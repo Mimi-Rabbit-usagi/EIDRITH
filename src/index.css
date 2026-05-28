@@ -23,8 +23,14 @@ body {
   --accent2: #ff6584;
 }
 
+/* タブレット（〜800px）: ランクラベル20px + 余白を考慮 */
 @media (max-width: 800px) {
-  :root { --sq: clamp(38px, calc(95vw / 8), 56px); }
+  :root { --sq: clamp(40px, calc((100vw - 340px) / 8), 64px); }
+}
+
+/* スマホ（〜640px）: ランクラベル20px + 左右パディング24px = 44px を引く */
+@media (max-width: 640px) {
+  :root { --sq: clamp(34px, calc((100vw - 44px) / 8), 54px); }
 }
 
 /* ── App Layout ─────────────────────────────────────────────────────────── */
@@ -51,6 +57,13 @@ body {
     align-items: center;
     padding: 16px 12px;
     gap: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .game-area {
+    padding: 8px 12px calc(16px + env(safe-area-inset-bottom));
+    gap: 10px;
   }
 }
 
@@ -262,6 +275,124 @@ body {
   }
 }
 
+/* ── スマホ専用レイアウト ────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* ボードを画面中央に */
+  .board-section {
+    align-items: center;
+    width: 100%;
+  }
+
+  .opponent-label,
+  .player-label {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0 2px;
+  }
+
+  /* パネル: 全幅 */
+  .game-panel {
+    max-width: 100%;
+    padding: 12px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+
+  /* タイトル+勝利数を横並びに */
+  .panel-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .panel-title { font-size: 15px; }
+
+  .win-counter {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  /* 難易度ボタン小さく */
+  .difficulty-btn {
+    padding: 5px 4px;
+    font-size: 10px;
+    gap: 2px;
+  }
+
+  /* テーマグリッド → 横スクロール */
+  .theme-grid {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 6px;
+    padding-bottom: 2px;
+  }
+  .theme-grid::-webkit-scrollbar { display: none; }
+
+  .theme-btn {
+    flex-shrink: 0;
+    width: 50px;
+    padding: 5px 3px;
+  }
+
+  .theme-preview { width: 24px; height: 24px; }
+
+  /* 手順: 高さ抑える */
+  .move-list { max-height: 80px; }
+
+  /* ボタン: 縦幅確保（タップしやすく） */
+  .new-game-btn,
+  .history-btn {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  /* 取った駒: コンパクト */
+  .captured-label { font-size: 10px; }
+  .captured-piece { font-size: 12px; }
+
+  /* テクニックポップアップ → ボトムシート */
+  .technique-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .technique-card {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  }
+
+  /* 履歴モーダル → 下から全画面 */
+  .history-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .history-modal {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .history-modal-header {
+    border-radius: 20px 20px 0 0;
+    padding: 16px 16px 0;
+  }
+
+  .history-modal-title { font-size: 17px; }
+
+  /* アンロック通知: 全幅 */
+  .unlock-toast {
+    top: env(safe-area-inset-top, 10px);
+    left: 10px;
+    right: 10px;
+    max-width: none;
+  }
+}
+
 .panel-title {
   display: flex;
   align-items: center;
@@ -270,6 +401,13 @@ body {
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.3px;
+}
+
+.panel-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .win-counter {

@@ -66,16 +66,16 @@ export default function GamePanel({
 
   return (
     <div className="game-panel">
-      {/* Title */}
-      <div className="panel-title">
-        <span>♟</span>
-        <span>Chess Master</span>
-      </div>
-
-      {/* Win counter */}
-      <div className="win-counter">
-        <span className="win-icon">🏆</span>
-        <span className="win-text">勝利数: <strong>{wins}</strong></span>
+      {/* Title + Win counter: 横並び（スマホ対応） */}
+      <div className="panel-top-row">
+        <div className="panel-title">
+          <span>♟</span>
+          <span>Chess Master</span>
+        </div>
+        <div className="win-counter">
+          <span className="win-icon">🏆</span>
+          <span className="win-text"><strong>{wins}</strong>勝</span>
+        </div>
       </div>
 
       {/* Difficulty selector */}
