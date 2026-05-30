@@ -7,6 +7,7 @@ import GamePanel from './components/GamePanel';
 import UnlockToast from './components/UnlockToast';
 import GameHistory from './components/GameHistory';
 import PromotionModal from './components/PromotionModal';
+import GameSummary from './components/GameSummary';
 
 // ── LocalStorage helpers ──────────────────────────────────────────────────────
 function loadGameData() {
@@ -46,6 +47,7 @@ export default function App() {
   const [winCounted, setWinCounted] = useState(false);
   const [difficulty, setDifficulty] = useState('easy');
   const [showHistory, setShowHistory] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   const activeBoardTheme = BOARD_THEMES.find(t => t.id === gameData.activeBoardTheme) || BOARD_THEMES[0];
   const { enabled: soundEnabled, toggle: toggleSound, play: playSound } = useSoundEffects();
@@ -79,6 +81,14 @@ export default function App() {
   // Keep refs in sync
   moveHistoryRef.current = moveHistory;
   techniqueLogRef.current = techniqueLog;
+
+  // ゲーム終了後にサマリーを表示（音が鳴り終わる1秒後）
+  useEffect(() => {
+    const isOver = gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'draw';
+    if (!isOver) return;
+    const t = setTimeout(() => setShowSummary(true), 1000);
+    return () => clearTimeout(t);
+  }, [gameStatus]);
 
   // Sound effects: 手が指されるたびに音を鳴らす
   const prevMoveCountRef = useRef(0);
@@ -160,12 +170,14 @@ export default function App() {
   const handleNewGame = useCallback(() => {
     resetGame();
     setWinCounted(false);
+    setShowSummary(false);
   }, [resetGame]);
 
   const handleDifficultyChange = useCallback((d) => {
     setDifficulty(d);
     resetGame();
     setWinCounted(false);
+    setShowSummary(false);
   }, [resetGame]);
 
   const handleThemeChange = useCallback((themeId) => {
@@ -231,6 +243,20 @@ export default function App() {
           onClearHint={clearHint}
         />
       </main>
+
+      {/* Game summary */}
+      {showSummary && (
+        <GameSummary
+          gameStatus={gameStatus}
+          winner={winner}
+          moveHistory={moveHistory}
+          techniqueLog={techniqueLog}
+          capturedPieces={capturedPieces}
+          difficulty={difficulty}
+          onNewGame={handleNewGame}
+          onClose={() => setShowSummary(false)}
+        />
+      )}
 
       {/* Promotion piece selector */}
       {pendingPromotion && (
