@@ -58,56 +58,47 @@ function TechniqueLogItem({ t, isNew, isExpanded, onToggle }) {
 }
 
 const STATUS_CONFIG = {
-  playing: { text: 'ゲーム中', color: '#4CAF50' },
-  check:   { text: 'チェック！', color: '#FF9800' },
-  checkmate: { text: 'チェックメイト', color: '#F44336' },
+  playing:   { text: 'ゲーム中',             color: '#4CAF50' },
+  check:     { text: 'チェック！',            color: '#FF9800' },
+  checkmate: { text: 'チェックメイト',        color: '#F44336' },
   stalemate: { text: 'ステイルメイト（引き分け）', color: '#9E9E9E' },
-  draw:    { text: '引き分け', color: '#9E9E9E' },
+  draw:      { text: '引き分け',              color: '#9E9E9E' },
 };
 
 const DIFFICULTY_CONFIG = [
-  { id: 'easy',   label: 'かんたん', emoji: '🌱', color: '#4CAF50' },
-  { id: 'normal', label: 'ふつう',   emoji: '⚔️',  color: '#FF9800' },
+  { id: 'easy',   label: 'かんたん',   emoji: '🌱', color: '#4CAF50' },
+  { id: 'normal', label: 'ふつう',     emoji: '⚔️',  color: '#FF9800' },
   { id: 'hard',   label: 'むずかしい', emoji: '💀', color: '#F44336' },
 ];
 
 export default function GamePanel({
-  gameStatus,
-  winner,
-  currentTurn,
-  isThinking,
-  capturedPieces,
-  moveHistory,
-  wins,
-  activeBoardTheme,
-  unlockedBoardThemes,
-  difficulty,
-  soundEnabled,
-  technique,
-  techniqueLog,
-  hint,
-  onDifficultyChange,
-  onThemeChange,
-  onNewGame,
-  onShowHistory,
-  onToggleSound,
-  onHint,
-  onClearHint,
+  gameStatus, winner, currentTurn, isThinking,
+  capturedPieces, moveHistory, wins,
+  activeBoardTheme, unlockedBoardThemes,
+  difficulty, soundEnabled, technique, techniqueLog, hint,
+  onDifficultyChange, onThemeChange, onNewGame, onShowHistory,
+  onToggleSound, onHint, onClearHint,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
-  const moveListRef = (el) => {
-    if (el) el.scrollTop = el.scrollHeight;
-  };
+  const moveListRef = (el) => { if (el) el.scrollTop = el.scrollHeight; };
 
-  // 最新テクニックを自動展開
   const [expandedTechId, setExpandedTechId] = useState(null);
   useEffect(() => {
     if (technique) setExpandedTechId(technique.id);
   }, [technique]);
 
+  // スマホ用タブ（PCでは無視される）
+  const [mobileTab, setMobileTab] = useState('game');
+
+  // 新しい戦術が来たらスマホでも対局タブに切り替え
+  useEffect(() => {
+    if (technique) setMobileTab('game');
+  }, [technique]);
+
   return (
     <div className="game-panel">
-      {/* Title + Win counter: 横並び（スマホ対応） */}
+
+      {/* ── タイトル行（常に表示） ── */}
       <div className="panel-top-row">
         <div className="panel-title">
           <span>♟</span>
@@ -128,37 +119,33 @@ export default function GamePanel({
         </div>
       </div>
 
-      {/* Difficulty selector */}
-      <div>
-        <p className="section-title">難易度</p>
-        <div className="difficulty-row">
-          {DIFFICULTY_CONFIG.map(d => (
-            <button
-              key={d.id}
-              className={`difficulty-btn ${difficulty === d.id ? 'difficulty-btn-active' : ''}`}
-              style={difficulty === d.id ? { borderColor: d.color, color: d.color } : {}}
-              onClick={() => onDifficultyChange(d.id)}
-            >
-              <span>{d.emoji}</span>
-              <span>{d.label}</span>
-            </button>
-          ))}
-        </div>
+      {/* ── スマホ専用タブバー ── */}
+      <div className="mobile-tabs">
+        <button
+          className={`mobile-tab-btn ${mobileTab === 'game' ? 'mobile-tab-active' : ''}`}
+          onClick={() => setMobileTab('game')}
+        >
+          ♟ 対局
+        </button>
+        <button
+          className={`mobile-tab-btn ${mobileTab === 'settings' ? 'mobile-tab-active' : ''}`}
+          onClick={() => setMobileTab('settings')}
+        >
+          ⚙ 設定
+        </button>
       </div>
 
-      {/* Game status */}
-      <div className="status-section">
+      {/* ── 対局タブ ── */}
+      {/* ゲーム状態 */}
+      <div className={`status-section${mobileTab === 'settings' ? ' mobile-hidden' : ''}`}>
         <div className="status-badge" style={{ borderColor: status.color, color: status.color }}>
           {status.text}
         </div>
-
         {gameStatus === 'playing' || gameStatus === 'check' ? (
           <div className="turn-indicator">
             {isThinking ? (
               <div className="thinking-indicator">
-                <div className="thinking-dots">
-                  <span /><span /><span />
-                </div>
+                <div className="thinking-dots"><span /><span /><span /></div>
                 <span>CPUが考え中...</span>
               </div>
             ) : (
@@ -181,68 +168,14 @@ export default function GamePanel({
             {gameStatus === 'checkmate' && (
               <p>{winner === 'w' ? '🎉 あなたの勝ち！' : '😔 CPUの勝ち...'}</p>
             )}
-            {(gameStatus === 'stalemate' || gameStatus === 'draw') && (
-              <p>引き分け</p>
-            )}
+            {(gameStatus === 'stalemate' || gameStatus === 'draw') && <p>引き分け</p>}
           </div>
         )}
       </div>
 
-      {/* Captured pieces */}
-      <div className="captured-section">
-        <CapturedPieces pieces={capturedPieces.w} label="あなた" />
-        <CapturedPieces pieces={capturedPieces.b} label="CPU" />
-      </div>
-
-      {/* Board theme selector */}
-      <div className="theme-section">
-        <p className="section-title">盤のテーマ</p>
-        <div className="theme-grid">
-          {BOARD_THEMES.map(theme => {
-            const unlocked = unlockedBoardThemes.includes(theme.id);
-            const isActive = activeBoardTheme === theme.id;
-            return (
-              <button
-                key={theme.id}
-                className={`theme-btn ${isActive ? 'theme-btn-active' : ''} ${!unlocked ? 'theme-btn-locked' : ''}`}
-                onClick={() => unlocked && onThemeChange(theme.id)}
-                title={unlocked ? theme.name : `${theme.requiredWins}勝でアンロック`}
-              >
-                <div
-                  className="theme-preview"
-                  style={{
-                    background: `linear-gradient(135deg, ${theme.lightSquare} 50%, ${theme.darkSquare} 50%)`,
-                  }}
-                />
-                <span className="theme-name">{unlocked ? theme.emoji : '🔒'}</span>
-                {!unlocked && (
-                  <span className="theme-lock-text">{theme.requiredWins}勝</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Move history */}
-      <div className="move-history-section">
-        <p className="section-title">手順</p>
-        <div className="move-list" ref={moveListRef}>
-          {moveHistory.length === 0 ? (
-            <p className="move-empty">まだ手が指されていません</p>
-          ) : (
-            <div className="move-grid">
-              {moveHistory.map((move, i) => (
-                <MoveHistoryItem key={i} move={move} index={i} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Technique log */}
+      {/* 戦術ログ */}
       {techniqueLog.length > 0 && (
-        <div className="technique-log-section">
+        <div className={`technique-log-section${mobileTab === 'settings' ? ' mobile-hidden' : ''}`}>
           <p className="section-title">発動した戦術（{techniqueLog.length}）</p>
           <div className="technique-log-list">
             {[...techniqueLog].reverse().map(t => (
@@ -258,15 +191,79 @@ export default function GamePanel({
         </div>
       )}
 
-      {/* Buttons */}
-      <div className="panel-buttons">
-        <button className="new-game-btn" onClick={onNewGame}>
-          新しいゲーム
-        </button>
-        <button className="history-btn" onClick={onShowHistory}>
-          📋 履歴
-        </button>
+      {/* 取った駒 */}
+      <div className={`captured-section${mobileTab === 'settings' ? ' mobile-hidden' : ''}`}>
+        <CapturedPieces pieces={capturedPieces.w} label="あなた" />
+        <CapturedPieces pieces={capturedPieces.b} label="CPU" />
       </div>
+
+      {/* ── 設定タブ ── */}
+      {/* 難易度 */}
+      <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
+        <p className="section-title">難易度</p>
+        <div className="difficulty-row">
+          {DIFFICULTY_CONFIG.map(d => (
+            <button
+              key={d.id}
+              className={`difficulty-btn ${difficulty === d.id ? 'difficulty-btn-active' : ''}`}
+              style={difficulty === d.id ? { borderColor: d.color, color: d.color } : {}}
+              onClick={() => onDifficultyChange(d.id)}
+            >
+              <span>{d.emoji}</span>
+              <span>{d.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* テーマ */}
+      <div className={`theme-section${mobileTab === 'game' ? ' mobile-hidden' : ''}`}>
+        <p className="section-title">盤のテーマ</p>
+        <div className="theme-grid">
+          {BOARD_THEMES.map(theme => {
+            const unlocked = unlockedBoardThemes.includes(theme.id);
+            const isActive = activeBoardTheme === theme.id;
+            return (
+              <button
+                key={theme.id}
+                className={`theme-btn ${isActive ? 'theme-btn-active' : ''} ${!unlocked ? 'theme-btn-locked' : ''}`}
+                onClick={() => unlocked && onThemeChange(theme.id)}
+                title={unlocked ? theme.name : `${theme.requiredWins}勝でアンロック`}
+              >
+                <div
+                  className="theme-preview"
+                  style={{ background: `linear-gradient(135deg, ${theme.lightSquare} 50%, ${theme.darkSquare} 50%)` }}
+                />
+                <span className="theme-name">{unlocked ? theme.emoji : '🔒'}</span>
+                {!unlocked && <span className="theme-lock-text">{theme.requiredWins}勝</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 手順 */}
+      <div className={`move-history-section${mobileTab === 'game' ? ' mobile-hidden' : ''}`}>
+        <p className="section-title">手順</p>
+        <div className="move-list" ref={moveListRef}>
+          {moveHistory.length === 0 ? (
+            <p className="move-empty">まだ手が指されていません</p>
+          ) : (
+            <div className="move-grid">
+              {moveHistory.map((move, i) => (
+                <MoveHistoryItem key={i} move={move} index={i} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── ボタン（常に表示） ── */}
+      <div className="panel-buttons">
+        <button className="new-game-btn" onClick={onNewGame}>新しいゲーム</button>
+        <button className="history-btn" onClick={onShowHistory}>📋 履歴</button>
+      </div>
+
     </div>
   );
 }
