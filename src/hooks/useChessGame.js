@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Chess } from 'chess.js';
 import { getBestMove } from './useAI';
 import { detectTechnique } from './detectTactics';
@@ -25,6 +25,7 @@ export function useChessGame(difficulty = 'normal') {
   const [techniqueLog, setTechniqueLog] = useState([]); // all techniques this game
   const [capturedPieces, setCapturedPieces] = useState({ w: [], b: [] });
   const [pendingPromotion, setPendingPromotion] = useState(null); // { from, to }
+  const [hint, setHint] = useState(null); // { from, to }
   const aiTimerRef = useRef(null);
 
   const chess = chessRef.current;
@@ -105,6 +106,7 @@ export function useChessGame(difficulty = 'normal') {
           syncFen();
           setSelectedSquare(null);
           setLegalMoves([]);
+          setHint(null);
           triggerAI();
           return;
         }
@@ -130,6 +132,21 @@ export function useChessGame(difficulty = 'normal') {
     }
   }, [selectedSquare, legalMoves, isThinking, triggerAI, syncFen, showTechnique]);
 
+  const requestHint = useCallback(() => {
+    const c = chessRef.current;
+    if (c.turn() !== 'w' || c.isGameOver() || isThinking) return;
+
+    // normal強度（depth=2）でベスト手を取得
+    const hintSan = getBestMove(c.fen(), 'normal');
+    if (!hintSan) return;
+
+    // SAN → from/to 変換
+    const verboseMove = c.moves({ verbose: true }).find(m => m.san === hintSan);
+    if (verboseMove) {
+      setHint({ from: verboseMove.from, to: verboseMove.to });
+    }
+  }, [isThinking]);
+
   const confirmPromotion = useCallback((piece) => {
     if (!pendingPromotion) return;
     const c = chessRef.current;
@@ -146,6 +163,7 @@ export function useChessGame(difficulty = 'normal') {
       showTechnique(detectTechnique(c, move));
       syncFen();
       setPendingPromotion(null);
+      setHint(null);
       triggerAI();
     }
   }, [pendingPromotion, syncFen, showTechnique, triggerAI]);
@@ -162,9 +180,18 @@ export function useChessGame(difficulty = 'normal') {
     setTechniqueLog([]);
     setCapturedPieces({ w: [], b: [] });
     setPendingPromotion(null);
+    setHint(null);
   }, []);
 
+  // 戦術の「NEW」バッジを8秒後に自動クリア
+  useEffect(() => {
+    if (!technique) return;
+    const t = setTimeout(() => setTechnique(null), 8000);
+    return () => clearTimeout(t);
+  }, [technique]);
+
   const closeTechnique = useCallback(() => setTechnique(null), []);
+  const clearHint = useCallback(() => setHint(null), []);
 
   return {
     board: chess.board(),
@@ -185,5 +212,8 @@ export function useChessGame(difficulty = 'normal') {
     closeTechnique,
     pendingPromotion,
     confirmPromotion,
+    hint,
+    requestHint,
+    clearHint,
   };
 }

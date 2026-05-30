@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useChessGame } from './hooks/useChessGame';
+import { useSoundEffects } from './hooks/useSoundEffects';
 import { BOARD_THEMES } from './data/themes';
 import ChessBoard from './components/ChessBoard';
 import GamePanel from './components/GamePanel';
-import TechniqueModal from './components/TechniqueModal';
 import UnlockToast from './components/UnlockToast';
 import GameHistory from './components/GameHistory';
 import PromotionModal from './components/PromotionModal';
@@ -48,6 +48,7 @@ export default function App() {
   const [showHistory, setShowHistory] = useState(false);
 
   const activeBoardTheme = BOARD_THEMES.find(t => t.id === gameData.activeBoardTheme) || BOARD_THEMES[0];
+  const { enabled: soundEnabled, toggle: toggleSound, play: playSound } = useSoundEffects();
 
   // Refs to capture latest values inside effects
   const moveHistoryRef = useRef([]);
@@ -68,14 +69,40 @@ export default function App() {
     moveHistory,
     handleSquareClick,
     resetGame,
-    closeTechnique,
     pendingPromotion,
     confirmPromotion,
+    hint,
+    requestHint,
+    clearHint,
   } = useChessGame(difficulty);
 
   // Keep refs in sync
   moveHistoryRef.current = moveHistory;
   techniqueLogRef.current = techniqueLog;
+
+  // Sound effects: 手が指されるたびに音を鳴らす
+  const prevMoveCountRef = useRef(0);
+  useEffect(() => {
+    const count = moveHistory.length;
+    if (count <= prevMoveCountRef.current) return;
+    prevMoveCountRef.current = count;
+
+    const last = moveHistory[count - 1];
+    if (gameStatus === 'checkmate') {
+      playSound(winner === 'w' ? 'win' : 'lose');
+    } else if (gameStatus === 'stalemate' || gameStatus === 'draw') {
+      playSound('draw');
+    } else if (gameStatus === 'check') {
+      playSound('check');
+    } else if (last?.promotion) {
+      playSound('promotion');
+    } else if (last?.captured) {
+      playSound('capture');
+    } else {
+      playSound('move');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moveHistory.length]);
 
   // Save log and count wins when game ends
   useEffect(() => {
@@ -169,6 +196,7 @@ export default function App() {
             lastMove={lastMove}
             gameStatus={gameStatus}
             boardTheme={activeBoardTheme}
+            hint={hint}
             onSquareClick={handleSquareClick}
           />
 
@@ -190,10 +218,17 @@ export default function App() {
           activeBoardTheme={gameData.activeBoardTheme}
           unlockedBoardThemes={gameData.unlockedBoardThemes}
           difficulty={difficulty}
+          soundEnabled={soundEnabled}
+          technique={technique}
+          techniqueLog={techniqueLog}
+          hint={hint}
           onDifficultyChange={handleDifficultyChange}
           onThemeChange={handleThemeChange}
           onNewGame={handleNewGame}
           onShowHistory={() => setShowHistory(true)}
+          onToggleSound={toggleSound}
+          onHint={requestHint}
+          onClearHint={clearHint}
         />
       </main>
 
@@ -201,9 +236,6 @@ export default function App() {
       {pendingPromotion && (
         <PromotionModal onConfirm={confirmPromotion} />
       )}
-
-      {/* Technique popup */}
-      <TechniqueModal technique={technique} onClose={closeTechnique} />
 
       {/* Unlock notification */}
       <UnlockToast unlock={pendingUnlock} onClose={closeUnlock} />

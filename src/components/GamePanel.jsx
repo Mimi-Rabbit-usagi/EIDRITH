@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BOARD_THEMES } from '../data/themes';
 
 const PIECE_SYMBOLS = { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' };
@@ -29,6 +30,33 @@ function MoveHistoryItem({ move, index }) {
   );
 }
 
+function TechniqueLogItem({ t, isNew, isExpanded, onToggle }) {
+  return (
+    <div className={`tlog-item ${isNew ? 'tlog-item-new' : ''}`}>
+      <button
+        className="tlog-header"
+        onClick={onToggle}
+        style={{ borderLeftColor: t.color }}
+      >
+        <span className="tlog-icon">{t.icon}</span>
+        <span className="tlog-name">{t.name}</span>
+        {isNew && <span className="tlog-new-badge">NEW</span>}
+        <span className="tlog-chevron">{isExpanded ? '▲' : '▼'}</span>
+      </button>
+      {isExpanded && (
+        <div className="tlog-body">
+          <p className="tlog-name-en">{t.nameEn}</p>
+          <p className="tlog-description">{t.description}</p>
+          <div className="tlog-detail">
+            <span className="tlog-detail-label">詳細</span>
+            <p className="tlog-detail-text">{t.detail}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const STATUS_CONFIG = {
   playing: { text: 'ゲーム中', color: '#4CAF50' },
   check:   { text: 'チェック！', color: '#FF9800' },
@@ -54,15 +82,28 @@ export default function GamePanel({
   activeBoardTheme,
   unlockedBoardThemes,
   difficulty,
+  soundEnabled,
+  technique,
+  techniqueLog,
+  hint,
   onDifficultyChange,
   onThemeChange,
   onNewGame,
   onShowHistory,
+  onToggleSound,
+  onHint,
+  onClearHint,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
   const moveListRef = (el) => {
     if (el) el.scrollTop = el.scrollHeight;
   };
+
+  // 最新テクニックを自動展開
+  const [expandedTechId, setExpandedTechId] = useState(null);
+  useEffect(() => {
+    if (technique) setExpandedTechId(technique.id);
+  }, [technique]);
 
   return (
     <div className="game-panel">
@@ -72,9 +113,18 @@ export default function GamePanel({
           <span>♟</span>
           <span>Chess Master</span>
         </div>
-        <div className="win-counter">
-          <span className="win-icon">🏆</span>
-          <span className="win-text"><strong>{wins}</strong>勝</span>
+        <div className="panel-top-right">
+          <button
+            className="sound-toggle-btn"
+            onClick={onToggleSound}
+            title={soundEnabled ? '音をオフにする' : '音をオンにする'}
+          >
+            {soundEnabled ? '🔊' : '🔇'}
+          </button>
+          <div className="win-counter">
+            <span className="win-icon">🏆</span>
+            <span className="win-text"><strong>{wins}</strong>勝</span>
+          </div>
         </div>
       </div>
 
@@ -116,6 +166,14 @@ export default function GamePanel({
                 <div className="turn-dot" />
                 <span>{currentTurn === 'w' ? 'あなたの番（白）' : 'CPUの番（黒）'}</span>
               </div>
+            )}
+            {currentTurn === 'w' && !isThinking && (
+              <button
+                className={`hint-btn ${hint ? 'hint-btn-active' : ''}`}
+                onClick={hint ? onClearHint : onHint}
+              >
+                {hint ? '💡 ヒントを消す' : '💡 ヒントを見る'}
+              </button>
             )}
           </div>
         ) : (
@@ -181,6 +239,24 @@ export default function GamePanel({
           )}
         </div>
       </div>
+
+      {/* Technique log */}
+      {techniqueLog.length > 0 && (
+        <div className="technique-log-section">
+          <p className="section-title">発動した戦術（{techniqueLog.length}）</p>
+          <div className="technique-log-list">
+            {[...techniqueLog].reverse().map(t => (
+              <TechniqueLogItem
+                key={t.id}
+                t={t}
+                isNew={technique?.id === t.id}
+                isExpanded={expandedTechId === t.id}
+                onToggle={() => setExpandedTechId(prev => prev === t.id ? null : t.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Buttons */}
       <div className="panel-buttons">

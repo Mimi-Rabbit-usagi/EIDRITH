@@ -14,7 +14,7 @@ function isLightSquare(rowIndex, colIndex) {
   return (rowIndex + colIndex) % 2 === 0;
 }
 
-function getSquareStyle(square, rowIndex, colIndex, boardTheme, selectedSquare, legalMoves, lastMove, gameStatus, board) {
+function getSquareStyle(square, rowIndex, colIndex, boardTheme, selectedSquare, legalMoves, lastMove, gameStatus, board, hint) {
   const isSelected = selectedSquare === square;
   const isLegal = legalMoves.includes(square);
   const isLastMoveSquare = lastMove && (lastMove.from === square || lastMove.to === square);
@@ -33,6 +33,12 @@ function getSquareStyle(square, rowIndex, colIndex, boardTheme, selectedSquare, 
   if (isSelected) {
     return { backgroundColor: light ? '#F6F669' : '#E8E020' };
   }
+  if (hint?.from === square) {
+    return { backgroundColor: light ? '#80DEEA' : '#26C6DA' };
+  }
+  if (hint?.to === square) {
+    return { backgroundColor: light ? '#A5D6A7' : '#66BB6A' };
+  }
   if (isLastMoveSquare) {
     return { backgroundColor: light ? '#CDD46A' : '#AABA32' };
   }
@@ -41,7 +47,7 @@ function getSquareStyle(square, rowIndex, colIndex, boardTheme, selectedSquare, 
   };
 }
 
-export default function ChessBoard({ board, selectedSquare, legalMoves, lastMove, gameStatus, boardTheme, onSquareClick }) {
+export default function ChessBoard({ board, selectedSquare, legalMoves, lastMove, gameStatus, boardTheme, hint, onSquareClick }) {
   return (
     <div className="chess-board-wrapper">
       {/* File labels top (hidden, just for symmetry) */}
@@ -61,7 +67,7 @@ export default function ChessBoard({ board, selectedSquare, legalMoves, lastMove
               const isLegal = legalMoves.includes(square);
               const squareStyle = getSquareStyle(
                 square, rowIndex, colIndex,
-                boardTheme, selectedSquare, legalMoves, lastMove, gameStatus, board
+                boardTheme, selectedSquare, legalMoves, lastMove, gameStatus, board, hint
               );
 
               return (
