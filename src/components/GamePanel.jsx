@@ -102,7 +102,7 @@ export default function GamePanel({
       <div className="panel-top-row">
         <div className="panel-title">
           <span>♟</span>
-          <span>Chess Master</span>
+          <span>EIDRITH</span>
         </div>
         <div className="panel-top-right">
           <button

@@ -76,6 +76,8 @@ export default function App() {
     hint,
     requestHint,
     clearHint,
+    handleDrop,
+    clearSelection,
   } = useChessGame(difficulty);
 
   // Keep refs in sync
@@ -210,6 +212,8 @@ export default function App() {
             boardTheme={activeBoardTheme}
             hint={hint}
             onSquareClick={handleSquareClick}
+            onDrop={handleDrop}
+            onCancelDrag={clearSelection}
           />
 
           {/* Player label */}

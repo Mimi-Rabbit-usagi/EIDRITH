@@ -147,6 +147,48 @@ export function useChessGame(difficulty = 'normal') {
     }
   }, [isThinking]);
 
+  const clearSelection = useCallback(() => {
+    setSelectedSquare(null);
+    setLegalMoves([]);
+  }, []);
+
+  // ドラッグ&ドロップ用: from→to を直接実行
+  const handleDrop = useCallback((from, to) => {
+    const c = chessRef.current;
+    if (c.turn() !== 'w' || isThinking || c.isGameOver()) return;
+
+    const piece = c.get(from);
+    if (!piece || piece.color !== 'w') { clearSelection(); return; }
+
+    const moves = c.moves({ square: from, verbose: true });
+    if (!moves.some(m => m.to === to)) { clearSelection(); return; }
+
+    const isPromotion = moves.some(m => m.to === to && m.promotion);
+    if (isPromotion) {
+      setPendingPromotion({ from, to });
+      setSelectedSquare(null);
+      setLegalMoves([]);
+      return;
+    }
+
+    const move = c.move({ from, to, promotion: 'q' });
+    if (move) {
+      setLastMove({ from: move.from, to: move.to });
+      if (move.captured) {
+        setCapturedPieces(prev => ({
+          ...prev,
+          [move.color]: [...prev[move.color], move.captured],
+        }));
+      }
+      showTechnique(detectTechnique(c, move));
+      syncFen();
+      setSelectedSquare(null);
+      setLegalMoves([]);
+      setHint(null);
+      triggerAI();
+    }
+  }, [isThinking, clearSelection, syncFen, showTechnique, triggerAI]);
+
   const confirmPromotion = useCallback((piece) => {
     if (!pendingPromotion) return;
     const c = chessRef.current;
@@ -215,5 +257,7 @@ export function useChessGame(difficulty = 'normal') {
     hint,
     requestHint,
     clearHint,
+    handleDrop,
+    clearSelection,
   };
 }
