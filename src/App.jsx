@@ -6,6 +6,7 @@ import GamePanel from './components/GamePanel';
 import TechniqueModal from './components/TechniqueModal';
 import UnlockToast from './components/UnlockToast';
 import GameHistory from './components/GameHistory';
+import PromotionModal from './components/PromotionModal';
 
 // ── LocalStorage helpers ──────────────────────────────────────────────────────
 function loadGameData() {
@@ -68,6 +69,8 @@ export default function App() {
     handleSquareClick,
     resetGame,
     closeTechnique,
+    pendingPromotion,
+    confirmPromotion,
   } = useChessGame(difficulty);
 
   // Keep refs in sync
@@ -193,6 +196,11 @@ export default function App() {
           onShowHistory={() => setShowHistory(true)}
         />
       </main>
+
+      {/* Promotion piece selector */}
+      {pendingPromotion && (
+        <PromotionModal onConfirm={confirmPromotion} />
+      )}
 
       {/* Technique popup */}
       <TechniqueModal technique={technique} onClose={closeTechnique} />

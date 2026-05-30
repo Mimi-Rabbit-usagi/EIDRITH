@@ -1139,6 +1139,83 @@ body {
 .mp-white { font-size: 12px; font-family: monospace; background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 3px; color: #fff; }
 .mp-black { font-size: 12px; font-family: monospace; background: rgba(0,0,0,0.2); padding: 1px 5px; border-radius: 3px; color: #aaa; }
 
+/* ── Promotion Modal ────────────────────────────────────────────────────── */
+.promotion-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+
+.promotion-modal {
+  background: #1a1a2e;
+  border: 1.5px solid rgba(108, 99, 255, 0.5);
+  border-radius: 20px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+.promotion-title {
+  margin: 0 0 20px;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+}
+
+.promotion-pieces {
+  display: flex;
+  gap: 12px;
+}
+
+.promotion-piece-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: #fff;
+  min-width: 72px;
+}
+
+.promotion-piece-btn:hover {
+  background: rgba(108, 99, 255, 0.2);
+  border-color: rgba(108, 99, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.promotion-piece-symbol {
+  font-size: 44px;
+  line-height: 1;
+  color: #FFFDE7;
+  -webkit-text-stroke: 1.5px #2a2a2a;
+  paint-order: stroke fill;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.65));
+}
+
+.promotion-piece-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+}
+
+@media (max-width: 640px) {
+  .promotion-modal { padding: 20px 16px; }
+  .promotion-pieces { gap: 8px; }
+  .promotion-piece-btn { min-width: 60px; padding: 12px 8px; }
+  .promotion-piece-symbol { font-size: 36px; }
+}
+
 /* ── Unlock Toast ───────────────────────────────────────────────────────── */
 .unlock-toast {
   position: fixed;

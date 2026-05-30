@@ -24,6 +24,7 @@ export function useChessGame(difficulty = 'normal') {
   const [technique, setTechnique] = useState(null);
   const [techniqueLog, setTechniqueLog] = useState([]); // all techniques this game
   const [capturedPieces, setCapturedPieces] = useState({ w: [], b: [] });
+  const [pendingPromotion, setPendingPromotion] = useState(null); // { from, to }
   const aiTimerRef = useRef(null);
 
   const chess = chessRef.current;
@@ -81,6 +82,16 @@ export function useChessGame(difficulty = 'normal') {
     if (selectedSquare) {
       // Attempt the move
       if (legalMoves.includes(square)) {
+        // プロモーション（ポーン昇格）かどうか確認
+        const isPromotion = c.moves({ square: selectedSquare, verbose: true })
+          .some(m => m.to === square && m.promotion);
+        if (isPromotion) {
+          setPendingPromotion({ from: selectedSquare, to: square });
+          setSelectedSquare(null);
+          setLegalMoves([]);
+          return;
+        }
+
         const move = c.move({ from: selectedSquare, to: square, promotion: 'q' });
         if (move) {
           setLastMove({ from: move.from, to: move.to });
@@ -119,6 +130,26 @@ export function useChessGame(difficulty = 'normal') {
     }
   }, [selectedSquare, legalMoves, isThinking, triggerAI, syncFen, showTechnique]);
 
+  const confirmPromotion = useCallback((piece) => {
+    if (!pendingPromotion) return;
+    const c = chessRef.current;
+    const { from, to } = pendingPromotion;
+    const move = c.move({ from, to, promotion: piece });
+    if (move) {
+      setLastMove({ from: move.from, to: move.to });
+      if (move.captured) {
+        setCapturedPieces(prev => ({
+          ...prev,
+          [move.color]: [...prev[move.color], move.captured],
+        }));
+      }
+      showTechnique(detectTechnique(c, move));
+      syncFen();
+      setPendingPromotion(null);
+      triggerAI();
+    }
+  }, [pendingPromotion, syncFen, showTechnique, triggerAI]);
+
   const resetGame = useCallback(() => {
     clearTimeout(aiTimerRef.current);
     chessRef.current = new Chess();
@@ -130,6 +161,7 @@ export function useChessGame(difficulty = 'normal') {
     setTechnique(null);
     setTechniqueLog([]);
     setCapturedPieces({ w: [], b: [] });
+    setPendingPromotion(null);
   }, []);
 
   const closeTechnique = useCallback(() => setTechnique(null), []);
@@ -151,5 +183,7 @@ export function useChessGame(difficulty = 'normal') {
     handleSquareClick,
     resetGame,
     closeTechnique,
+    pendingPromotion,
+    confirmPromotion,
   };
 }
