@@ -2838,6 +2838,76 @@ body {
   margin: 0;
 }
 
+/* ── カスタマイズモーダル ────────────────────────────────────────────────── */
+
+.customize-modal {
+  max-width: 460px;
+}
+
+.customize-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.customize-tab-btn {
+  flex: 1;
+  padding: 8px 6px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.customize-tab-btn:hover:not(.customize-tab-active) {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.75);
+}
+.customize-tab-active {
+  background: rgba(108,99,255,0.35);
+  color: #c7c2ff;
+}
+
+.customize-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.customize-subtitle {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.4);
+  margin: 0;
+}
+.customize-subtitle strong { color: rgba(255,255,255,0.7); }
+
+.piece-values-ref {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.piece-values-ref-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(255,255,255,0.3);
+  margin: 0;
+}
+.piece-values-ref-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 /* ── #19 棋譜分析（GameSummary） ──────────────────────────────────────────── */
 
 .summary-section {

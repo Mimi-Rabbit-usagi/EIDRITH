@@ -16,6 +16,7 @@ import ReplayModal from './components/ReplayModal';
 import StatsModal from './components/StatsModal';
 import PuzzleModal from './components/PuzzleModal';
 import OpeningModal from './components/OpeningModal';
+import CustomizeModal from './components/CustomizeModal';
 import PromotionModal from './components/PromotionModal';
 import GameSummary from './components/GameSummary';
 
@@ -77,6 +78,7 @@ export default function App() {
   const [showStats, setShowStats] = useState(false);
   const [showPuzzle, setShowPuzzle] = useState(false);
   const [showOpening, setShowOpening] = useState(false);
+  const [showCustomize, setShowCustomize] = useState(false);
   const [replayGame, setReplayGame] = useState(null);
 
   const handlePlayerNameChange = useCallback((name) => {
@@ -399,17 +401,12 @@ export default function App() {
           capturedPieces={capturedPieces}
           moveHistory={moveHistory}
           wins={gameData.wins}
-          activeBoardTheme={gameData.activeBoardTheme}
-          unlockedBoardThemes={gameData.unlockedBoardThemes}
           difficulty={difficulty}
           soundEnabled={soundEnabled}
           technique={technique}
           techniqueLog={techniqueLog}
           hint={hint}
           currentOpening={currentOpening}
-          activePieceSet={gameData.activePieceSet}
-          unlockedPieceSets={gameData.unlockedPieceSets}
-          unlockedAchievements={gameData.unlockedAchievements}
           playerColor={playerColor}
           playerName={playerName}
           clockMode={clockMode}
@@ -419,12 +416,11 @@ export default function App() {
           onClockModeChange={handleClockModeChange}
           onPlayerColorChange={handlePlayerColorChange}
           onUndo={undoMove}
-          onThemeChange={handleThemeChange}
-          onPieceSetChange={handlePieceSetChange}
           onNewGame={handleNewGame}
           onShowHistory={() => setShowHistory(true)}
           onShowPuzzle={() => setShowPuzzle(true)}
           onShowOpening={() => setShowOpening(true)}
+          onShowCustomize={() => setShowCustomize(true)}
           onToggleSound={toggleSound}
           onHint={requestHint}
           onClearHint={clearHint}
@@ -467,6 +463,21 @@ export default function App() {
           activeBoardTheme={gameData.activeBoardTheme}
           activePieceSet={gameData.activePieceSet}
           onClose={() => setShowPuzzle(false)}
+        />
+      )}
+
+      {/* Customize modal */}
+      {showCustomize && (
+        <CustomizeModal
+          activeBoardTheme={gameData.activeBoardTheme}
+          unlockedBoardThemes={gameData.unlockedBoardThemes}
+          activePieceSet={gameData.activePieceSet}
+          unlockedPieceSets={gameData.unlockedPieceSets}
+          unlockedAchievements={gameData.unlockedAchievements}
+          wins={gameData.wins}
+          onThemeChange={handleThemeChange}
+          onPieceSetChange={handlePieceSetChange}
+          onClose={() => setShowCustomize(false)}
         />
       )}
 
