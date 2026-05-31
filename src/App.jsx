@@ -15,6 +15,7 @@ import GameHistory from './components/GameHistory';
 import ReplayModal from './components/ReplayModal';
 import StatsModal from './components/StatsModal';
 import PuzzleModal from './components/PuzzleModal';
+import OpeningModal from './components/OpeningModal';
 import PromotionModal from './components/PromotionModal';
 import GameSummary from './components/GameSummary';
 
@@ -75,6 +76,7 @@ export default function App() {
   const [showSummary, setShowSummary] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showPuzzle, setShowPuzzle] = useState(false);
+  const [showOpening, setShowOpening] = useState(false);
   const [replayGame, setReplayGame] = useState(null);
 
   const handlePlayerNameChange = useCallback((name) => {
@@ -422,6 +424,7 @@ export default function App() {
           onNewGame={handleNewGame}
           onShowHistory={() => setShowHistory(true)}
           onShowPuzzle={() => setShowPuzzle(true)}
+          onShowOpening={() => setShowOpening(true)}
           onToggleSound={toggleSound}
           onHint={requestHint}
           onClearHint={clearHint}
@@ -464,6 +467,15 @@ export default function App() {
           activeBoardTheme={gameData.activeBoardTheme}
           activePieceSet={gameData.activePieceSet}
           onClose={() => setShowPuzzle(false)}
+        />
+      )}
+
+      {/* Opening practice modal */}
+      {showOpening && (
+        <OpeningModal
+          activeBoardTheme={gameData.activeBoardTheme}
+          activePieceSet={gameData.activePieceSet}
+          onClose={() => setShowOpening(false)}
         />
       )}
 

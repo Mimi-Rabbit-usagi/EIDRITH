@@ -2040,12 +2040,16 @@ body {
   max-width: 440px;
   max-height: 92vh;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-sizing: border-box;
 }
 
-.puzzle-modal-play { max-width: 500px; }
+.puzzle-modal-play {
+  max-width: 480px;
+}
 
 .puzzle-modal-header {
   display: flex;
@@ -2171,6 +2175,8 @@ body {
 .puzzle-board-wrap {
   display: flex;
   justify-content: center;
+  /* モーダル幅(max 500px) - padding(40px) - rank-label(20px) を 8 等分 */
+  --sq: clamp(34px, calc((min(500px, 100vw) - 60px) / 8), 50px);
 }
 
 .puzzle-actions {
@@ -2830,4 +2836,136 @@ body {
   color: rgba(255,255,255,0.55);
   line-height: 1.5;
   margin: 0;
+}
+
+/* ── #19 棋譜分析（GameSummary） ──────────────────────────────────────────── */
+
+.summary-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.summary-analysis-toggle {
+  width: 100%;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.5);
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+  text-align: left;
+}
+.summary-analysis-toggle:hover {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.8);
+}
+
+.summary-analysis {
+  margin-top: 8px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-eval-chart-wrap {
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.summary-accuracy-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.acc-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border: 1px solid;
+}
+.acc-blunder    { background: rgba(244,67,54,0.18);  color: #F44336; border-color: #F44336; }
+.acc-mistake    { background: rgba(255,152,0,0.18);  color: #FF9800; border-color: #FF9800; }
+.acc-inaccuracy { background: rgba(255,193,7,0.18);  color: #FFC107; border-color: #FFC107; }
+.acc-perfect    { background: rgba(76,175,80,0.18);  color: #69F0AE; border-color: #4CAF50; }
+
+.summary-worst-move {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.45);
+  margin: 0;
+}
+.summary-worst-move strong { color: rgba(255,255,255,0.75); }
+
+/* ── #20 定跡練習（OpeningModal） ────────────────────────────────────────── */
+
+.opening-progress {
+  position: relative;
+  height: 18px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 9px;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+.opening-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #7C4DFF, #651FFF);
+  border-radius: 9px;
+  transition: width 0.35s ease;
+}
+.opening-progress-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.7);
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.opening-color-toggle {
+  display: flex;
+  gap: 4px;
+}
+.opening-color-btn {
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.opening-color-btn.active {
+  background: rgba(124,77,255,0.28);
+  border-color: #7C4DFF;
+  color: #D1BAFF;
+  font-weight: 600;
+}
+.opening-color-btn:hover:not(.active) {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.75);
+}
+
+.puzzle-banner-info {
+  background: rgba(33,150,243,0.18);
+  border: 1px solid rgba(33,150,243,0.5);
+  color: #64B5F6;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  text-align: center;
+  font-weight: 600;
 }

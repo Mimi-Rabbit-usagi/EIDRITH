@@ -185,7 +185,9 @@ export default function PuzzleModal({ activeBoardTheme, activePieceSet, onClose 
   }
 
   // ── パズル解答ビュー ──
-  const isWhiteTurn = chess.turn() === 'w';
+  // FENの2トークン目が初期手番。move/undoで変化しないよう固定値として使う
+  const puzzlePlayerColor = puzzle.fen.split(' ')[1]; // 'w' | 'b'
+  const flipped = puzzlePlayerColor === 'b';
 
   return (
     <div className="puzzle-overlay" onClick={onClose}>
@@ -205,7 +207,7 @@ export default function PuzzleModal({ activeBoardTheme, activePieceSet, onClose 
             {DIFF_LABEL[puzzle.difficulty]}
           </span>
           <span className="puzzle-turn-label">
-            {isWhiteTurn ? '白番（先手）の一手' : '黒番（後手）の一手'}
+            {puzzlePlayerColor === 'w' ? '白番（先手）の一手' : '黒番（後手）の一手'}
           </span>
         </div>
 

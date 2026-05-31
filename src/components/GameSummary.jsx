@@ -1,8 +1,73 @@
+import { useState, useMemo } from 'react';
+import { Chess } from 'chess.js';
+import { evaluatePosition } from '../hooks/useAI';
+
 const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9 };
 
 function calcMaterial(pieces) {
   return pieces.reduce((sum, p) => sum + (PIECE_VALUES[p] || 0), 0);
 }
+
+// ── #19 棋譜分析 ─────────────────────────────────────────────────────────────
+
+function computeAnalysis(sanMoves, playerColor) {
+  const chess = new Chess();
+  const evals = [evaluatePosition(chess)];
+  for (const san of sanMoves) {
+    const r = chess.move(san);
+    if (!r) break;
+    evals.push(evaluatePosition(chess));
+  }
+  const total = evals.length - 1;
+  const moves = sanMoves.slice(0, total).map((san, i) => {
+    const mover = i % 2 === 0 ? 'w' : 'b';
+    const delta = mover === 'w' ? evals[i + 1] - evals[i] : evals[i] - evals[i + 1];
+    let grade;
+    if (delta < -200) grade = 'blunder';
+    else if (delta < -80) grade = 'mistake';
+    else if (delta < -20) grade = 'inaccuracy';
+    else grade = 'good';
+    return { san, mover, delta, grade };
+  });
+  const pm = moves.filter(m => m.mover === playerColor);
+  const blunders     = pm.filter(m => m.grade === 'blunder').length;
+  const mistakes     = pm.filter(m => m.grade === 'mistake').length;
+  const inaccuracies = pm.filter(m => m.grade === 'inaccuracy').length;
+  const worstMove    = pm.length > 0 ? pm.reduce((w, m) => m.delta < w.delta ? m : w, pm[0]) : null;
+  return { evals, moves, blunders, mistakes, inaccuracies, worstMove };
+}
+
+const GRADE_LABEL = { blunder: '大ミス', mistake: 'ミス', inaccuracy: '不正確' };
+const DOT_COLOR   = { blunder: '#F44336', mistake: '#FF9800', inaccuracy: '#FFC107' };
+
+function EvalChart({ evals, moves, playerColor }) {
+  if (evals.length < 2) return null;
+  const W = 280, H = 56, CLAMP = 700;
+  const clamp = v => Math.max(-CLAMP, Math.min(CLAMP, v));
+  const xi = i => (i / (evals.length - 1)) * W;
+  const yi = v => H / 2 - (clamp(v) / (CLAMP * 2)) * H;
+  const midY = H / 2;
+  const pts = evals.map((v, i) => [xi(i), yi(v)]);
+  const linePts = pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const fillPts = [`0,${midY}`, ...pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`), `${W},${midY}`].join(' ');
+  const badDots = moves
+    .map((m, i) => ({ ...m, cx: xi(i + 1), cy: yi(evals[i + 1]) }))
+    .filter(m => m.mover === playerColor && m.grade !== 'good');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ display: 'block' }}>
+      <rect x={0} y={0} width={W} height={midY} fill="rgba(220,220,255,0.04)" />
+      <rect x={0} y={midY} width={W} height={midY} fill="rgba(10,10,20,0.25)" />
+      <polygon points={fillPts} fill="rgba(140,120,200,0.18)" />
+      <line x1={0} y1={midY} x2={W} y2={midY} stroke="#444" strokeWidth="1" />
+      <polyline points={linePts} fill="none" stroke="#9B8FA6" strokeWidth="1.5" />
+      {badDots.map((m, i) => (
+        <circle key={i} cx={m.cx.toFixed(1)} cy={m.cy.toFixed(1)} r={4} fill={DOT_COLOR[m.grade]} />
+      ))}
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getAdvice({ gameStatus, winner, playerColor, moveHistory, techniqueLog, capturedPieces, difficulty }) {
   const cpuColor = playerColor === 'w' ? 'b' : 'w';
@@ -69,6 +134,12 @@ export default function GameSummary({
   gameStatus, winner, playerColor = 'w', moveHistory, techniqueLog,
   capturedPieces, difficulty, onNewGame, onClose, onReplay,
 }) {
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const analysis = useMemo(() => {
+    if (!showAnalysis || moveHistory.length === 0) return null;
+    return computeAnalysis(moveHistory.map(m => m.san), playerColor);
+  }, [showAnalysis, moveHistory, playerColor]);
+
   const cpuColor = playerColor === 'w' ? 'b' : 'w';
   const result = (gameStatus === 'checkmate' || gameStatus === 'timeout')
     ? (winner === playerColor ? 'win' : 'loss') : 'draw';
@@ -136,6 +207,45 @@ export default function GameSummary({
           <p className="summary-advice-label">💡 アドバイス</p>
           <p className="summary-advice-text">{advice}</p>
         </div>
+
+        {/* ── 棋譜分析 ── */}
+        {moveHistory.length > 0 && (
+          <div className="summary-section">
+            <button
+              className="summary-analysis-toggle"
+              onClick={() => setShowAnalysis(a => !a)}
+            >
+              📊 棋譜分析 {showAnalysis ? '▲' : '▼'}
+            </button>
+            {showAnalysis && analysis && (
+              <div className="summary-analysis">
+                <div className="summary-eval-chart-wrap">
+                  <EvalChart evals={analysis.evals} moves={analysis.moves} playerColor={playerColor} />
+                </div>
+                <div className="summary-accuracy-row">
+                  {analysis.blunders > 0 && (
+                    <span className="acc-chip acc-blunder">🔴 大ミス {analysis.blunders}</span>
+                  )}
+                  {analysis.mistakes > 0 && (
+                    <span className="acc-chip acc-mistake">🟠 ミス {analysis.mistakes}</span>
+                  )}
+                  {analysis.inaccuracies > 0 && (
+                    <span className="acc-chip acc-inaccuracy">🟡 不正確 {analysis.inaccuracies}</span>
+                  )}
+                  {analysis.blunders === 0 && analysis.mistakes === 0 && analysis.inaccuracies === 0 && (
+                    <span className="acc-chip acc-perfect">✨ ミスなし！</span>
+                  )}
+                </div>
+                {analysis.worstMove && analysis.worstMove.grade !== 'good' && (
+                  <p className="summary-worst-move">
+                    一番の悪手: <strong>{analysis.worstMove.san}</strong>
+                    （{GRADE_LABEL[analysis.worstMove.grade]}）
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── ボタン ── */}
         <div className="summary-buttons">
