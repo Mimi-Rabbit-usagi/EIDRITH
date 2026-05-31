@@ -3,9 +3,11 @@ import { useChessGame } from './hooks/useChessGame';
 import { useSoundEffects } from './hooks/useSoundEffects';
 import { BOARD_THEMES } from './data/themes';
 import ChessBoard from './components/ChessBoard';
+import EvalBar from './components/EvalBar';
 import GamePanel from './components/GamePanel';
 import UnlockToast from './components/UnlockToast';
 import GameHistory from './components/GameHistory';
+import ReplayModal from './components/ReplayModal';
 import PromotionModal from './components/PromotionModal';
 import GameSummary from './components/GameSummary';
 
@@ -48,6 +50,7 @@ export default function App() {
   const [difficulty, setDifficulty] = useState('easy');
   const [showHistory, setShowHistory] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [replayGame, setReplayGame] = useState(null);
 
   const activeBoardTheme = BOARD_THEMES.find(t => t.id === gameData.activeBoardTheme) || BOARD_THEMES[0];
   const { enabled: soundEnabled, toggle: toggleSound, play: playSound } = useSoundEffects();
@@ -78,6 +81,8 @@ export default function App() {
     clearHint,
     handleDrop,
     clearSelection,
+    currentOpening,
+    positionEval,
   } = useChessGame(difficulty);
 
   // Keep refs in sync
@@ -192,6 +197,19 @@ export default function App() {
 
   const closeUnlock = useCallback(() => setPendingUnlock(null), []);
 
+  // 現在のゲームをリプレイ（GameSummaryから呼ばれる）
+  const handleReplayCurrentGame = useCallback(() => {
+    const moves = moveHistoryRef.current.map(m => m.san);
+    setShowSummary(false);
+    setReplayGame({ moves, moveCount: moves.length });
+  }, []);
+
+  // 履歴ゲームをリプレイ（GameHistoryから呼ばれる）
+  const handleReplayHistorical = useCallback((game) => {
+    setShowHistory(false);
+    setReplayGame(game);
+  }, []);
+
   return (
     <div className="app-container">
       <main className="game-area">
@@ -203,18 +221,25 @@ export default function App() {
             {isThinking && <div className="thinking-text">考え中...</div>}
           </div>
 
-          <ChessBoard
-            board={board}
-            selectedSquare={selectedSquare}
-            legalMoves={legalMoves}
-            lastMove={lastMove}
-            gameStatus={gameStatus}
-            boardTheme={activeBoardTheme}
-            hint={hint}
-            onSquareClick={handleSquareClick}
-            onDrop={handleDrop}
-            onCancelDrag={clearSelection}
-          />
+          <div className="board-eval-row">
+            <EvalBar
+              score={positionEval}
+              gameStatus={gameStatus}
+              winner={winner}
+            />
+            <ChessBoard
+              board={board}
+              selectedSquare={selectedSquare}
+              legalMoves={legalMoves}
+              lastMove={lastMove}
+              gameStatus={gameStatus}
+              boardTheme={activeBoardTheme}
+              hint={hint}
+              onSquareClick={handleSquareClick}
+              onDrop={handleDrop}
+              onCancelDrag={clearSelection}
+            />
+          </div>
 
           {/* Player label */}
           <div className="player-label">
@@ -238,6 +263,7 @@ export default function App() {
           technique={technique}
           techniqueLog={techniqueLog}
           hint={hint}
+          currentOpening={currentOpening}
           onDifficultyChange={handleDifficultyChange}
           onThemeChange={handleThemeChange}
           onNewGame={handleNewGame}
@@ -259,6 +285,7 @@ export default function App() {
           difficulty={difficulty}
           onNewGame={handleNewGame}
           onClose={() => setShowSummary(false)}
+          onReplay={handleReplayCurrentGame}
         />
       )}
 
@@ -272,7 +299,20 @@ export default function App() {
 
       {/* Game history modal */}
       {showHistory && (
-        <GameHistory logs={logs} onClose={() => setShowHistory(false)} />
+        <GameHistory
+          logs={logs}
+          onClose={() => setShowHistory(false)}
+          onReplay={handleReplayHistorical}
+        />
+      )}
+
+      {/* Replay modal */}
+      {replayGame && (
+        <ReplayModal
+          game={replayGame}
+          boardTheme={activeBoardTheme}
+          onClose={() => setReplayGame(null)}
+        />
       )}
     </div>
   );

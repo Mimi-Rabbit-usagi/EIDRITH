@@ -44,7 +44,7 @@ function MovePairs({ moves }) {
   );
 }
 
-function GameEntry({ game }) {
+function GameEntry({ game, onReplay }) {
   const [expanded, setExpanded] = useState(false);
   const result = RESULT_CONFIG[game.result];
   const diff = DIFFICULTY_LABEL[game.difficulty] || DIFFICULTY_LABEL.normal;
@@ -105,6 +105,14 @@ function GameEntry({ game }) {
           <div className="history-moves-section">
             <p className="history-detail-title">棋譜（全{game.moveCount}手）</p>
             <MovePairs moves={game.moves} />
+            {game.moves.length > 0 && (
+              <button
+                className="history-replay-btn"
+                onClick={(e) => { e.stopPropagation(); onReplay(game); }}
+              >
+                📽 棋譜を再生
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -139,7 +147,7 @@ function buildSummary(game) {
   return lines.join(' ');
 }
 
-export default function GameHistory({ logs, onClose }) {
+export default function GameHistory({ logs, onClose, onReplay }) {
   return (
     <div className="history-overlay" onClick={onClose}>
       <div className="history-modal" onClick={e => e.stopPropagation()}>
@@ -180,7 +188,7 @@ export default function GameHistory({ logs, onClose }) {
               <p>ゲームを終わらせると自動で記録されます！</p>
             </div>
           ) : (
-            logs.map(game => <GameEntry key={game.id} game={game} />)
+            logs.map(game => <GameEntry key={game.id} game={game} onReplay={onReplay} />)
           )}
         </div>
       </div>

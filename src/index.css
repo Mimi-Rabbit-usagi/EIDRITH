@@ -1669,3 +1669,411 @@ body {
 }
 
 .unlock-toast-close:hover { color: rgba(255,255,255,0.7); }
+
+/* ── Eval Bar ────────────────────────────────────────────────────────────── */
+/* チェスボードと評価バーを横並びにするラッパー */
+.board-eval-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* 評価バー本体 */
+.eval-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* バートラック：盤グリッド(8*sq + 4px枠)に合わせた高さ */
+.eval-bar-track {
+  width: 12px;
+  height: calc(var(--sq) * 8 + 4px);
+  background: #1a1a2e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 白側（下から伸びる白い部分） */
+.eval-bar-white {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #e8e8d8;
+  transition: height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* スコアラベル */
+.eval-bar-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.4);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+/* スマホでは非表示（レイアウト崩れ防止） */
+@media (max-width: 640px) {
+  .eval-bar { display: none; }
+}
+
+/* ── Replay Modal ────────────────────────────────────────────────────────── */
+.replay-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.replay-modal {
+  background: #1a1a2e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  width: min(860px, 96vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+  /* 盤マス目サイズをモーダル内で上書き */
+  --sq: clamp(36px, calc((min(860px, 96vw) - 340px) / 8), 60px);
+}
+
+.replay-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.replay-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  flex: 1;
+}
+
+.replay-step-counter {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-close-btn {
+  background: rgba(255,255,255,0.07);
+  border: none;
+  border-radius: 6px;
+  color: rgba(255,255,255,0.5);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.replay-close-btn:hover {
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+}
+
+/* 盤面 + 手順の横並びレイアウト */
+.replay-body {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 18px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.replay-board-wrap {
+  flex-shrink: 0;
+}
+
+.replay-side {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: calc(var(--sq) * 8 + 20px);
+  overflow: hidden;
+}
+
+.replay-moves-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.replay-move-list {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.replay-pair {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.replay-pair-num {
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  width: 22px;
+  flex-shrink: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-move-btn {
+  padding: 3px 7px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: inherit;
+  min-width: 44px;
+  text-align: left;
+}
+
+.replay-move-btn:hover {
+  background: rgba(255,255,255,0.07);
+  color: #fff;
+}
+
+.replay-move-active {
+  background: rgba(108, 99, 255, 0.25) !important;
+  border-color: rgba(108, 99, 255, 0.5) !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+/* コントロールボタン群 */
+.replay-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.replay-ctrl-btn {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.7);
+  width: 40px;
+  height: 36px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.replay-ctrl-btn:hover {
+  background: rgba(255,255,255,0.13);
+  color: #fff;
+}
+
+.replay-play-btn {
+  width: 48px;
+  background: rgba(108, 99, 255, 0.2);
+  border-color: rgba(108, 99, 255, 0.4);
+  color: #9b94ff;
+}
+
+.replay-play-btn:hover {
+  background: rgba(108, 99, 255, 0.35);
+  color: #fff;
+}
+
+.replay-playing {
+  background: rgba(108, 99, 255, 0.35) !important;
+  color: #fff !important;
+}
+
+.replay-keyboard-hint {
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+  text-align: center;
+  margin: 0;
+  padding: 0 18px 10px;
+  flex-shrink: 0;
+}
+
+/* GameSummary の「棋譜を見る」ボタン */
+.replay-from-summary-btn {
+  background: rgba(108, 99, 255, 0.15);
+  border: 1px solid rgba(108, 99, 255, 0.35);
+  border-radius: 10px;
+  color: #9b94ff;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.replay-from-summary-btn:hover {
+  background: rgba(108, 99, 255, 0.28);
+  color: #fff;
+}
+
+/* GameHistory の「棋譜を再生」ボタン */
+.history-replay-btn {
+  margin-top: 8px;
+  background: rgba(108, 99, 255, 0.12);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  border-radius: 8px;
+  color: #9b94ff;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  width: 100%;
+}
+
+.history-replay-btn:hover {
+  background: rgba(108, 99, 255, 0.25);
+  color: #fff;
+}
+
+/* スマホ: 縦並びレイアウト */
+@media (max-width: 640px) {
+  .replay-modal {
+    --sq: clamp(34px, calc((100vw - 44px) / 8), 52px);
+    width: 100%;
+    max-height: 95vh;
+    border-radius: 16px 16px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .replay-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .replay-body {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .replay-side {
+    height: 140px;
+    width: 100%;
+  }
+}
+
+/* ── Opening Badge ───────────────────────────────────────────────────────── */
+.opening-badge {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  background: rgba(108, 99, 255, 0.07);
+}
+
+.opening-badge-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: none;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.opening-badge-header:hover {
+  background: rgba(108, 99, 255, 0.1);
+}
+
+.opening-eco {
+  font-size: 10px;
+  font-weight: 700;
+  color: #6c63ff;
+  background: rgba(108, 99, 255, 0.18);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+
+.opening-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ddd;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opening-chevron {
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+.opening-body {
+  padding: 0 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.opening-name-en {
+  font-size: 11px;
+  color: rgba(108, 99, 255, 0.85);
+  font-style: italic;
+  margin: 0;
+}
+
+.opening-description {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.5;
+  margin: 0;
+}

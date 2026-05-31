@@ -66,7 +66,7 @@ const RESULT_CONFIG = {
 
 export default function GameSummary({
   gameStatus, winner, moveHistory, techniqueLog,
-  capturedPieces, difficulty, onNewGame, onClose,
+  capturedPieces, difficulty, onNewGame, onClose, onReplay,
 }) {
   const result = gameStatus === 'checkmate' ? (winner === 'w' ? 'win' : 'loss') : 'draw';
   const cfg = RESULT_CONFIG[result];
@@ -137,6 +137,9 @@ export default function GameSummary({
         {/* ── ボタン ── */}
         <div className="summary-buttons">
           <button className="new-game-btn" onClick={onNewGame}>新しいゲーム</button>
+          {moveHistory.length > 0 && (
+            <button className="replay-from-summary-btn" onClick={onReplay}>📽 棋譜を見る</button>
+          )}
           <button className="summary-close-btn" onClick={onClose}>閉じる</button>
         </div>
       </div>

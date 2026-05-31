@@ -71,11 +71,35 @@ const DIFFICULTY_CONFIG = [
   { id: 'hard',   label: 'むずかしい', emoji: '💀', color: '#F44336' },
 ];
 
+function OpeningBadge({ opening }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!opening) return null;
+  return (
+    <div className="opening-badge">
+      <button
+        className="opening-badge-header"
+        onClick={() => setExpanded(p => !p)}
+      >
+        <span className="opening-eco">{opening.eco}</span>
+        <span className="opening-name">{opening.name}</span>
+        <span className="opening-chevron">{expanded ? '▲' : '▼'}</span>
+      </button>
+      {expanded && (
+        <div className="opening-body">
+          <p className="opening-name-en">{opening.nameEn}</p>
+          <p className="opening-description">{opening.description}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function GamePanel({
   gameStatus, winner, currentTurn, isThinking,
   capturedPieces, moveHistory, wins,
   activeBoardTheme, unlockedBoardThemes,
   difficulty, soundEnabled, technique, techniqueLog, hint,
+  currentOpening,
   onDifficultyChange, onThemeChange, onNewGame, onShowHistory,
   onToggleSound, onHint, onClearHint,
 }) {
@@ -172,6 +196,13 @@ export default function GamePanel({
           </div>
         )}
       </div>
+
+      {/* オープニング解説 */}
+      {currentOpening && (
+        <div className={mobileTab === 'settings' ? 'mobile-hidden' : ''}>
+          <OpeningBadge opening={currentOpening} />
+        </div>
+      )}
 
       {/* 戦術ログ */}
       {techniqueLog.length > 0 && (

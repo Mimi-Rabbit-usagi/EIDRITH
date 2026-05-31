@@ -61,6 +61,10 @@ function getPieceBonus(piece, square) {
   }
 }
 
+export function evaluatePosition(chess) {
+  return evaluate(chess);
+}
+
 function evaluate(chess) {
   if (chess.isCheckmate()) return chess.turn() === 'w' ? -100000 : 100000;
   if (chess.isDraw()) return 0;

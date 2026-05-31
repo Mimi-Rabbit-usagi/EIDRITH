@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Chess } from 'chess.js';
-import { getBestMove } from './useAI';
+import { getBestMove, evaluatePosition } from './useAI';
 import { detectTechnique } from './detectTactics';
+import { detectOpening } from './detectOpening';
 
 function buildGameStatus(chess) {
   if (chess.isCheckmate()) return 'checkmate';
@@ -26,6 +27,8 @@ export function useChessGame(difficulty = 'normal') {
   const [capturedPieces, setCapturedPieces] = useState({ w: [], b: [] });
   const [pendingPromotion, setPendingPromotion] = useState(null); // { from, to }
   const [hint, setHint] = useState(null); // { from, to }
+  const [currentOpening, setCurrentOpening] = useState(null);
+  const [positionEval, setPositionEval] = useState(0);
   const aiTimerRef = useRef(null);
 
   const chess = chessRef.current;
@@ -35,7 +38,10 @@ export function useChessGame(difficulty = 'normal') {
   const winner = gameStatus === 'checkmate' ? (chess.turn() === 'w' ? 'b' : 'w') : null;
 
   const syncFen = useCallback(() => {
-    setFen(chessRef.current.fen());
+    const c = chessRef.current;
+    setFen(c.fen());
+    setCurrentOpening(detectOpening(c.history({ verbose: true })));
+    setPositionEval(evaluatePosition(c));
   }, []);
 
   const showTechnique = useCallback((tech) => {
@@ -223,6 +229,8 @@ export function useChessGame(difficulty = 'normal') {
     setCapturedPieces({ w: [], b: [] });
     setPendingPromotion(null);
     setHint(null);
+    setCurrentOpening(null);
+    setPositionEval(0);
   }, []);
 
   // 戦術の「NEW」バッジを8秒後に自動クリア
@@ -259,5 +267,7 @@ export function useChessGame(difficulty = 'normal') {
     clearHint,
     handleDrop,
     clearSelection,
+    currentOpening,
+    positionEval,
   };
 }
