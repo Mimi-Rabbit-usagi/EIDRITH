@@ -327,6 +327,13 @@ export default function GamePanel({
         </div>
       </div>
 
+      {/* カスタマイズ（設定タブ） */}
+      <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
+        <button className="customize-open-btn" onClick={onShowCustomize}>
+          🎨 テーマ・駒セット・実績
+        </button>
+      </div>
+
       {/* 手順 */}
       <div className={`move-history-section${mobileTab === 'settings' ? ' mobile-hidden' : ''}`}>
         <p className="section-title">手順</p>
@@ -349,7 +356,6 @@ export default function GamePanel({
         <button className="history-btn" onClick={onShowHistory}>📋 履歴</button>
         <button className="history-btn" onClick={onShowPuzzle}>🧩 パズル</button>
         <button className="history-btn" onClick={onShowOpening}>📖 定跡</button>
-        <button className="history-btn" onClick={onShowCustomize}>🎨 カスタマイズ</button>
       </div>
 
     </div>

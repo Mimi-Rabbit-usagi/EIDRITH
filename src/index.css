@@ -69,11 +69,21 @@ body {
 
 /* ── Board Section ──────────────────────────────────────────────────────── */
 .board-section {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
+  display: grid;
+  grid-template-areas:
+    ".    opponent"
+    "eval board"
+    ".    player";
+  grid-template-columns: auto auto;
+  row-gap: 8px;
+  column-gap: 6px;
+  align-items: start;
 }
+
+.opponent-label { grid-area: opponent; }
+.player-label   { grid-area: player; }
+.eval-bar       { grid-area: eval; }
+.chess-board-wrapper { grid-area: board; }
 
 .opponent-label,
 .player-label {
@@ -304,6 +314,8 @@ body {
 @media (max-width: 640px) {
   /* ボードを画面中央に */
   .board-section {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     width: 100%;
   }
@@ -2836,6 +2848,27 @@ body {
   color: rgba(255,255,255,0.55);
   line-height: 1.5;
   margin: 0;
+}
+
+/* ── カスタマイズ開くボタン（設定タブ内） ───────────────────────────────── */
+
+.customize-open-btn {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(108,99,255,0.35);
+  background: rgba(108,99,255,0.08);
+  color: rgba(195,185,255,0.85);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: center;
+}
+.customize-open-btn:hover {
+  background: rgba(108,99,255,0.18);
+  border-color: rgba(108,99,255,0.6);
+  color: #d1caff;
 }
 
 /* ── カスタマイズモーダル ────────────────────────────────────────────────── */

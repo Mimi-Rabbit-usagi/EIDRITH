@@ -358,27 +358,25 @@ export default function App() {
             />
           </div>
 
-          <div className="board-eval-row">
-            <EvalBar
-              score={positionEval}
-              gameStatus={gameStatus}
-              winner={winner}
-            />
-            <ChessBoard
-              board={board}
-              selectedSquare={selectedSquare}
-              legalMoves={legalMoves}
-              lastMove={lastMove}
-              gameStatus={gameStatus}
-              boardTheme={activeBoardTheme}
-              pieceSet={gameData.activePieceSet}
-              hint={hint}
-              flipped={playerColor === 'b'}
-              onSquareClick={handleSquareClick}
-              onDrop={handleDrop}
-              onCancelDrag={clearSelection}
-            />
-          </div>
+          <EvalBar
+            score={positionEval}
+            gameStatus={gameStatus}
+            winner={winner}
+          />
+          <ChessBoard
+            board={board}
+            selectedSquare={selectedSquare}
+            legalMoves={legalMoves}
+            lastMove={lastMove}
+            gameStatus={gameStatus}
+            boardTheme={activeBoardTheme}
+            pieceSet={gameData.activePieceSet}
+            hint={hint}
+            flipped={playerColor === 'b'}
+            onSquareClick={handleSquareClick}
+            onDrop={handleDrop}
+            onCancelDrag={clearSelection}
+          />
 
           {/* Player label */}
           <div className="player-label">
