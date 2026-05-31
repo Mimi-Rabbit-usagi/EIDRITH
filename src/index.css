@@ -1744,6 +1744,68 @@ body {
   filter: brightness(1.15) drop-shadow(0 2px 5px rgba(0,0,0,0.85));
 }
 
+/* ── Chess Clock ─────────────────────────────────────────────────────────── */
+.chess-clock {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.35);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  transition: all 0.25s ease;
+}
+
+.clock-time {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.55);
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', 'Consolas', monospace;
+}
+
+.clock-active {
+  background: rgba(33, 150, 243, 0.15);
+  border-color: rgba(33, 150, 243, 0.5);
+}
+.clock-active .clock-time {
+  color: #90CAF9;
+}
+
+.clock-low {
+  background: rgba(244, 67, 54, 0.15) !important;
+  border-color: rgba(244, 67, 54, 0.55) !important;
+}
+.clock-low .clock-time {
+  color: #FF5252 !important;
+  animation: clock-pulse 0.9s ease-in-out infinite;
+}
+
+.clock-dead {
+  background: rgba(244, 67, 54, 0.25) !important;
+  border-color: #F44336 !important;
+}
+.clock-dead .clock-time {
+  color: #FF1744 !important;
+  animation: none !important;
+}
+
+@keyframes clock-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* 持ち時間ボタン行 — 4ボタン横並びに調整 */
+.clock-mode-row {
+  flex-wrap: nowrap;
+}
+.clock-mode-row .difficulty-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 4px;
+  font-size: 11px;
+}
+
 /* ── Piece Set Buttons ────────────────────────────────────────────────────── */
 .piece-set-btn {
   display: flex;

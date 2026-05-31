@@ -65,7 +65,15 @@ const STATUS_CONFIG = {
   checkmate: { text: 'チェックメイト',        color: '#F44336' },
   stalemate: { text: 'ステイルメイト（引き分け）', color: '#9E9E9E' },
   draw:      { text: '引き分け',              color: '#9E9E9E' },
+  timeout:   { text: '時間切れ！',            color: '#F44336' },
 };
+
+const CLOCK_CONFIG = [
+  { id: 'none', label: 'なし',  emoji: '∞'  },
+  { id: '1',    label: '1分',   emoji: '⚡' },
+  { id: '3',    label: '3分',   emoji: '⏱' },
+  { id: '10',   label: '10分',  emoji: '🕐' },
+];
 
 const DIFFICULTY_CONFIG = [
   { id: 'easy',   label: 'かんたん',   emoji: '🌱', color: '#4CAF50' },
@@ -111,9 +119,9 @@ export default function GamePanel({
   difficulty, soundEnabled, technique, techniqueLog, hint,
   currentOpening,
   activePieceSet, unlockedPieceSets, unlockedAchievements,
-  playerColor,
+  playerColor, clockMode,
   onDifficultyChange, onThemeChange, onPieceSetChange, onNewGame, onShowHistory,
-  onToggleSound, onHint, onClearHint, onUndo, onPlayerColorChange,
+  onToggleSound, onHint, onClearHint, onUndo, onPlayerColorChange, onClockModeChange,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
   const moveListRef = (el) => { if (el) el.scrollTop = el.scrollHeight; };
@@ -214,7 +222,7 @@ export default function GamePanel({
           </div>
         ) : (
           <div className="game-over-message">
-            {gameStatus === 'checkmate' && (
+            {(gameStatus === 'checkmate' || gameStatus === 'timeout') && (
               <p>{winner === playerColor ? '🎉 あなたの勝ち！' : '😔 CPUの勝ち...'}</p>
             )}
             {(gameStatus === 'stalemate' || gameStatus === 'draw') && <p>引き分け</p>}
@@ -267,6 +275,24 @@ export default function GamePanel({
             >
               <span>{d.emoji}</span>
               <span>{d.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 持ち時間 */}
+      <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
+        <p className="section-title">持ち時間</p>
+        <div className="difficulty-row clock-mode-row">
+          {CLOCK_CONFIG.map(c => (
+            <button
+              key={c.id}
+              className={`difficulty-btn ${clockMode === c.id ? 'difficulty-btn-active' : ''}`}
+              style={clockMode === c.id ? { borderColor: '#2196F3', color: '#2196F3' } : {}}
+              onClick={() => onClockModeChange(c.id)}
+            >
+              <span>{c.emoji}</span>
+              <span>{c.label}</span>
             </button>
           ))}
         </div>

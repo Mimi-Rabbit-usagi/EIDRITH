@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useChessGame } from './hooks/useChessGame';
+import { useChessClock } from './hooks/useChessClock';
 import { useSoundEffects } from './hooks/useSoundEffects';
 import { BOARD_THEMES } from './data/themes';
 import { PIECE_SETS } from './data/pieceSets';
 import { ACHIEVEMENTS, checkAchievements } from './data/achievements';
 import ChessBoard from './components/ChessBoard';
+import ChessClock from './components/ChessClock';
 import EvalBar from './components/EvalBar';
 import ConfettiEffect from './components/ConfettiEffect';
 import GamePanel from './components/GamePanel';
@@ -64,6 +66,8 @@ export default function App() {
   const [winCounted, setWinCounted] = useState(false);
   const [difficulty, setDifficulty] = useState('easy');
   const [playerColor, setPlayerColor] = useState('w');
+  const [clockMode, setClockMode] = useState('none');
+  const [clockTimeout, setClockTimeout] = useState(null); // 時間切れで負けた色 ('w'|'b'|null)
   const [showHistory, setShowHistory] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [replayGame, setReplayGame] = useState(null);
@@ -106,13 +110,30 @@ export default function App() {
   moveHistoryRef.current = moveHistory;
   techniqueLogRef.current = techniqueLog;
 
+  // チェスクロック
+  const isChessOver = gameStatus !== 'playing' && gameStatus !== 'check';
+  const handleTimeout = useCallback((loserColor) => setClockTimeout(loserColor), []);
+  const { playerTime, cpuTime, resetClock } = useChessClock({
+    clockMode,
+    currentTurn,
+    playerColor,
+    isGameOver: isChessOver || clockTimeout !== null,
+    onTimeout: handleTimeout,
+  });
+
+  // 時間切れ時の表示用（サマリー・GamePanelに渡す）
+  const effectiveGameStatus = clockTimeout !== null ? 'timeout' : gameStatus;
+  const effectiveWinner     = clockTimeout !== null ? (clockTimeout === 'w' ? 'b' : 'w') : winner;
+  const playerWon = (gameStatus === 'checkmate' && winner === playerColor)
+                 || (clockTimeout !== null && clockTimeout !== playerColor);
+
   // ゲーム終了後にサマリーを表示（音が鳴り終わる1秒後）
   useEffect(() => {
-    const isOver = gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'draw';
+    const isOver = gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'draw' || clockTimeout !== null;
     if (!isOver) return;
     const t = setTimeout(() => setShowSummary(true), 1000);
     return () => clearTimeout(t);
-  }, [gameStatus]);
+  }, [gameStatus, clockTimeout]);
 
   // Sound effects: 手が指されるたびに音を鳴らす
   const prevMoveCountRef = useRef(0);
@@ -138,15 +159,23 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moveHistory.length]);
 
+  // 時間切れサウンド
+  useEffect(() => {
+    if (clockTimeout === null) return;
+    playSound(clockTimeout !== playerColor ? 'win' : 'lose');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clockTimeout]);
+
   // Save log and count wins when game ends
   useEffect(() => {
-    const isOver = gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'draw';
+    const isOver = gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'draw' || clockTimeout !== null;
     if (!isOver || winCounted) return;
     setWinCounted(true);
 
     // Determine result
     let result = 'draw';
     if (gameStatus === 'checkmate') result = winner === playerColor ? 'win' : 'loss';
+    else if (clockTimeout !== null) result = clockTimeout === playerColor ? 'loss' : 'win';
 
     // Build log entry (use refs for latest values)
     const history = moveHistoryRef.current;
@@ -222,24 +251,38 @@ export default function App() {
       return newData;
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStatus, winner, winCounted]);
+  }, [gameStatus, winner, winCounted, clockTimeout]);
 
   const handleNewGame = useCallback(() => {
     resetGame();
+    resetClock();
+    setClockTimeout(null);
     setWinCounted(false);
     setShowSummary(false);
-  }, [resetGame]);
+  }, [resetGame, resetClock]);
 
   const handleDifficultyChange = useCallback((d) => {
     setDifficulty(d);
     resetGame();
+    resetClock();
+    setClockTimeout(null);
     setWinCounted(false);
     setShowSummary(false);
-  }, [resetGame]);
+  }, [resetGame, resetClock]);
 
   const handlePlayerColorChange = useCallback((color) => {
     setPlayerColor(color);
     resetGame();
+    resetClock();
+    setClockTimeout(null);
+    setWinCounted(false);
+    setShowSummary(false);
+  }, [resetGame, resetClock]);
+
+  const handleClockModeChange = useCallback((mode) => {
+    setClockMode(mode);
+    resetGame();
+    setClockTimeout(null);
     setWinCounted(false);
     setShowSummary(false);
   }, [resetGame]);
@@ -295,6 +338,10 @@ export default function App() {
               CPU（{playerColor === 'w' ? '黒' : '白'}）
             </div>
             {isThinking && <div className="thinking-text">考え中...</div>}
+            <ChessClock
+              time={cpuTime}
+              isActive={currentTurn !== playerColor && !isChessOver && clockTimeout === null}
+            />
           </div>
 
           <div className="board-eval-row">
@@ -324,13 +371,17 @@ export default function App() {
             <div className={`player-chip player-chip-${playerColor === 'w' ? 'white' : 'black'}`}>
               あなた（{playerColor === 'w' ? '白' : '黒'}）
             </div>
+            <ChessClock
+              time={playerTime}
+              isActive={currentTurn === playerColor && !isChessOver && clockTimeout === null}
+            />
           </div>
         </div>
 
         {/* Side panel */}
         <GamePanel
-          gameStatus={gameStatus}
-          winner={winner}
+          gameStatus={effectiveGameStatus}
+          winner={effectiveWinner}
           currentTurn={currentTurn}
           isThinking={isThinking}
           capturedPieces={capturedPieces}
@@ -348,7 +399,9 @@ export default function App() {
           unlockedPieceSets={gameData.unlockedPieceSets}
           unlockedAchievements={gameData.unlockedAchievements}
           playerColor={playerColor}
+          clockMode={clockMode}
           onDifficultyChange={handleDifficultyChange}
+          onClockModeChange={handleClockModeChange}
           onPlayerColorChange={handlePlayerColorChange}
           onUndo={undoMove}
           onThemeChange={handleThemeChange}
@@ -364,8 +417,8 @@ export default function App() {
       {/* Game summary */}
       {showSummary && (
         <GameSummary
-          gameStatus={gameStatus}
-          winner={winner}
+          gameStatus={effectiveGameStatus}
+          winner={effectiveWinner}
           playerColor={playerColor}
           moveHistory={moveHistory}
           techniqueLog={techniqueLog}
@@ -401,7 +454,7 @@ export default function App() {
       )}
 
       {/* 勝利エフェクト */}
-      {gameStatus === 'checkmate' && winner === 'w' && <ConfettiEffect />}
+      {playerWon && <ConfettiEffect />}
 
       {/* Replay modal */}
       {replayGame && (

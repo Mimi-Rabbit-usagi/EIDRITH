@@ -11,7 +11,7 @@ function getAdvice({ gameStatus, winner, playerColor, moveHistory, techniqueLog,
   const gainedMaterial = calcMaterial(capturedPieces[playerColor]); // プレイヤーが取った駒
 
   // 勝ち
-  if (gameStatus === 'checkmate' && winner === playerColor) {
+  if ((gameStatus === 'checkmate' || gameStatus === 'timeout') && winner === playerColor) {
     if (difficulty === 'hard')   return 'むずかしい難易度で勝利！完璧なゲームでした。棋譜を振り返ってさらに磨いていこう！';
     if (difficulty === 'normal') return 'おめでとう！次はむずかしい難易度に挑戦してみよう！';
     return 'おめでとう！自信がついたらふつう以上の難易度にも挑戦してみよう！';
@@ -70,10 +70,11 @@ export default function GameSummary({
   capturedPieces, difficulty, onNewGame, onClose, onReplay,
 }) {
   const cpuColor = playerColor === 'w' ? 'b' : 'w';
-  const result = gameStatus === 'checkmate' ? (winner === playerColor ? 'win' : 'loss') : 'draw';
+  const result = (gameStatus === 'checkmate' || gameStatus === 'timeout')
+    ? (winner === playerColor ? 'win' : 'loss') : 'draw';
   const cfg = RESULT_CONFIG[result];
 
-  const endLabel = { checkmate: 'チェックメイト', stalemate: 'ステイルメイト', draw: '引き分け' }[gameStatus] || '';
+  const endLabel = { checkmate: 'チェックメイト', stalemate: 'ステイルメイト', draw: '引き分け', timeout: '時間切れ' }[gameStatus] || '';
   const moveCount = moveHistory.length;
   const lostMaterial   = calcMaterial(capturedPieces[cpuColor]);
   const gainedMaterial = calcMaterial(capturedPieces[playerColor]);
