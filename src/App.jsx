@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useChessGame } from './hooks/useChessGame';
 import { useSoundEffects } from './hooks/useSoundEffects';
 import { BOARD_THEMES } from './data/themes';
+import { PIECE_SETS } from './data/pieceSets';
+import { ACHIEVEMENTS, checkAchievements } from './data/achievements';
 import ChessBoard from './components/ChessBoard';
 import EvalBar from './components/EvalBar';
 import ConfettiEffect from './components/ConfettiEffect';
@@ -13,16 +15,26 @@ import PromotionModal from './components/PromotionModal';
 import GameSummary from './components/GameSummary';
 
 // ── LocalStorage helpers ──────────────────────────────────────────────────────
+const DEFAULT_GAME_DATA = {
+  wins: 0,
+  streak: 0,
+  unlockedBoardThemes: ['classic'],
+  activeBoardTheme: 'classic',
+  activePieceSet: 'classic',
+  unlockedPieceSets: ['classic'],
+  unlockedAchievements: [],
+};
+
 function loadGameData() {
   try {
     const stored = localStorage.getItem('chess-master-data');
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const data = JSON.parse(stored);
+      // 旧データとの互換性：欠損フィールドにデフォルト値を補完
+      return { ...DEFAULT_GAME_DATA, ...data };
+    }
   } catch {}
-  return {
-    wins: 0,
-    unlockedBoardThemes: ['classic'],
-    activeBoardTheme: 'classic',
-  };
+  return { ...DEFAULT_GAME_DATA };
 }
 
 function saveGameData(data) {
@@ -47,6 +59,8 @@ export default function App() {
   const [gameData, setGameData] = useState(loadGameData);
   const [logs, setLogs] = useState(loadLogs);
   const [pendingUnlock, setPendingUnlock] = useState(null);
+  const [pendingAchievement, setPendingAchievement] = useState(null);
+  const achievementQueueRef = useRef([]);
   const [winCounted, setWinCounted] = useState(false);
   const [difficulty, setDifficulty] = useState('easy');
   const [showHistory, setShowHistory] = useState(false);
@@ -152,27 +166,60 @@ export default function App() {
       return updated;
     });
 
-    // Win counter and unlocks
-    if (result === 'win') {
-      setGameData(prev => {
-        const newWins = prev.wins + 1;
-        const newUnlocked = [...prev.unlockedBoardThemes];
-        let justUnlocked = null;
+    // Win counter, streak, unlocks, achievements
+    setGameData(prev => {
+      const isWin = result === 'win';
+      const newWins   = isWin ? prev.wins + 1 : prev.wins;
+      const newStreak = isWin ? prev.streak + 1 : 0;
 
-        BOARD_THEMES.forEach(theme => {
-          if (theme.locked && theme.requiredWins <= newWins && !newUnlocked.includes(theme.id)) {
-            newUnlocked.push(theme.id);
-            justUnlocked = theme;
-          }
-        });
-
-        if (justUnlocked) setPendingUnlock(justUnlocked);
-
-        const newData = { ...prev, wins: newWins, unlockedBoardThemes: newUnlocked };
-        saveGameData(newData);
-        return newData;
+      // ── ボードテーマアンロック ──
+      const newBoardThemes = [...prev.unlockedBoardThemes];
+      let justUnlockedTheme = null;
+      BOARD_THEMES.forEach(theme => {
+        if (theme.locked && theme.requiredWins <= newWins && !newBoardThemes.includes(theme.id)) {
+          newBoardThemes.push(theme.id);
+          justUnlockedTheme = theme;
+        }
       });
-    }
+      if (justUnlockedTheme) setPendingUnlock(justUnlockedTheme);
+
+      // ── 駒セットアンロック ──
+      const newPieceSets = [...(prev.unlockedPieceSets || ['classic'])];
+      PIECE_SETS.forEach(ps => {
+        if (ps.locked && ps.requiredWins <= newWins && !newPieceSets.includes(ps.id)) {
+          newPieceSets.push(ps.id);
+          // テーマアンロックが既にあれば駒セットは静かにアンロック（重複通知を避ける）
+          if (!justUnlockedTheme) {
+            setPendingUnlock({ emoji: ps.emoji, name: ps.name, description: ps.description, title: '駒セットアンロック！' });
+          }
+        }
+      });
+
+      // ── 実績チェック ──
+      const alreadyDone = prev.unlockedAchievements || [];
+      const openingMoves = currentOpening?.moves?.length ?? 0;
+      const newAchievements = checkAchievements(
+        { result, difficulty, moveCount: history.length, techniqueLog: techLog,
+          moveHistory: history, openingMoves, wins: newWins, streak: newStreak },
+        alreadyDone
+      );
+      const newAchievementIds = [...alreadyDone, ...newAchievements.map(a => a.id)];
+      if (newAchievements.length > 0) {
+        achievementQueueRef.current = [...newAchievements];
+        setPendingAchievement(achievementQueueRef.current.shift());
+      }
+
+      const newData = {
+        ...prev,
+        wins: newWins,
+        streak: newStreak,
+        unlockedBoardThemes: newBoardThemes,
+        unlockedPieceSets: newPieceSets,
+        unlockedAchievements: newAchievementIds,
+      };
+      saveGameData(newData);
+      return newData;
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameStatus, winner, winCounted]);
 
@@ -198,6 +245,23 @@ export default function App() {
   }, []);
 
   const closeUnlock = useCallback(() => setPendingUnlock(null), []);
+
+  // 実績トーストを閉じる（キューに次があれば続けて表示）
+  const closeAchievement = useCallback(() => {
+    if (achievementQueueRef.current.length > 0) {
+      setPendingAchievement(achievementQueueRef.current.shift());
+    } else {
+      setPendingAchievement(null);
+    }
+  }, []);
+
+  const handlePieceSetChange = useCallback((id) => {
+    setGameData(prev => {
+      const newData = { ...prev, activePieceSet: id };
+      saveGameData(newData);
+      return newData;
+    });
+  }, []);
 
   // 現在のゲームをリプレイ（GameSummaryから呼ばれる）
   const handleReplayCurrentGame = useCallback(() => {
@@ -236,6 +300,7 @@ export default function App() {
               lastMove={lastMove}
               gameStatus={gameStatus}
               boardTheme={activeBoardTheme}
+              pieceSet={gameData.activePieceSet}
               hint={hint}
               onSquareClick={handleSquareClick}
               onDrop={handleDrop}
@@ -266,9 +331,13 @@ export default function App() {
           techniqueLog={techniqueLog}
           hint={hint}
           currentOpening={currentOpening}
+          activePieceSet={gameData.activePieceSet}
+          unlockedPieceSets={gameData.unlockedPieceSets}
+          unlockedAchievements={gameData.unlockedAchievements}
           onDifficultyChange={handleDifficultyChange}
           onUndo={undoMove}
           onThemeChange={handleThemeChange}
+          onPieceSetChange={handlePieceSetChange}
           onNewGame={handleNewGame}
           onShowHistory={() => setShowHistory(true)}
           onToggleSound={toggleSound}
@@ -299,6 +368,12 @@ export default function App() {
 
       {/* Unlock notification */}
       <UnlockToast unlock={pendingUnlock} onClose={closeUnlock} />
+
+      {/* 実績解除通知 */}
+      <UnlockToast
+        unlock={pendingAchievement ? { ...pendingAchievement, title: '実績解除！' } : null}
+        onClose={closeAchievement}
+      />
 
       {/* Game history modal */}
       {showHistory && (

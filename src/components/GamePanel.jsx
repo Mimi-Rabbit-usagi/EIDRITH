@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BOARD_THEMES } from '../data/themes';
+import { PIECE_SETS } from '../data/pieceSets';
+import { ACHIEVEMENTS } from '../data/achievements';
 
 const PIECE_SYMBOLS = { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' };
 
@@ -108,7 +110,8 @@ export default function GamePanel({
   activeBoardTheme, unlockedBoardThemes,
   difficulty, soundEnabled, technique, techniqueLog, hint,
   currentOpening,
-  onDifficultyChange, onThemeChange, onNewGame, onShowHistory,
+  activePieceSet, unlockedPieceSets, unlockedAchievements,
+  onDifficultyChange, onThemeChange, onPieceSetChange, onNewGame, onShowHistory,
   onToggleSound, onHint, onClearHint, onUndo,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
@@ -286,6 +289,52 @@ export default function GamePanel({
                 <span className="theme-name">{unlocked ? theme.emoji : '🔒'}</span>
                 {!unlocked && <span className="theme-lock-text">{theme.requiredWins}勝</span>}
               </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 駒セット */}
+      <div className={`theme-section${mobileTab === 'game' ? ' mobile-hidden' : ''}`}>
+        <p className="section-title">駒セット</p>
+        <div className="theme-grid">
+          {PIECE_SETS.map(ps => {
+            const unlocked = (unlockedPieceSets || ['classic']).includes(ps.id);
+            const isActive = activePieceSet === ps.id;
+            return (
+              <button
+                key={ps.id}
+                className={`theme-btn ${isActive ? 'theme-btn-active' : ''} ${!unlocked ? 'theme-btn-locked' : ''}`}
+                onClick={() => unlocked && onPieceSetChange(ps.id)}
+                title={unlocked ? ps.name : `${ps.requiredWins}勝でアンロック`}
+              >
+                <div
+                  className="piece-set-preview"
+                  style={{ background: `linear-gradient(135deg, ${ps.previewWhite} 50%, ${ps.previewBlack} 50%)` }}
+                />
+                <span className="theme-name">{unlocked ? ps.emoji : '🔒'}</span>
+                {!unlocked && <span className="theme-lock-text">{ps.requiredWins}勝</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 実績バッジ */}
+      <div className={`achievement-section${mobileTab === 'game' ? ' mobile-hidden' : ''}`}>
+        <p className="section-title">実績（{(unlockedAchievements || []).length}/{ACHIEVEMENTS.length}）</p>
+        <div className="achievement-grid">
+          {ACHIEVEMENTS.map(a => {
+            const unlocked = (unlockedAchievements || []).includes(a.id);
+            return (
+              <div
+                key={a.id}
+                className={`achievement-badge ${unlocked ? 'achievement-unlocked' : 'achievement-locked'}`}
+                title={unlocked ? `${a.name}：${a.description}` : `未解除：${a.description}`}
+              >
+                <span className="achievement-icon">{unlocked ? a.icon : '🔒'}</span>
+                <span className="achievement-name">{a.name}</span>
+              </div>
             );
           })}
         </div>

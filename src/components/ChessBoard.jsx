@@ -48,7 +48,7 @@ function getSquareAtPoint(x, y, boardEl) {
 
 export default function ChessBoard({
   board, selectedSquare, legalMoves, lastMove,
-  gameStatus, boardTheme, hint,
+  gameStatus, boardTheme, pieceSet, hint,
   onSquareClick, onDrop, onCancelDrag,
 }) {
   const boardRef  = useRef(null);
@@ -105,7 +105,7 @@ export default function ChessBoard({
   }, [onDrop, onCancelDrag]);
 
   return (
-    <div className="chess-board-wrapper">
+    <div className={`chess-board-wrapper${pieceSet && pieceSet !== 'classic' ? ` piece-set-${pieceSet}` : ''}`}>
       <div className="board-with-coords">
         {/* Rank labels */}
         <div className="rank-labels">

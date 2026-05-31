@@ -1670,6 +1670,122 @@ body {
 
 .unlock-toast-close:hover { color: rgba(255,255,255,0.7); }
 
+/* ── Piece Sets ──────────────────────────────────────────────────────────── */
+/* Gold */
+.piece-set-gold .piece-white {
+  color: #FFD700;
+  -webkit-text-stroke-color: #8B6914;
+  filter: drop-shadow(0 2px 6px rgba(255,215,0,0.55));
+}
+.piece-set-gold .piece-black {
+  color: #CD7F32;
+  -webkit-text-stroke-color: #5C3A00;
+  filter: drop-shadow(0 2px 6px rgba(205,127,50,0.55));
+}
+
+/* Neon */
+.piece-set-neon .piece-white {
+  color: #00FFFF;
+  -webkit-text-stroke-color: #006666;
+  filter: drop-shadow(0 0 6px #00FFFF) drop-shadow(0 0 14px #00CCCC);
+}
+.piece-set-neon .piece-black {
+  color: #FF00FF;
+  -webkit-text-stroke-color: #660066;
+  filter: drop-shadow(0 0 6px #FF00FF) drop-shadow(0 0 14px #CC00CC);
+}
+
+/* Crystal */
+.piece-set-crystal .piece-white {
+  color: #B3E5FC;
+  -webkit-text-stroke-color: #01579B;
+  filter: drop-shadow(0 2px 8px rgba(100,200,255,0.7)) brightness(1.1);
+}
+.piece-set-crystal .piece-black {
+  color: #1A237E;
+  -webkit-text-stroke-color: #90CAF9;
+  filter: drop-shadow(0 2px 8px rgba(26,35,126,0.7));
+}
+
+/* Fire */
+.piece-set-fire .piece-white {
+  color: #FF9800;
+  -webkit-text-stroke-color: #8B1A00;
+  filter: drop-shadow(0 0 6px #FF5722) drop-shadow(0 2px 4px rgba(255,87,34,0.6));
+}
+.piece-set-fire .piece-black {
+  color: #BF360C;
+  -webkit-text-stroke-color: #FF7043;
+  filter: drop-shadow(0 0 6px #D84315) drop-shadow(0 2px 4px rgba(211,47,47,0.6));
+}
+
+/* Shadow */
+.piece-set-shadow .piece-white {
+  color: #B0BEC5;
+  -webkit-text-stroke-color: #263238;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.9)) brightness(0.85);
+}
+.piece-set-shadow .piece-black {
+  color: #37474F;
+  -webkit-text-stroke-color: #90A4AE;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.95)) brightness(0.65);
+}
+
+/* 駒セット選択プレビュー（board theme-btn の theme-preview と同じサイズ） */
+.piece-set-preview {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  flex-shrink: 0;
+}
+
+/* ── Achievements ────────────────────────────────────────────────────────── */
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+}
+
+.achievement-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.03);
+  cursor: default;
+  transition: background 0.15s;
+}
+
+.achievement-unlocked {
+  border-color: rgba(108,99,255,0.3);
+  background: rgba(108,99,255,0.08);
+}
+
+.achievement-unlocked:hover {
+  background: rgba(108,99,255,0.14);
+}
+
+.achievement-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.achievement-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.achievement-unlocked .achievement-name {
+  color: rgba(255,255,255,0.85);
+}
+
 /* ── Confetti Effect ─────────────────────────────────────────────────────── */
 .confetti-container {
   position: fixed;
