@@ -1744,6 +1744,219 @@ body {
   filter: brightness(1.15) drop-shadow(0 2px 5px rgba(0,0,0,0.85));
 }
 
+/* ── Player Name & Stats ─────────────────────────────────────────────────── */
+.player-name-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.player-name-input {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.player-name-input::placeholder { color: rgba(255,255,255,0.3); }
+.player-name-input:focus { border-color: rgba(108,99,255,0.6); }
+
+.stats-open-btn {
+  background: rgba(108,99,255,0.2);
+  border: 1.5px solid rgba(108,99,255,0.4);
+  border-radius: 8px;
+  color: #a89ef5;
+  font-size: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.stats-open-btn:hover {
+  background: rgba(108,99,255,0.35);
+  color: #fff;
+}
+
+/* ── Stats Modal ─────────────────────────────────────────────────────────── */
+.stats-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 16px;
+}
+
+.stats-modal {
+  background: #1a1a2e;
+  border: 1px solid rgba(108,99,255,0.3);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stats-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.stats-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+}
+.stats-close:hover { color: #fff; }
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.stats-card {
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stats-card-win  { background: rgba(76,175,80,0.15); }
+.stats-card-loss { background: rgba(244,67,54,0.15); }
+
+.stats-card-num {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.stats-card-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+}
+
+.stats-winrate-section { display: flex; flex-direction: column; gap: 6px; }
+
+.stats-winrate-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+.stats-winrate-pct { font-weight: 700; color: #69F0AE; }
+
+.stats-winrate-bar {
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stats-winrate-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #69F0AE);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+  min-width: 2px;
+}
+
+.stats-streak {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,152,0,0.1);
+  border: 1px solid rgba(255,152,0,0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.stats-streak-icon  { font-size: 18px; }
+.stats-streak-label { font-size: 12px; color: rgba(255,255,255,0.55); flex: 1; }
+.stats-streak-num   { font-size: 16px; font-weight: 700; color: #FFB300; }
+
+.stats-section { display: flex; flex-direction: column; gap: 8px; }
+
+.stats-section-title {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.stats-diff-grid { display: flex; flex-direction: column; gap: 5px; }
+
+.stats-diff-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 5px 8px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+}
+
+.stats-diff-name  { flex: 1; color: rgba(255,255,255,0.7); }
+.stats-diff-result { color: rgba(255,255,255,0.5); font-size: 11px; }
+.stats-diff-rate  { font-weight: 600; color: #A89EF5; min-width: 30px; text-align: right; }
+
+.stats-recent {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.stat-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stat-dot-win  { background: rgba(76,175,80,0.25);  color: #69F0AE; }
+.stat-dot-loss { background: rgba(244,67,54,0.25);  color: #FF5252; }
+.stat-dot-draw { background: rgba(158,158,158,0.2); color: #BDBDBD; }
+
+.stats-empty {
+  text-align: center;
+  color: rgba(255,255,255,0.35);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 16px 0;
+}
+
 /* ── Chess Clock ─────────────────────────────────────────────────────────── */
 .chess-clock {
   display: inline-flex;
@@ -1805,6 +2018,213 @@ body {
   padding: 6px 4px;
   font-size: 11px;
 }
+
+/* ── Puzzle Modal ────────────────────────────────────────────────────────── */
+.puzzle-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 16px;
+}
+
+.puzzle-modal {
+  background: #12121f;
+  border: 1px solid rgba(108,99,255,0.3);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 92vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.puzzle-modal-play { max-width: 500px; }
+
+.puzzle-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.puzzle-modal-title {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  text-align: center;
+}
+
+.puzzle-back-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.puzzle-back-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+
+.puzzle-filter-row {
+  display: flex;
+  gap: 6px;
+}
+
+.puzzle-filter-btn {
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.55);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.puzzle-filter-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.puzzle-filter-active {
+  border-color: #6c63ff !important;
+  background: rgba(108,99,255,0.2) !important;
+  color: #fff !important;
+}
+
+.puzzle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.puzzle-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  color: #fff;
+}
+.puzzle-list-item:hover { background: rgba(255,255,255,0.08); border-color: rgba(108,99,255,0.3); }
+.puzzle-solved { border-color: rgba(76,175,80,0.3); background: rgba(76,175,80,0.06); }
+
+.puzzle-list-left { display: flex; align-items: center; gap: 10px; }
+.puzzle-list-status { font-size: 16px; }
+.puzzle-list-title { font-size: 13px; font-weight: 600; margin: 0 0 2px; }
+.puzzle-list-theme { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; }
+.puzzle-list-diff  { font-size: 11px; font-weight: 600; }
+
+.puzzle-solved-count {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin: 0;
+}
+
+.puzzle-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.puzzle-theme-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(108,99,255,0.2);
+  color: #A89EF5;
+}
+
+.puzzle-diff-badge { font-size: 11px; font-weight: 600; }
+
+.puzzle-turn-label {
+  margin-left: auto;
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+
+.puzzle-banner {
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.puzzle-banner-done    { background: rgba(76,175,80,0.2);  color: #69F0AE; border: 1px solid rgba(76,175,80,0.35); }
+.puzzle-banner-wrong   { background: rgba(244,67,54,0.2);  color: #FF5252; border: 1px solid rgba(244,67,54,0.35); }
+.puzzle-banner-correct { background: rgba(255,152,0,0.15); color: #FFB300; border: 1px solid rgba(255,152,0,0.3); }
+
+.puzzle-board-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.puzzle-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.puzzle-hint-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.puzzle-hint-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+.puzzle-hint-text {
+  font-size: 13px;
+  color: #FFD54F;
+  margin: 0;
+  text-align: center;
+}
+
+.puzzle-next-row { display: flex; gap: 8px; }
+
+.puzzle-next-btn {
+  background: rgba(108,99,255,0.25);
+  border: 1.5px solid rgba(108,99,255,0.5);
+  border-radius: 8px;
+  color: #A89EF5;
+  font-size: 13px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.puzzle-next-btn:hover { background: rgba(108,99,255,0.4); color: #fff; }
+
+.puzzle-retry-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.puzzle-retry-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
 
 /* ── Piece Set Buttons ────────────────────────────────────────────────────── */
 .piece-set-btn {

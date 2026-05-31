@@ -119,9 +119,10 @@ export default function GamePanel({
   difficulty, soundEnabled, technique, techniqueLog, hint,
   currentOpening,
   activePieceSet, unlockedPieceSets, unlockedAchievements,
-  playerColor, clockMode,
+  playerColor, playerName, clockMode,
   onDifficultyChange, onThemeChange, onPieceSetChange, onNewGame, onShowHistory,
   onToggleSound, onHint, onClearHint, onUndo, onPlayerColorChange, onClockModeChange,
+  onPlayerNameChange, onShowStats, onShowPuzzle,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
   const moveListRef = (el) => { if (el) el.scrollTop = el.scrollHeight; };
@@ -196,7 +197,7 @@ export default function GamePanel({
               <div className={`turn-chip ${currentTurn === 'w' ? 'turn-white' : 'turn-black'}`}>
                 <div className="turn-dot" />
                 <span>{currentTurn === playerColor
-                  ? `あなたの番（${playerColor === 'w' ? '白' : '黒'}）`
+                  ? `${playerName}の番（${playerColor === 'w' ? '白' : '黒'}）`
                   : `CPUの番（${playerColor === 'w' ? '黒' : '白'}）`
                 }</span>
               </div>
@@ -257,7 +258,7 @@ export default function GamePanel({
 
       {/* 取った駒 */}
       <div className={`captured-section${mobileTab === 'settings' ? ' mobile-hidden' : ''}`}>
-        <CapturedPieces pieces={capturedPieces[playerColor]} label="あなた" />
+        <CapturedPieces pieces={capturedPieces[playerColor]} label={playerName} />
         <CapturedPieces pieces={capturedPieces[playerColor === 'w' ? 'b' : 'w']} label="CPU" />
       </div>
 
@@ -277,6 +278,24 @@ export default function GamePanel({
               <span>{d.label}</span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* プレイヤー名 */}
+      <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
+        <p className="section-title">プレイヤー名</p>
+        <div className="player-name-row">
+          <input
+            className="player-name-input"
+            type="text"
+            maxLength={16}
+            value={playerName}
+            onChange={e => onPlayerNameChange(e.target.value)}
+            placeholder="あなた"
+          />
+          <button className="stats-open-btn" onClick={onShowStats}>
+            📊 統計
+          </button>
         </div>
       </div>
 
@@ -435,6 +454,7 @@ export default function GamePanel({
       <div className="panel-buttons">
         <button className="new-game-btn" onClick={onNewGame}>新しいゲーム</button>
         <button className="history-btn" onClick={onShowHistory}>📋 履歴</button>
+        <button className="history-btn" onClick={onShowPuzzle}>🧩 パズル</button>
       </div>
 
     </div>

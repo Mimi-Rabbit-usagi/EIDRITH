@@ -13,6 +13,8 @@ import GamePanel from './components/GamePanel';
 import UnlockToast from './components/UnlockToast';
 import GameHistory from './components/GameHistory';
 import ReplayModal from './components/ReplayModal';
+import StatsModal from './components/StatsModal';
+import PuzzleModal from './components/PuzzleModal';
 import PromotionModal from './components/PromotionModal';
 import GameSummary from './components/GameSummary';
 
@@ -68,9 +70,17 @@ export default function App() {
   const [playerColor, setPlayerColor] = useState('w');
   const [clockMode, setClockMode] = useState('none');
   const [clockTimeout, setClockTimeout] = useState(null); // 時間切れで負けた色 ('w'|'b'|null)
+  const [playerName, setPlayerName] = useState(() => localStorage.getItem('chess-player-name') || 'あなた');
   const [showHistory, setShowHistory] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [showPuzzle, setShowPuzzle] = useState(false);
   const [replayGame, setReplayGame] = useState(null);
+
+  const handlePlayerNameChange = useCallback((name) => {
+    setPlayerName(name);
+    localStorage.setItem('chess-player-name', name);
+  }, []);
 
   const activeBoardTheme = BOARD_THEMES.find(t => t.id === gameData.activeBoardTheme) || BOARD_THEMES[0];
   const { enabled: soundEnabled, toggle: toggleSound, play: playSound } = useSoundEffects();
@@ -369,7 +379,7 @@ export default function App() {
           {/* Player label */}
           <div className="player-label">
             <div className={`player-chip player-chip-${playerColor === 'w' ? 'white' : 'black'}`}>
-              あなた（{playerColor === 'w' ? '白' : '黒'}）
+              {playerName}（{playerColor === 'w' ? '白' : '黒'}）
             </div>
             <ChessClock
               time={playerTime}
@@ -399,8 +409,11 @@ export default function App() {
           unlockedPieceSets={gameData.unlockedPieceSets}
           unlockedAchievements={gameData.unlockedAchievements}
           playerColor={playerColor}
+          playerName={playerName}
           clockMode={clockMode}
           onDifficultyChange={handleDifficultyChange}
+          onPlayerNameChange={handlePlayerNameChange}
+          onShowStats={() => setShowStats(true)}
           onClockModeChange={handleClockModeChange}
           onPlayerColorChange={handlePlayerColorChange}
           onUndo={undoMove}
@@ -408,6 +421,7 @@ export default function App() {
           onPieceSetChange={handlePieceSetChange}
           onNewGame={handleNewGame}
           onShowHistory={() => setShowHistory(true)}
+          onShowPuzzle={() => setShowPuzzle(true)}
           onToggleSound={toggleSound}
           onHint={requestHint}
           onClearHint={clearHint}
@@ -443,6 +457,24 @@ export default function App() {
         unlock={pendingAchievement ? { ...pendingAchievement, title: '実績解除！' } : null}
         onClose={closeAchievement}
       />
+
+      {/* Puzzle modal */}
+      {showPuzzle && (
+        <PuzzleModal
+          activeBoardTheme={gameData.activeBoardTheme}
+          activePieceSet={gameData.activePieceSet}
+          onClose={() => setShowPuzzle(false)}
+        />
+      )}
+
+      {/* Stats modal */}
+      {showStats && (
+        <StatsModal
+          logs={logs}
+          playerName={playerName}
+          onClose={() => setShowStats(false)}
+        />
+      )}
 
       {/* Game history modal */}
       {showHistory && (
