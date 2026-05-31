@@ -243,6 +243,35 @@ export function useChessGame(difficulty = 'normal') {
   const closeTechnique = useCallback(() => setTechnique(null), []);
   const clearHint = useCallback(() => setHint(null), []);
 
+  // 1手前（自分の手）に戻す：CPUの手→自分の手 の順でundo
+  const undoMove = useCallback(() => {
+    const c = chessRef.current;
+    // 白の番・2手以上指されている・AI待機中でない、の場合のみ許可
+    if (c.turn() !== 'w' || c.history().length < 2 || isThinking) return;
+
+    clearTimeout(aiTimerRef.current);
+    setIsThinking(false);
+
+    c.undo(); // 黒（CPU）の手を取り消す
+    c.undo(); // 白（自分）の手を取り消す
+
+    // 取った駒リストを棋譜から再計算
+    const history = c.history({ verbose: true });
+    const newCaptured = { w: [], b: [] };
+    for (const move of history) {
+      if (move.captured) newCaptured[move.color].push(move.captured);
+    }
+    setCapturedPieces(newCaptured);
+
+    // 最後の指し手ハイライトを更新
+    const prevMove = history.length > 0 ? history[history.length - 1] : null;
+    setLastMove(prevMove ? { from: prevMove.from, to: prevMove.to } : null);
+
+    setHint(null);
+    setTechnique(null);
+    syncFen();
+  }, [isThinking, syncFen]);
+
   return {
     board: chess.board(),
     fen,
@@ -269,5 +298,6 @@ export function useChessGame(difficulty = 'normal') {
     clearSelection,
     currentOpening,
     positionEval,
+    undoMove,
   };
 }

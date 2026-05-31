@@ -4,6 +4,7 @@ import { useSoundEffects } from './hooks/useSoundEffects';
 import { BOARD_THEMES } from './data/themes';
 import ChessBoard from './components/ChessBoard';
 import EvalBar from './components/EvalBar';
+import ConfettiEffect from './components/ConfettiEffect';
 import GamePanel from './components/GamePanel';
 import UnlockToast from './components/UnlockToast';
 import GameHistory from './components/GameHistory';
@@ -83,6 +84,7 @@ export default function App() {
     clearSelection,
     currentOpening,
     positionEval,
+    undoMove,
   } = useChessGame(difficulty);
 
   // Keep refs in sync
@@ -265,6 +267,7 @@ export default function App() {
           hint={hint}
           currentOpening={currentOpening}
           onDifficultyChange={handleDifficultyChange}
+          onUndo={undoMove}
           onThemeChange={handleThemeChange}
           onNewGame={handleNewGame}
           onShowHistory={() => setShowHistory(true)}
@@ -305,6 +308,9 @@ export default function App() {
           onReplay={handleReplayHistorical}
         />
       )}
+
+      {/* 勝利エフェクト */}
+      {gameStatus === 'checkmate' && winner === 'w' && <ConfettiEffect />}
 
       {/* Replay modal */}
       {replayGame && (

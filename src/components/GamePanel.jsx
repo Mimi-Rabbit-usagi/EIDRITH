@@ -94,6 +94,14 @@ function OpeningBadge({ opening }) {
   );
 }
 
+const PIECE_VALUES_INFO = [
+  { symbol: '♙', name: 'ポーン',     pts: 1 },
+  { symbol: '♘', name: 'ナイト',     pts: 3 },
+  { symbol: '♗', name: 'ビショップ', pts: 3 },
+  { symbol: '♖', name: 'ルーク',     pts: 5 },
+  { symbol: '♛', name: 'クイーン',   pts: 9 },
+];
+
 export default function GamePanel({
   gameStatus, winner, currentTurn, isThinking,
   capturedPieces, moveHistory, wins,
@@ -101,7 +109,7 @@ export default function GamePanel({
   difficulty, soundEnabled, technique, techniqueLog, hint,
   currentOpening,
   onDifficultyChange, onThemeChange, onNewGame, onShowHistory,
-  onToggleSound, onHint, onClearHint,
+  onToggleSound, onHint, onClearHint, onUndo,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
   const moveListRef = (el) => { if (el) el.scrollTop = el.scrollHeight; };
@@ -179,12 +187,22 @@ export default function GamePanel({
               </div>
             )}
             {currentTurn === 'w' && !isThinking && (
-              <button
-                className={`hint-btn ${hint ? 'hint-btn-active' : ''}`}
-                onClick={hint ? onClearHint : onHint}
-              >
-                {hint ? '💡 ヒントを消す' : '💡 ヒントを見る'}
-              </button>
+              <div className="action-btn-row">
+                <button
+                  className={`hint-btn ${hint ? 'hint-btn-active' : ''}`}
+                  onClick={hint ? onClearHint : onHint}
+                >
+                  {hint ? '💡 消す' : '💡 ヒント'}
+                </button>
+                <button
+                  className="undo-btn"
+                  onClick={onUndo}
+                  disabled={moveHistory.length < 2}
+                  title="直前の1手を取り消す"
+                >
+                  ↩ 待った
+                </button>
+              </div>
             )}
           </div>
         ) : (
@@ -271,6 +289,21 @@ export default function GamePanel({
             );
           })}
         </div>
+      </div>
+
+      {/* 駒の点数 */}
+      <div className={`piece-values-section${mobileTab === 'game' ? ' mobile-hidden' : ''}`}>
+        <p className="section-title">駒の点数</p>
+        <div className="piece-values-grid">
+          {PIECE_VALUES_INFO.map(p => (
+            <div key={p.name} className="piece-value-row">
+              <span className="pv-symbol">{p.symbol}</span>
+              <span className="pv-name">{p.name}</span>
+              <span className="pv-pts">{p.pts}pt</span>
+            </div>
+          ))}
+        </div>
+        <p className="pv-note">駒を多く取った方が有利！</p>
       </div>
 
       {/* 手順 */}

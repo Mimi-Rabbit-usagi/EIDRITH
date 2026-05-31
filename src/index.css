@@ -1670,6 +1670,106 @@ body {
 
 .unlock-toast-close:hover { color: rgba(255,255,255,0.7); }
 
+/* ── Confetti Effect ─────────────────────────────────────────────────────── */
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 500;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -12px;
+  animation: confetti-fall linear forwards;
+  opacity: 0.9;
+}
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(0)      rotate(0deg);   opacity: 0.9; }
+  80%  { opacity: 0.7; }
+  100% { transform: translateY(110vh)  rotate(600deg); opacity: 0; }
+}
+
+/* ── Undo Button ─────────────────────────────────────────────────────────── */
+/* ヒントボタンとUNDOボタンを横並びにするラッパー */
+.action-btn-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.undo-btn {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 152, 0, 0.35);
+  background: rgba(255, 152, 0, 0.08);
+  color: #ffb74d;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.undo-btn:hover:not(:disabled) {
+  background: rgba(255, 152, 0, 0.2);
+  color: #fff;
+}
+
+.undo-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Piece Values ────────────────────────────────────────────────────────── */
+.piece-values-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.piece-value-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+}
+
+.pv-symbol {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  color: #e0e0d0;
+  -webkit-text-stroke: 0.5px #555;
+  paint-order: stroke fill;
+}
+
+.pv-name {
+  flex: 1;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+.pv-pts {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6c63ff;
+  font-variant-numeric: tabular-nums;
+}
+
+.pv-note {
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  margin: 4px 0 0;
+  text-align: center;
+}
+
 /* ── Eval Bar ────────────────────────────────────────────────────────────── */
 /* チェスボードと評価バーを横並びにするラッパー */
 .board-eval-row {
