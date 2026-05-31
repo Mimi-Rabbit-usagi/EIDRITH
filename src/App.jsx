@@ -63,6 +63,7 @@ export default function App() {
   const achievementQueueRef = useRef([]);
   const [winCounted, setWinCounted] = useState(false);
   const [difficulty, setDifficulty] = useState('easy');
+  const [playerColor, setPlayerColor] = useState('w');
   const [showHistory, setShowHistory] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [replayGame, setReplayGame] = useState(null);
@@ -99,7 +100,7 @@ export default function App() {
     currentOpening,
     positionEval,
     undoMove,
-  } = useChessGame(difficulty);
+  } = useChessGame(difficulty, playerColor);
 
   // Keep refs in sync
   moveHistoryRef.current = moveHistory;
@@ -145,7 +146,7 @@ export default function App() {
 
     // Determine result
     let result = 'draw';
-    if (gameStatus === 'checkmate') result = winner === 'w' ? 'win' : 'loss';
+    if (gameStatus === 'checkmate') result = winner === playerColor ? 'win' : 'loss';
 
     // Build log entry (use refs for latest values)
     const history = moveHistoryRef.current;
@@ -236,6 +237,13 @@ export default function App() {
     setShowSummary(false);
   }, [resetGame]);
 
+  const handlePlayerColorChange = useCallback((color) => {
+    setPlayerColor(color);
+    resetGame();
+    setWinCounted(false);
+    setShowSummary(false);
+  }, [resetGame]);
+
   const handleThemeChange = useCallback((themeId) => {
     setGameData(prev => {
       const newData = { ...prev, activeBoardTheme: themeId };
@@ -283,7 +291,9 @@ export default function App() {
         <div className="board-section">
           {/* CPU captured pieces (shown above board) */}
           <div className="opponent-label">
-            <div className="player-chip player-chip-black">CPU（黒）</div>
+            <div className={`player-chip player-chip-${playerColor === 'w' ? 'black' : 'white'}`}>
+              CPU（{playerColor === 'w' ? '黒' : '白'}）
+            </div>
             {isThinking && <div className="thinking-text">考え中...</div>}
           </div>
 
@@ -302,6 +312,7 @@ export default function App() {
               boardTheme={activeBoardTheme}
               pieceSet={gameData.activePieceSet}
               hint={hint}
+              flipped={playerColor === 'b'}
               onSquareClick={handleSquareClick}
               onDrop={handleDrop}
               onCancelDrag={clearSelection}
@@ -310,7 +321,9 @@ export default function App() {
 
           {/* Player label */}
           <div className="player-label">
-            <div className="player-chip player-chip-white">あなた（白）</div>
+            <div className={`player-chip player-chip-${playerColor === 'w' ? 'white' : 'black'}`}>
+              あなた（{playerColor === 'w' ? '白' : '黒'}）
+            </div>
           </div>
         </div>
 
@@ -334,7 +347,9 @@ export default function App() {
           activePieceSet={gameData.activePieceSet}
           unlockedPieceSets={gameData.unlockedPieceSets}
           unlockedAchievements={gameData.unlockedAchievements}
+          playerColor={playerColor}
           onDifficultyChange={handleDifficultyChange}
+          onPlayerColorChange={handlePlayerColorChange}
           onUndo={undoMove}
           onThemeChange={handleThemeChange}
           onPieceSetChange={handlePieceSetChange}
@@ -351,6 +366,7 @@ export default function App() {
         <GameSummary
           gameStatus={gameStatus}
           winner={winner}
+          playerColor={playerColor}
           moveHistory={moveHistory}
           techniqueLog={techniqueLog}
           capturedPieces={capturedPieces}

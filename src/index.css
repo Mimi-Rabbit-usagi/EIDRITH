@@ -362,6 +362,17 @@ body {
     padding: 5px 3px;
   }
 
+  .piece-set-btn {
+    flex-shrink: 0;
+    width: 58px;
+    min-height: 68px;
+    padding: 8px 4px 6px;
+  }
+
+  .piece-set-symbol {
+    font-size: 24px;
+  }
+
   .theme-preview { width: 24px; height: 24px; }
 
   /* 手順: 高さ抑える */
@@ -1671,73 +1682,118 @@ body {
 .unlock-toast-close:hover { color: rgba(255,255,255,0.7); }
 
 /* ── Piece Sets ──────────────────────────────────────────────────────────── */
-/* Gold */
+/* 原則：白駒は常に明度70%以上、黒駒は常に明度20%以下。どのボードでも読める。 */
+
+/* Gold：明るい黄金 × 深みのある琥珀 */
 .piece-set-gold .piece-white {
-  color: #FFD700;
-  -webkit-text-stroke-color: #8B6914;
-  filter: drop-shadow(0 2px 6px rgba(255,215,0,0.55));
+  color: #FFD54F;
+  -webkit-text-stroke: calc(var(--sq) * 0.03) #4A2800;
+  filter: drop-shadow(0 1px 4px rgba(255,200,0,0.55));
 }
 .piece-set-gold .piece-black {
-  color: #CD7F32;
-  -webkit-text-stroke-color: #5C3A00;
-  filter: drop-shadow(0 2px 6px rgba(205,127,50,0.55));
+  color: #3E1C00;
+  -webkit-text-stroke: calc(var(--sq) * 0.028) #FFB300;
+  filter: drop-shadow(0 1px 4px rgba(255,160,0,0.4));
 }
 
-/* Neon */
+/* Neon：ソフトラベンダー × ディープインディゴ */
 .piece-set-neon .piece-white {
-  color: #00FFFF;
-  -webkit-text-stroke-color: #006666;
-  filter: drop-shadow(0 0 6px #00FFFF) drop-shadow(0 0 14px #00CCCC);
+  color: #EDE0FF;
+  -webkit-text-stroke: calc(var(--sq) * 0.03) #2A0070;
+  filter: drop-shadow(0 0 5px rgba(179,136,255,0.7));
 }
 .piece-set-neon .piece-black {
-  color: #FF00FF;
-  -webkit-text-stroke-color: #660066;
-  filter: drop-shadow(0 0 6px #FF00FF) drop-shadow(0 0 14px #CC00CC);
+  color: #160040;
+  -webkit-text-stroke: calc(var(--sq) * 0.028) #B39DDB;
+  filter: drop-shadow(0 0 5px rgba(140,100,220,0.5));
 }
 
-/* Crystal */
+/* Crystal：ほぼ白のアイスブルー × 深海ネイビー */
 .piece-set-crystal .piece-white {
-  color: #B3E5FC;
-  -webkit-text-stroke-color: #01579B;
-  filter: drop-shadow(0 2px 8px rgba(100,200,255,0.7)) brightness(1.1);
+  color: #F0FAFF;
+  -webkit-text-stroke: calc(var(--sq) * 0.03) #0A3060;
+  filter: drop-shadow(0 1px 5px rgba(100,200,255,0.55)) brightness(1.05);
 }
 .piece-set-crystal .piece-black {
-  color: #1A237E;
-  -webkit-text-stroke-color: #90CAF9;
-  filter: drop-shadow(0 2px 8px rgba(26,35,126,0.7));
+  color: #071A35;
+  -webkit-text-stroke: calc(var(--sq) * 0.028) #5AC8FA;
+  filter: drop-shadow(0 1px 4px rgba(30,130,220,0.45));
 }
 
-/* Fire */
+/* Fire：明るい琥珀黄 × 漆黒の炭 */
 .piece-set-fire .piece-white {
-  color: #FF9800;
-  -webkit-text-stroke-color: #8B1A00;
-  filter: drop-shadow(0 0 6px #FF5722) drop-shadow(0 2px 4px rgba(255,87,34,0.6));
+  color: #FFCA28;
+  -webkit-text-stroke: calc(var(--sq) * 0.03) #5D1A00;
+  filter: drop-shadow(0 0 4px rgba(255,150,0,0.65));
 }
 .piece-set-fire .piece-black {
-  color: #BF360C;
-  -webkit-text-stroke-color: #FF7043;
-  filter: drop-shadow(0 0 6px #D84315) drop-shadow(0 2px 4px rgba(211,47,47,0.6));
+  color: #3E0E00;
+  -webkit-text-stroke: calc(var(--sq) * 0.028) #FF6D00;
+  filter: drop-shadow(0 0 4px rgba(255,80,0,0.5));
 }
 
-/* Shadow */
+/* Shadow：クールシルバー × スレートブラック */
 .piece-set-shadow .piece-white {
-  color: #B0BEC5;
-  -webkit-text-stroke-color: #263238;
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.9)) brightness(0.85);
+  color: #D0D8DC;
+  -webkit-text-stroke: calc(var(--sq) * 0.03) #1A2428;
+  filter: brightness(0.92) drop-shadow(0 2px 4px rgba(0,0,0,0.7));
 }
 .piece-set-shadow .piece-black {
-  color: #37474F;
-  -webkit-text-stroke-color: #90A4AE;
-  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.95)) brightness(0.65);
+  color: #1A2428;
+  -webkit-text-stroke: calc(var(--sq) * 0.028) #7B99A4;
+  filter: brightness(1.15) drop-shadow(0 2px 5px rgba(0,0,0,0.85));
 }
 
-/* 駒セット選択プレビュー（board theme-btn の theme-preview と同じサイズ） */
-.piece-set-preview {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.15);
-  flex-shrink: 0;
+/* ── Piece Set Buttons ────────────────────────────────────────────────────── */
+.piece-set-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 6px 8px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #fff;
+  min-height: 76px;
+}
+
+.piece-set-btn:hover:not(.theme-btn-locked) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.piece-set-btn-active {
+  /* border-color and box-shadow applied inline from ps data */
+}
+
+.piece-set-btn.theme-btn-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: rgba(255,255,255,0.03);
+}
+
+.piece-set-symbol {
+  font-size: 28px;
+  line-height: 1;
+  color: rgba(255,255,255,0.25);
+  filter: none;
+  transition: filter 0.2s;
+}
+
+.piece-set-btn-name {
+  font-size: 10px;
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.piece-set-btn-active .piece-set-btn-name {
+  color: #fff;
 }
 
 /* ── Achievements ────────────────────────────────────────────────────────── */

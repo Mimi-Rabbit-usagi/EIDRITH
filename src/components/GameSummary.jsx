@@ -4,13 +4,14 @@ function calcMaterial(pieces) {
   return pieces.reduce((sum, p) => sum + (PIECE_VALUES[p] || 0), 0);
 }
 
-function getAdvice({ gameStatus, winner, moveHistory, techniqueLog, capturedPieces, difficulty }) {
+function getAdvice({ gameStatus, winner, playerColor, moveHistory, techniqueLog, capturedPieces, difficulty }) {
+  const cpuColor = playerColor === 'w' ? 'b' : 'w';
   const moveCount = moveHistory.length;
-  const lostMaterial  = calcMaterial(capturedPieces.b); // CPUに取られた駒
-  const gainedMaterial = calcMaterial(capturedPieces.w); // プレイヤーが取った駒
+  const lostMaterial   = calcMaterial(capturedPieces[cpuColor]);    // CPUに取られた駒
+  const gainedMaterial = calcMaterial(capturedPieces[playerColor]); // プレイヤーが取った駒
 
   // 勝ち
-  if (gameStatus === 'checkmate' && winner === 'w') {
+  if (gameStatus === 'checkmate' && winner === playerColor) {
     if (difficulty === 'hard')   return 'むずかしい難易度で勝利！完璧なゲームでした。棋譜を振り返ってさらに磨いていこう！';
     if (difficulty === 'normal') return 'おめでとう！次はむずかしい難易度に挑戦してみよう！';
     return 'おめでとう！自信がついたらふつう以上の難易度にも挑戦してみよう！';
@@ -65,17 +66,18 @@ const RESULT_CONFIG = {
 };
 
 export default function GameSummary({
-  gameStatus, winner, moveHistory, techniqueLog,
+  gameStatus, winner, playerColor = 'w', moveHistory, techniqueLog,
   capturedPieces, difficulty, onNewGame, onClose, onReplay,
 }) {
-  const result = gameStatus === 'checkmate' ? (winner === 'w' ? 'win' : 'loss') : 'draw';
+  const cpuColor = playerColor === 'w' ? 'b' : 'w';
+  const result = gameStatus === 'checkmate' ? (winner === playerColor ? 'win' : 'loss') : 'draw';
   const cfg = RESULT_CONFIG[result];
 
   const endLabel = { checkmate: 'チェックメイト', stalemate: 'ステイルメイト', draw: '引き分け' }[gameStatus] || '';
   const moveCount = moveHistory.length;
-  const lostMaterial   = calcMaterial(capturedPieces.b);
-  const gainedMaterial = calcMaterial(capturedPieces.w);
-  const advice = getAdvice({ gameStatus, winner, moveHistory, techniqueLog, capturedPieces, difficulty });
+  const lostMaterial   = calcMaterial(capturedPieces[cpuColor]);
+  const gainedMaterial = calcMaterial(capturedPieces[playerColor]);
+  const advice = getAdvice({ gameStatus, winner, playerColor, moveHistory, techniqueLog, capturedPieces, difficulty });
 
   return (
     <div className="summary-overlay" onClick={onClose}>

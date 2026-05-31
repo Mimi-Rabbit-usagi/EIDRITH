@@ -111,8 +111,9 @@ export default function GamePanel({
   difficulty, soundEnabled, technique, techniqueLog, hint,
   currentOpening,
   activePieceSet, unlockedPieceSets, unlockedAchievements,
+  playerColor,
   onDifficultyChange, onThemeChange, onPieceSetChange, onNewGame, onShowHistory,
-  onToggleSound, onHint, onClearHint, onUndo,
+  onToggleSound, onHint, onClearHint, onUndo, onPlayerColorChange,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
   const moveListRef = (el) => { if (el) el.scrollTop = el.scrollHeight; };
@@ -186,10 +187,13 @@ export default function GamePanel({
             ) : (
               <div className={`turn-chip ${currentTurn === 'w' ? 'turn-white' : 'turn-black'}`}>
                 <div className="turn-dot" />
-                <span>{currentTurn === 'w' ? 'あなたの番（白）' : 'CPUの番（黒）'}</span>
+                <span>{currentTurn === playerColor
+                  ? `あなたの番（${playerColor === 'w' ? '白' : '黒'}）`
+                  : `CPUの番（${playerColor === 'w' ? '黒' : '白'}）`
+                }</span>
               </div>
             )}
-            {currentTurn === 'w' && !isThinking && (
+            {currentTurn === playerColor && !isThinking && (
               <div className="action-btn-row">
                 <button
                   className={`hint-btn ${hint ? 'hint-btn-active' : ''}`}
@@ -211,7 +215,7 @@ export default function GamePanel({
         ) : (
           <div className="game-over-message">
             {gameStatus === 'checkmate' && (
-              <p>{winner === 'w' ? '🎉 あなたの勝ち！' : '😔 CPUの勝ち...'}</p>
+              <p>{winner === playerColor ? '🎉 あなたの勝ち！' : '😔 CPUの勝ち...'}</p>
             )}
             {(gameStatus === 'stalemate' || gameStatus === 'draw') && <p>引き分け</p>}
           </div>
@@ -245,8 +249,8 @@ export default function GamePanel({
 
       {/* 取った駒 */}
       <div className={`captured-section${mobileTab === 'settings' ? ' mobile-hidden' : ''}`}>
-        <CapturedPieces pieces={capturedPieces.w} label="あなた" />
-        <CapturedPieces pieces={capturedPieces.b} label="CPU" />
+        <CapturedPieces pieces={capturedPieces[playerColor]} label="あなた" />
+        <CapturedPieces pieces={capturedPieces[playerColor === 'w' ? 'b' : 'w']} label="CPU" />
       </div>
 
       {/* ── 設定タブ ── */}
@@ -265,6 +269,29 @@ export default function GamePanel({
               <span>{d.label}</span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* 手番選択 */}
+      <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
+        <p className="section-title">手番</p>
+        <div className="difficulty-row">
+          <button
+            className={`difficulty-btn ${playerColor === 'w' ? 'difficulty-btn-active' : ''}`}
+            style={playerColor === 'w' ? { borderColor: '#9E9E9E', color: '#9E9E9E' } : {}}
+            onClick={() => onPlayerColorChange('w')}
+          >
+            <span>♙</span>
+            <span>白番（先手）</span>
+          </button>
+          <button
+            className={`difficulty-btn ${playerColor === 'b' ? 'difficulty-btn-active' : ''}`}
+            style={playerColor === 'b' ? { borderColor: '#555', color: '#555' } : {}}
+            onClick={() => onPlayerColorChange('b')}
+          >
+            <span>♟</span>
+            <span>黒番（後手）</span>
+          </button>
         </div>
       </div>
 
@@ -304,15 +331,22 @@ export default function GamePanel({
             return (
               <button
                 key={ps.id}
-                className={`theme-btn ${isActive ? 'theme-btn-active' : ''} ${!unlocked ? 'theme-btn-locked' : ''}`}
+                className={`piece-set-btn ${isActive ? 'piece-set-btn-active' : ''} ${!unlocked ? 'theme-btn-locked' : ''}`}
+                style={unlocked ? {
+                  background: ps.cardBg,
+                  borderColor: isActive ? ps.accentColor : 'transparent',
+                  boxShadow: isActive ? `0 0 10px ${ps.accentColor}55` : 'none',
+                } : {}}
                 onClick={() => unlocked && onPieceSetChange(ps.id)}
                 title={unlocked ? ps.name : `${ps.requiredWins}勝でアンロック`}
               >
-                <div
-                  className="piece-set-preview"
-                  style={{ background: `linear-gradient(135deg, ${ps.previewWhite} 50%, ${ps.previewBlack} 50%)` }}
-                />
-                <span className="theme-name">{unlocked ? ps.emoji : '🔒'}</span>
+                <span
+                  className="piece-set-symbol"
+                  style={unlocked ? { color: ps.symbolColor, filter: ps.symbolFilter } : {}}
+                >
+                  ♛
+                </span>
+                <span className="piece-set-btn-name">{ps.name}</span>
                 {!unlocked && <span className="theme-lock-text">{ps.requiredWins}勝</span>}
               </button>
             );

@@ -13,7 +13,7 @@ function buildGameStatus(chess) {
 }
 
 
-export function useChessGame(difficulty = 'normal') {
+export function useChessGame(difficulty = 'normal', playerColor = 'w') {
   const chessRef = useRef(new Chess());
 
   // fen changes on every move, driving re-renders
@@ -29,9 +29,16 @@ export function useChessGame(difficulty = 'normal') {
   const [hint, setHint] = useState(null); // { from, to }
   const [currentOpening, setCurrentOpening] = useState(null);
   const [positionEval, setPositionEval] = useState(0);
+  const [gameResetKey, setGameResetKey] = useState(0);
   const aiTimerRef = useRef(null);
 
   const chess = chessRef.current;
+
+  // プレイヤーカラーのref（再レンダーのたびに更新されるので常に最新値を参照できる）
+  const playerColorRef = useRef(playerColor);
+  const cpuColorRef = useRef(playerColor === 'w' ? 'b' : 'w');
+  playerColorRef.current = playerColor;
+  cpuColorRef.current = playerColor === 'w' ? 'b' : 'w';
 
   // Snapshot of derived state
   const gameStatus = buildGameStatus(chess);
@@ -54,7 +61,7 @@ export function useChessGame(difficulty = 'normal') {
 
   const triggerAI = useCallback(() => {
     const c = chessRef.current;
-    if (c.turn() !== 'b' || c.isGameOver()) return;
+    if (c.turn() !== cpuColorRef.current || c.isGameOver()) return;
 
     setIsThinking(true);
 
@@ -81,7 +88,7 @@ export function useChessGame(difficulty = 'normal') {
 
   const handleSquareClick = useCallback((square) => {
     const c = chessRef.current;
-    if (c.turn() !== 'w' || isThinking || c.isGameOver()) return;
+    if (c.turn() !== playerColorRef.current || isThinking || c.isGameOver()) return;
 
     const piece = c.get(square);
 
@@ -119,7 +126,7 @@ export function useChessGame(difficulty = 'normal') {
       }
 
       // Re-select a different own piece
-      if (piece && piece.color === 'w') {
+      if (piece && piece.color === playerColorRef.current) {
         setSelectedSquare(square);
         setLegalMoves(c.moves({ square, verbose: true }).map(m => m.to));
         return;
@@ -132,7 +139,7 @@ export function useChessGame(difficulty = 'normal') {
     }
 
     // Select an own piece
-    if (piece && piece.color === 'w') {
+    if (piece && piece.color === playerColorRef.current) {
       setSelectedSquare(square);
       setLegalMoves(c.moves({ square, verbose: true }).map(m => m.to));
     }
@@ -140,7 +147,7 @@ export function useChessGame(difficulty = 'normal') {
 
   const requestHint = useCallback(() => {
     const c = chessRef.current;
-    if (c.turn() !== 'w' || c.isGameOver() || isThinking) return;
+    if (c.turn() !== playerColorRef.current || c.isGameOver() || isThinking) return;
 
     // normal強度（depth=2）でベスト手を取得
     const hintSan = getBestMove(c.fen(), 'normal');
@@ -161,10 +168,10 @@ export function useChessGame(difficulty = 'normal') {
   // ドラッグ&ドロップ用: from→to を直接実行
   const handleDrop = useCallback((from, to) => {
     const c = chessRef.current;
-    if (c.turn() !== 'w' || isThinking || c.isGameOver()) return;
+    if (c.turn() !== playerColorRef.current || isThinking || c.isGameOver()) return;
 
     const piece = c.get(from);
-    if (!piece || piece.color !== 'w') { clearSelection(); return; }
+    if (!piece || piece.color !== playerColorRef.current) { clearSelection(); return; }
 
     const moves = c.moves({ square: from, verbose: true });
     if (!moves.some(m => m.to === to)) { clearSelection(); return; }
@@ -231,7 +238,17 @@ export function useChessGame(difficulty = 'normal') {
     setHint(null);
     setCurrentOpening(null);
     setPositionEval(0);
+    setGameResetKey(prev => prev + 1);
   }, []);
+
+  // 新しいゲーム開始時、またはplayerColorが変わったとき：CPUが先手なら即発動
+  useEffect(() => {
+    const c = chessRef.current;
+    if (!c.isGameOver() && c.turn() === cpuColorRef.current) {
+      triggerAI();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameResetKey, playerColor]);
 
   // 戦術の「NEW」バッジを8秒後に自動クリア
   useEffect(() => {
@@ -247,7 +264,7 @@ export function useChessGame(difficulty = 'normal') {
   const undoMove = useCallback(() => {
     const c = chessRef.current;
     // 白の番・2手以上指されている・AI待機中でない、の場合のみ許可
-    if (c.turn() !== 'w' || c.history().length < 2 || isThinking) return;
+    if (c.turn() !== playerColorRef.current || c.history().length < 2 || isThinking) return;
 
     clearTimeout(aiTimerRef.current);
     setIsThinking(false);

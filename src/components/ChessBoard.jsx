@@ -36,19 +36,20 @@ function getSquareStyle(square, rowIndex, colIndex, boardTheme, selectedSquare, 
 }
 
 // ボード上の (x, y) がどのマスか計算
-function getSquareAtPoint(x, y, boardEl) {
+function getSquareAtPoint(x, y, boardEl, flipped) {
   if (!boardEl) return null;
   const rect = boardEl.getBoundingClientRect();
   if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
-  const col = Math.floor((x - rect.left) / (rect.width / 8));
-  const row = Math.floor((y - rect.top)  / (rect.height / 8));
+  let col = Math.floor((x - rect.left) / (rect.width / 8));
+  let row = Math.floor((y - rect.top)  / (rect.height / 8));
   if (col < 0 || col >= 8 || row < 0 || row >= 8) return null;
+  if (flipped) { col = 7 - col; row = 7 - row; }
   return FILES[col] + RANKS[row];
 }
 
 export default function ChessBoard({
   board, selectedSquare, legalMoves, lastMove,
-  gameStatus, boardTheme, pieceSet, hint,
+  gameStatus, boardTheme, pieceSet, hint, flipped,
   onSquareClick, onDrop, onCancelDrag,
 }) {
   const boardRef  = useRef(null);
@@ -56,6 +57,9 @@ export default function ChessBoard({
   const dragRef   = useRef({ active: false, from: null, piece: null, startX: 0, startY: 0, isDragging: false });
   // ゴースト駒の位置（stateで管理→再レンダーが必要）
   const [ghost, setGhost] = useState(null); // { from, piece, x, y } | null
+  // flippedのref（onPointerUp内のクロージャから最新値を参照するため）
+  const flippedRef = useRef(flipped);
+  flippedRef.current = flipped;
 
   useEffect(() => {
     function onPointerMove(e) {
@@ -87,7 +91,7 @@ export default function ChessBoard({
       setGhost(null);
 
       if (wasDragging) {
-        const target = getSquareAtPoint(e.clientX, e.clientY, boardRef.current);
+        const target = getSquareAtPoint(e.clientX, e.clientY, boardRef.current, flippedRef.current);
         if (target && target !== from) {
           onDrop(from, target);
         } else {
@@ -109,33 +113,37 @@ export default function ChessBoard({
       <div className="board-with-coords">
         {/* Rank labels */}
         <div className="rank-labels">
-          {RANKS.map(r => (
+          {(flipped ? [...RANKS].reverse() : RANKS).map(r => (
             <div key={r} className="coord-label rank-label">{r}</div>
           ))}
         </div>
 
         {/* Board grid */}
         <div className="chess-board" ref={boardRef}>
-          {board.map((row, rowIndex) =>
-            row.map((piece, colIndex) => {
-              const square   = getSquareName(rowIndex, colIndex);
+          {Array.from({ length: 8 }, (_, visualRow) =>
+            Array.from({ length: 8 }, (_, visualCol) => {
+              const actualRow = flipped ? 7 - visualRow : visualRow;
+              const actualCol = flipped ? 7 - visualCol : visualCol;
+              const piece = board[actualRow][actualCol];
+              const square   = getSquareName(actualRow, actualCol);
               const isLegal  = legalMoves.includes(square);
               const isSource = ghost?.from === square; // ドラッグ中の元マス
+              const playerPieceColor = flipped ? 'b' : 'w';
 
               return (
                 <div
                   key={square}
                   className="chess-square"
                   style={getSquareStyle(
-                    square, rowIndex, colIndex,
+                    square, actualRow, actualCol,
                     boardTheme, selectedSquare, legalMoves, lastMove, gameStatus, board, hint
                   )}
                   onPointerDown={(e) => {
                     e.preventDefault(); // clickイベントの二重発火を防ぐ
                     onSquareClick(square); // クリック動作（選択・移動）は即時実行
 
-                    // 白駒ならドラッグ追跡を開始
-                    if (piece && piece.color === 'w') {
+                    // プレイヤーの駒ならドラッグ追跡を開始
+                    if (piece && piece.color === playerPieceColor) {
                       dragRef.current = {
                         active: true,
                         from: square,
@@ -175,7 +183,7 @@ export default function ChessBoard({
       <div className="file-labels-row">
         <div className="file-labels-spacer" />
         <div className="file-labels">
-          {FILES.map(f => (
+          {(flipped ? [...FILES].reverse() : FILES).map(f => (
             <div key={f} className="coord-label file-label">{f}</div>
           ))}
         </div>
