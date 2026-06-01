@@ -61,8 +61,6 @@ function saveLogs(logs) {
 
 // ── Play Page ─────────────────────────────────────────────────────────────────
 export default function Play() {
-  const navigate = useNavigate();
-
   const [gameData, setGameData] = useState(loadGameData);
   const [logs, setLogs] = useState(loadLogs);
   const [pendingUnlock, setPendingUnlock] = useState(null);
