@@ -152,6 +152,36 @@ export const TECHNIQUES = {
     description: 'ルーク（5点）をビショップやナイト（3点）と意図的に交換して、局面の優位を得るテクニック。',
     detail: '駒の価値では損でも、強力なアウトポストを得たり、相手の守りを崩したりできる。戦略的判断が必要。',
   },
+  windmill: {
+    id: 'windmill', category: 'tactics', detectable: false,
+    name: '風車（ウィンドミル）', nameEn: 'Windmill', icon: '🌀', color: '#00ACC1',
+    description: '発見チェックと駒取りを交互に繰り返し、相手の駒を根こそぎ奪うコンビネーション。風車のように何度も回転する。',
+    detail: '例: ビショップでチェック→キングが逃げる→ルークで駒を取る→ルークで再びチェック→キングが逃げる→またビショップでチェック… を繰り返す。Torre vs Lasker (1925) が有名。',
+  },
+  perpetualCheck: {
+    id: 'perpetualCheck', category: 'tactics', detectable: false,
+    name: '永久チェック', nameEn: 'Perpetual Check', icon: '♾️', color: '#78909C',
+    description: '相手のキングを永遠にチェックし続けることで引き分けに持ち込む技。負けそうな局面での逃げ道になる。',
+    detail: '同一局面が3回繰り返されるとドロー（三回繰り返しルール）。劣勢な側が引き分けを狙うときの重要な手段。チェックを止められない形を作るのがポイント。',
+  },
+  clearanceSacrifice: {
+    id: 'clearanceSacrifice', category: 'tactics', detectable: false,
+    name: 'クリアランス犠打', nameEn: 'Clearance Sacrifice', icon: '🧹', color: '#FF8A65',
+    description: '特定のマスやラインをあけるために駒を犠牲にする手。邪魔な駒をどかして別の駒の力を解放する。',
+    detail: '例: ルークのラインを塞いでいる自駒をわざと差し出して取らせ、ルークがオープンファイルを使えるようにする。見た目は損に見えるが、局面全体で得をする。',
+  },
+  trapping: {
+    id: 'trapping', category: 'tactics', detectable: false,
+    name: 'トラップ（駒の封鎖）', nameEn: 'Trapping a Piece', icon: '🪤', color: '#8D6E63',
+    description: '相手の駒を逃げ場のない状態に追い込み、次の手で必ず取れるようにする。価値の高い駒（ビショップ・ナイト）が狙われやすい。',
+    detail: '例: 端に行ったビショップをポーンで包囲して動けなくする。ナイトをコーナーや端に追い込んでから取る。駒交換を嫌がる相手に特に有効。',
+  },
+  desperado: {
+    id: 'desperado', category: 'tactics', detectable: false,
+    name: 'デスペラード（絶望の手）', nameEn: 'Desperado', icon: '💣', color: '#E53935',
+    description: '取られることが確定している駒が、捕まる前に最大限の被害を与える手。どうせ取られるなら高く売る戦術。',
+    detail: '例: 取られることが確定しているルークが、取られる前に相手の駒を道連れにする。物質的な損失を最小化する冷静な計算が必要。',
+  },
 
   // ── 詰みのパターン ──────────────────────────────────────────────────────
 
@@ -214,6 +244,36 @@ export const TECHNIQUES = {
     name: 'コリドーメイト（廊下詰め）', nameEn: 'Corridor Mate', icon: '🚪', color: '#37474F',
     description: 'キングが廊下のように狭い空間に追い込まれ、2枚のルーク（またはクイーンとルーク）で詰まされるパターン。',
     detail: 'ルークの「梯子」手順（一方のルークでチェック→キングが逃げる→もう一方でチェック）でキングを追い込む。',
+  },
+  operaMate: {
+    id: 'operaMate', category: 'mate_pattern', detectable: false,
+    name: 'オペラメイト', nameEn: 'Opera Mate', icon: '🎭', color: '#6A1B9A',
+    description: 'ルークとビショップのコンビによる詰みパターン。1858年にMorphyがオペラ観戦中に指した伝説の一局から命名。',
+    detail: 'ルークがバックランクでチェックをかけ、ビショップがキングの逃げ道を封鎖して詰ます。相手のd7にいる自駒がキングの逃げ道を塞いでいるのがポイント。',
+  },
+  legalsMate: {
+    id: 'legalsMate', category: 'mate_pattern', detectable: false,
+    name: 'リーガルメイト', nameEn: "Legal's Mate", icon: '⚖️', color: '#1565C0',
+    description: 'クイーンをわざとピンされた状態で捨て、3枚のナイトとビショップで詰ます華麗なトラップ。',
+    detail: '手順: 相手がビショップでクイーンをピン→クイーンを無視してナイトでチェック→相手がクイーンを取る→ナイト＋ナイト＋ビショップでチェックメイト。クイーンを取ったことを後悔させる詰み。',
+  },
+  hookMate: {
+    id: 'hookMate', category: 'mate_pattern', detectable: false,
+    name: 'フックメイト', nameEn: 'Hook Mate', icon: '🪝', color: '#00796B',
+    description: 'ルーク・ナイト・ポーンの3駒が連携し、コーナー付近でキングを詰ます。フック（釣り針）の形に似ることから命名。',
+    detail: 'ナイトがキングの逃げ道を封鎖し、ポーンが隣接マスをカバー、ルークがチェックメイトを決める。コーナーに追い込むほど有効。',
+  },
+  lawnmowerMate: {
+    id: 'lawnmowerMate', category: 'mate_pattern', detectable: false,
+    name: '芝刈り機メイト', nameEn: 'Lawnmower Mate', icon: '🌿', color: '#388E3C',
+    description: '2枚のルーク（またはクイーンとルーク）が交互にチェックしながら、相手のキングをコーナーへ刈り込んでいく詰みパターン。',
+    detail: '1段目でチェック→キングが1段上に逃げる→もう1枚のルークが新しいランクでチェック→を繰り返してコーナーに追い込む。最も基本的なエンドゲームの詰み手順。',
+  },
+  dovetailMate: {
+    id: 'dovetailMate', category: 'mate_pattern', detectable: false,
+    name: 'ダブテールメイト', nameEn: 'Dovetail Mate', icon: '🕊️', color: '#5C6BC0',
+    description: 'クイーンがキングを斜めから詰ます美しいパターン。キングの両サイドに自軍の駒がいて逃げられない形。',
+    detail: '鳩の尾（Dovetail）に似た形から命名。左右の駒がキングの逃げ道を塞ぎ、クイーンが対角線からチェックメイト。エポレットメイトの亜種。',
   },
 
   // ── 戦略概念 ─────────────────────────────────────────────────────────────
@@ -289,6 +349,36 @@ export const TECHNIQUES = {
     name: 'ルークの第7列侵入', nameEn: 'Rook on the 7th Rank', icon: '🏄', color: '#00695C',
     description: '白なら7段目、黒なら2段目にルークを侵入させること。相手のポーンを横から攻撃し、キングを押し込む強力な手。',
     detail: '第7列のルークは相手のキングを最奥段に閉じ込めバックランクメイトの脅威を作る。「悪魔のルーク」とも呼ばれる。',
+  },
+  fianchetto: {
+    id: 'fianchetto', category: 'strategy', detectable: false,
+    name: 'フィアンケット', nameEn: 'Fianchetto', icon: '⛪', color: '#558B2F',
+    description: 'ビショップをb2/g2（黒はb7/g7）に展開し、長い対角線を支配させる配置。キングの守りにもなる。',
+    detail: 'イタリア語で「小さなフランク」の意味。キングインディアン・グリュンフェルト・カタランなどの定跡で多用される。フィアンケットしたビショップを相手に交換させると「ビショップペアの解消」と呼ばれる弱点が残る。',
+  },
+  weakSquare: {
+    id: 'weakSquare', category: 'strategy', detectable: false,
+    name: '弱点マス', nameEn: 'Weak Square / Color Complex', icon: '🕳️', color: '#4E342E',
+    description: 'ポーンで守ることができないマス。特定の色のビショップを持っていない側は、その色のマスが永続的な弱点になる。',
+    detail: '例: g3にポーンがあると、f4・h4のマスがポーンに守れない弱点になる。相手のナイトや駒をその弱点に定着させると強力。「カラーコンプレックス」とも呼ばれる。',
+  },
+  prophylaxis: {
+    id: 'prophylaxis', category: 'strategy', detectable: false,
+    name: '予防手（プロフィラクシス）', nameEn: 'Prophylaxis', icon: '🛡️', color: '#37474F',
+    description: '相手が次に狙っている手を先読みして、事前に防いでおく戦略的な考え方。攻めるだけでなく相手の計画を潰す。',
+    detail: 'Nimzovichが体系化した概念。「相手の最善手は何か？」を常に考えてから自分の手を選ぶ。プロフィラクシス的な思考法はどんな局面でも重要。',
+  },
+  minorityAttack: {
+    id: 'minorityAttack', category: 'strategy', detectable: false,
+    name: 'マイノリティアタック', nameEn: 'Minority Attack', icon: '🎯', color: '#1976D2',
+    description: '少ない枚数のポーンで相手の多数ポーンに突っ込み、弱点（孤立ポーンなど）を作り出す戦略。クイーンズギャンビット交換変化でよく使われる。',
+    detail: '例: 白がb5のポーンで黒のb6・c7の2枚のポーンに挑む。bxc6ならb6が孤立ポーンに、c5なら通過ポーンの危険がある。クイーンサイドでの典型的な少数突撃作戦。',
+  },
+  pawnBreak: {
+    id: 'pawnBreak', category: 'strategy', detectable: false,
+    name: 'ポーンブレイク', nameEn: 'Pawn Break', icon: '💥', color: '#E65100',
+    description: '閉鎖的な局面をポーンの前進で打ち破り、オープンラインや新しい駒の活躍の場を作り出す戦略的な突き。',
+    detail: '例: d5-d4でセンターポーン構造を崩す、f7-f5でキングサイドを開く、c7-c5でクイーンサイドに反撃する。適切なポーンブレイクを見つけることが中盤の重要な課題。',
   },
 
   // ── ポーンの概念 ─────────────────────────────────────────────────────────
