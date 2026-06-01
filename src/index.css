@@ -3622,9 +3622,261 @@ body {
   .puzzles-puzzle-meta { flex: 1; }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   PROFILE PAGE
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.profile-container {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 20% 50%, #16213e 0%, #0f0e17 60%);
+  padding-top: 52px;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* プレイヤーヒーロー */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #13131d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.profile-avatar {
+  font-size: 2.4rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(108,99,255,0.15);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.profile-hero-body { flex: 1; }
+
+.profile-name-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.profile-name { font-size: 1.4rem; font-weight: 800; color: #fffffe; margin: 0; }
+.profile-name-edit-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 1rem; opacity: 0.5; transition: opacity 0.15s;
+  padding: 2px;
+}
+.profile-name-edit-btn:hover { opacity: 1; }
+
+.profile-name-edit { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.profile-name-input {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fffffe;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  width: 160px;
+}
+.profile-name-save {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.profile-name-cancel {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.profile-sub { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin: 0; }
+
+/* メインスタッツグリッド */
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.profile-stat-card {
+  background: #13131d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.profile-stat-icon  { font-size: 1.2rem; }
+.profile-stat-value { font-size: 1.5rem; font-weight: 900; color: #fffffe; line-height: 1; }
+.profile-stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.35); letter-spacing: 0.04em; }
+
+/* セクション共通 */
+.profile-section {
+  background: #13131d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.profile-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.35);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-achievement-count {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* 難易度別 */
+.profile-diff-list { display: flex; flex-direction: column; gap: 12px; }
+.profile-diff-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+}
+.profile-diff-name   { font-size: 0.82rem; font-weight: 700; }
+.profile-diff-result { font-size: 0.78rem; color: rgba(255,255,255,0.4); }
+.profile-diff-bar-wrap {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.profile-diff-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.profile-diff-rate { font-size: 0.78rem; color: rgba(255,255,255,0.5); width: 36px; text-align: right; }
+
+/* 学習進捗 */
+.profile-progress-list { display: flex; flex-direction: column; gap: 14px; }
+.profile-progress-item {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.profile-progress-item:hover { opacity: 0.8; }
+.profile-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.profile-progress-icon { font-size: 1rem; }
+.profile-progress-name { font-size: 0.88rem; font-weight: 600; color: #fffffe; flex: 1; }
+.profile-progress-count { font-size: 0.78rem; color: rgba(255,255,255,0.4); }
+.profile-progress-bar-wrap {
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.profile-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+.profile-progress-bar--gold { background: #c89b3c; }
+
+/* 実績 */
+.profile-achievements {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.profile-achievement {
+  border-radius: 10px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  position: relative;
+}
+.profile-achievement--unlocked {
+  background: rgba(108,99,255,0.15);
+  border: 1px solid rgba(108,99,255,0.3);
+}
+.profile-achievement--locked {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  opacity: 0.5;
+}
+.profile-achievement-icon { font-size: 1.4rem; }
+.profile-achievement-name { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.7); }
+.profile-achievement-lock {
+  position: absolute;
+  top: 6px; right: 6px;
+  font-size: 0.6rem;
+  opacity: 0.4;
+}
+
+/* 直近の対局 */
+.profile-recent { display: flex; flex-direction: column; gap: 6px; }
+.profile-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.82rem;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.profile-result-dot { font-weight: 700; font-size: 1rem; width: 20px; }
+.profile-recent-diff  { flex: 1; }
+.profile-recent-moves { color: rgba(255,255,255,0.4); }
+.profile-recent-date  { color: rgba(255,255,255,0.25); width: 60px; text-align: right; }
+
+/* 空 */
+.profile-empty {
+  text-align: center;
+  color: rgba(255,255,255,0.4);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
 /* レスポンシブ */
 @media (max-width: 600px) {
   .home-modes, .home-stats { max-width: 100%; }
   .home-stat-value { font-size: 1.3rem; }
   .learn-grid { grid-template-columns: 1fr; }
+  .profile-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .profile-diff-row { grid-template-columns: 70px 1fr auto; }
+  .profile-diff-bar-wrap { display: none; }
 }

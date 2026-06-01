@@ -4,6 +4,7 @@ const NAV_LINKS = [
   { path: '/play',    label: '対局',  icon: '♟' },
   { path: '/learn',   label: '学習',  icon: '📖' },
   { path: '/puzzles', label: 'パズル', icon: '♞' },
+  { path: '/profile', label: '成績',  icon: '👤' },
 ];
 
 export default function NavBar() {
