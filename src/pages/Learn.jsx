@@ -4,9 +4,9 @@ import NavBar from '../components/NavBar';
 const LESSONS = [
   { id: 'pieces',    icon: '♟', title: '駒の動き',         desc: 'ポーン・ナイト・ビショップ・ルーク・クイーン・キングの動き方',   available: true },
   { id: 'check',     icon: '⚠️', title: 'チェックとチェックメイト', desc: '王手のかけ方、逃げ方、詰み方を理解しよう',                available: true },
-  { id: 'fork',      icon: '🍴', title: 'フォーク（両取り）',   desc: '1つの駒で相手の2駒を同時に攻撃する強力な戦術',           done: false },
-  { id: 'pin',       icon: '📌', title: 'ピン',             desc: '相手の駒を動けなくする戦術テクニック',                    done: false },
-  { id: 'skewer',    icon: '🗡️', title: 'スキュア',          desc: '価値の高い駒を攻撃し、その後ろの駒を取る',                done: false },
+  { id: 'fork',      icon: '🍴', title: 'フォーク（両取り）',   desc: '1つの駒で相手の2駒を同時に攻撃する強力な戦術',           available: true },
+  { id: 'pin',       icon: '📌', title: 'ピン',             desc: '相手の駒を動けなくする戦術テクニック',                    available: true },
+  { id: 'skewer',    icon: '🗡️', title: 'スキュア',          desc: '価値の高い駒を攻撃し、その後ろの駒を取る',                available: true },
   { id: 'opening',   icon: '🎯', title: '序盤の考え方',       desc: 'センターコントロール・駒の展開・キャスリング',               done: false },
   { id: 'endgame',   icon: '🏁', title: 'エンドゲーム入門',    desc: 'キングの活用・ポーン昇格の狙い方',                       done: false },
   { id: 'strategy',  icon: '🧠', title: '中盤の戦略',         desc: 'コマの協力・弱点マスの狙い方',                          done: false },
