@@ -39,7 +39,7 @@ const MODES = [
   },
   {
     id: 'puzzles',
-    path: '/play',
+    path: '/puzzles',
     icon: '♞',
     title: 'パズル',
     subtitle: '12問収録',
