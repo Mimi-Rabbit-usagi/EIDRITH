@@ -3072,3 +3072,372 @@ body {
   text-align: center;
   font-weight: 600;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HOME PAGE
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.home-container {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 20% 50%, #16213e 0%, #0f0e17 60%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景グロー */
+.home-bg-glow {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(120px);
+  opacity: 0.15;
+}
+.home-bg-glow--left  { background: #6c63ff; left: -200px; top: 10%; }
+.home-bg-glow--right { background: #c89b3c; right: -200px; bottom: 10%; }
+
+/* ヘッダー */
+.home-header {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 0;
+  position: relative;
+  z-index: 1;
+}
+
+.home-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.home-logo-icon { font-size: 1.6rem; }
+.home-logo-text {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  background: linear-gradient(135deg, #c89b3c, #ffe082);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.home-header-right { display: flex; align-items: center; gap: 12px; }
+
+.home-player-name {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ヒーロー */
+.home-hero {
+  text-align: center;
+  margin: 64px 0 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.home-hero-title {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+  color: #fffffe;
+}
+.home-hero-title--accent {
+  background: linear-gradient(135deg, #c89b3c 0%, #ffe082 50%, #c89b3c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.home-hero-sub {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.5);
+  margin: 0;
+  max-width: 440px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* モードカード */
+.home-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+  z-index: 1;
+}
+
+.home-mode-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #13131d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 20px 24px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+.home-mode-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--card-accent, #6c63ff);
+  border-radius: 3px 0 0 3px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.home-mode-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.home-mode-card:hover::before { opacity: 1; }
+
+.home-mode-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  width: 48px;
+  text-align: center;
+}
+
+.home-mode-body { flex: 1; }
+
+.home-mode-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fffffe;
+  margin-bottom: 2px;
+}
+.home-mode-subtitle {
+  font-size: 0.78rem;
+  color: var(--card-accent, #6c63ff);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.home-mode-desc {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.45);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.home-mode-arrow {
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.25);
+  flex-shrink: 0;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+.home-mode-card:hover .home-mode-arrow {
+  color: rgba(255,255,255,0.6);
+  transform: translateX(3px);
+}
+
+/* スタッツバー */
+.home-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #13131d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 18px 32px;
+  margin-top: 28px;
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+  z-index: 1;
+}
+
+.home-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.home-stat-icon  { font-size: 1.2rem; }
+.home-stat-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fffffe;
+  line-height: 1;
+}
+.home-stat-denom { font-size: 0.9rem; color: rgba(255,255,255,0.35); font-weight: 400; }
+.home-stat-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); letter-spacing: 0.05em; }
+
+.home-stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255,255,255,0.08);
+}
+
+/* フッター */
+.home-footer {
+  margin-top: 40px;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.2);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Play ページ: 戻るボタン */
+.play-back-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 100;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.play-back-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fffffe;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LEARN PAGE
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.learn-container {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 20% 50%, #16213e 0%, #0f0e17 60%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.learn-header {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 0 0;
+  position: relative;
+  z-index: 1;
+}
+
+.learn-hero {
+  text-align: center;
+  margin: 48px 0 40px;
+  position: relative;
+  z-index: 1;
+}
+.learn-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+  margin: 0 0 10px;
+  background: linear-gradient(135deg, #c89b3c, #ffe082);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.learn-subtitle {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.45);
+  margin: 0;
+}
+
+.learn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  width: 100%;
+  max-width: 860px;
+  position: relative;
+  z-index: 1;
+}
+
+.learn-card {
+  background: #13131d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.learn-card--locked { opacity: 0.65; }
+
+.learn-card-number {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.learn-card-icon  { font-size: 1.6rem; }
+.learn-card-title { font-size: 0.95rem; font-weight: 700; color: #fffffe; }
+.learn-card-desc  { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin: 0; line-height: 1.5; }
+
+.learn-card-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(200,155,60,0.15);
+  color: #c89b3c;
+  border: 1px solid rgba(200,155,60,0.3);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.learn-cta {
+  margin-top: 48px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.learn-cta-text { font-size: 0.9rem; color: rgba(255,255,255,0.4); margin: 0 0 14px; }
+.learn-cta-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.learn-cta-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+/* レスポンシブ */
+@media (max-width: 600px) {
+  .home-modes, .home-stats { max-width: 100%; }
+  .home-stat-value { font-size: 1.3rem; }
+  .learn-grid { grid-template-columns: 1fr; }
+}
