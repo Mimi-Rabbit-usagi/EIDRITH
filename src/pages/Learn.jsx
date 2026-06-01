@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import NavBar from '../components/NavBar';
 
 const LESSONS = [
   { id: 'pieces',    icon: '♟', title: '駒の動き',         desc: 'ポーン・ナイト・ビショップ・ルーク・クイーン・キングの動き方',   done: false },
@@ -19,16 +20,7 @@ export default function Learn() {
       {/* 背景装飾 */}
       <div className="home-bg-glow home-bg-glow--left" />
 
-      {/* ヘッダー */}
-      <header className="learn-header">
-        <button className="play-back-btn" onClick={() => navigate('/')}>
-          ← ホーム
-        </button>
-        <div className="home-logo">
-          <span className="home-logo-icon">♛</span>
-          <span className="home-logo-text">EIDRITH</span>
-        </div>
-      </header>
+      <NavBar />
 
       {/* タイトル */}
       <section className="learn-hero">

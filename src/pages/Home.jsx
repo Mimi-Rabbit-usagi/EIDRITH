@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NavBar from '../components/NavBar';
 
 function loadStats() {
   try {
@@ -65,16 +66,7 @@ export default function Home() {
       <div className="home-bg-glow home-bg-glow--left" />
       <div className="home-bg-glow home-bg-glow--right" />
 
-      {/* ヘッダー */}
-      <header className="home-header">
-        <div className="home-logo">
-          <span className="home-logo-icon">♛</span>
-          <span className="home-logo-text">EIDRITH</span>
-        </div>
-        <div className="home-header-right">
-          <span className="home-player-name">{playerName}</span>
-        </div>
-      </header>
+      <NavBar />
 
       {/* ヒーローセクション */}
       <section className="home-hero">

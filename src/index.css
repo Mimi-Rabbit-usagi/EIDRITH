@@ -39,6 +39,7 @@ body {
   background: radial-gradient(ellipse at 20% 50%, #16213e 0%, #0f0e17 60%);
   display: flex;
   flex-direction: column;
+  padding-top: 52px;
 }
 
 .game-area {
@@ -3074,6 +3075,77 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   NAVBAR（全ページ共通）
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: rgba(10, 10, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.navbar-logo-icon { font-size: 1.2rem; }
+.navbar-logo-text {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  background: linear-gradient(135deg, #c89b3c, #ffe082);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navbar-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: color 0.15s, background 0.15s;
+}
+.navbar-link:hover {
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.07);
+}
+.navbar-link--active {
+  color: #fffffe;
+  background: rgba(108,99,255,0.2);
+}
+.navbar-link-icon  { font-size: 0.95rem; }
+.navbar-link-label { }
+
+@media (max-width: 480px) {
+  .navbar { padding: 0 16px; }
+  .navbar-link-label { display: none; }
+  .navbar-link { padding: 6px 10px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    HOME PAGE
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -3083,7 +3155,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 20px 60px;
+  padding: 52px 20px 60px;
   position: relative;
   overflow: hidden;
 }
@@ -3301,25 +3373,6 @@ body {
   z-index: 1;
 }
 
-/* Play ページ: 戻るボタン */
-.play-back-btn {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 100;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.6);
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 0.82rem;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.play-back-btn:hover {
-  background: rgba(255,255,255,0.1);
-  color: #fffffe;
-}
 
 /* ══════════════════════════════════════════════════════════════════════════
    LEARN PAGE
@@ -3331,7 +3384,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 20px 80px;
+  padding: 52px 20px 80px;
   position: relative;
   overflow: hidden;
 }

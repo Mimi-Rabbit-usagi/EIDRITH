@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import NavBar from '../components/NavBar';
 import { useChessGame } from '../hooks/useChessGame';
 import { useChessClock } from '../hooks/useChessClock';
 import { useSoundEffects } from '../hooks/useSoundEffects';
@@ -326,14 +326,7 @@ export default function Play() {
 
   return (
     <div className="app-container">
-      {/* ホームへ戻るボタン */}
-      <button
-        onClick={() => navigate('/')}
-        className="play-back-btn"
-        aria-label="ホームへ戻る"
-      >
-        ← ホーム
-      </button>
+      <NavBar />
 
       <main className="game-area">
         <div className="board-section">
