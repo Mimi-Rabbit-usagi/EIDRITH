@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 
 const LESSONS = [
-  { id: 'pieces',    icon: '♟', title: '駒の動き',         desc: 'ポーン・ナイト・ビショップ・ルーク・クイーン・キングの動き方',   done: false },
-  { id: 'check',     icon: '⚠️', title: 'チェックとチェックメイト', desc: '王手のかけ方、逃げ方、詰み方を理解しよう',                done: false },
+  { id: 'pieces',    icon: '♟', title: '駒の動き',         desc: 'ポーン・ナイト・ビショップ・ルーク・クイーン・キングの動き方',   available: true },
+  { id: 'check',     icon: '⚠️', title: 'チェックとチェックメイト', desc: '王手のかけ方、逃げ方、詰み方を理解しよう',                available: true },
   { id: 'fork',      icon: '🍴', title: 'フォーク（両取り）',   desc: '1つの駒で相手の2駒を同時に攻撃する強力な戦術',           done: false },
   { id: 'pin',       icon: '📌', title: 'ピン',             desc: '相手の駒を動けなくする戦術テクニック',                    done: false },
   { id: 'skewer',    icon: '🗡️', title: 'スキュア',          desc: '価値の高い駒を攻撃し、その後ろの駒を取る',                done: false },
@@ -32,17 +32,45 @@ export default function Learn() {
 
       {/* レッスン一覧 */}
       <section className="learn-grid">
-        {LESSONS.map((lesson, index) => (
-          <div key={lesson.id} className="learn-card learn-card--locked">
-            <div className="learn-card-number">#{index + 1}</div>
-            <div className="learn-card-icon">{lesson.icon}</div>
-            <div className="learn-card-body">
-              <div className="learn-card-title">{lesson.title}</div>
-              <p className="learn-card-desc">{lesson.desc}</p>
+        {LESSONS.map((lesson, index) => {
+          const progress = (() => {
+            try { return JSON.parse(localStorage.getItem('chess-lesson-progress') || '[]'); } catch { return []; }
+          })();
+          const done = progress.includes(lesson.id);
+
+          if (lesson.available) {
+            return (
+              <div
+                key={lesson.id}
+                className="learn-card learn-card--available"
+                onClick={() => navigate(`/learn/${lesson.id}`)}
+              >
+                <div className="learn-card-number">#{index + 1}</div>
+                <div className="learn-card-icon">{lesson.icon}</div>
+                <div className="learn-card-body">
+                  <div className="learn-card-title">{lesson.title}</div>
+                  <p className="learn-card-desc">{lesson.desc}</p>
+                </div>
+                {done
+                  ? <div className="learn-card-badge learn-card-badge--done">✅ 完了</div>
+                  : <div className="learn-card-badge learn-card-badge--go">→ 始める</div>
+                }
+              </div>
+            );
+          }
+
+          return (
+            <div key={lesson.id} className="learn-card learn-card--locked">
+              <div className="learn-card-number">#{index + 1}</div>
+              <div className="learn-card-icon">{lesson.icon}</div>
+              <div className="learn-card-body">
+                <div className="learn-card-title">{lesson.title}</div>
+                <p className="learn-card-desc">{lesson.desc}</p>
+              </div>
+              <div className="learn-card-badge">近日公開</div>
             </div>
-            <div className="learn-card-badge">近日公開</div>
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       {/* 足元のCTA */}

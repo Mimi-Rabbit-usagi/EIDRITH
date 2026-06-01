@@ -4,6 +4,7 @@ import Play from './pages/Play';
 import Learn from './pages/Learn';
 import Puzzles from './pages/Puzzles';
 import Profile from './pages/Profile';
+import LessonPlayer from './pages/LessonPlayer';
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/play" element={<Play />} />
       <Route path="/learn" element={<Learn />} />
+      <Route path="/learn/:lessonId" element={<LessonPlayer />} />
       <Route path="/puzzles" element={<Puzzles />} />
       <Route path="/profile" element={<Profile />} />
     </Routes>

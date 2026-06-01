@@ -3488,6 +3488,275 @@ body {
 }
 .learn-cta-btn:hover { opacity: 0.85; transform: translateY(-1px); }
 
+/* 利用可能なカード */
+.learn-card--available {
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  opacity: 1;
+}
+.learn-card--available:hover {
+  transform: translateY(-2px);
+  border-color: rgba(108,99,255,0.4);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+}
+.learn-card-badge--done {
+  background: rgba(76,175,80,0.15);
+  color: #4CAF50;
+  border-color: rgba(76,175,80,0.3);
+}
+.learn-card-badge--go {
+  background: rgba(108,99,255,0.15);
+  color: var(--accent);
+  border-color: rgba(108,99,255,0.3);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LESSON PLAYER
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.lesson-container {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 20% 50%, #16213e 0%, #0f0e17 60%);
+  padding-top: 52px;
+  position: relative;
+  overflow: hidden;
+}
+
+.lesson-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lesson-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lesson-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+}
+.lesson-lesson-title { color: #fffffe; }
+
+/* プログレスバー */
+.lesson-progress-wrap {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.lesson-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.lesson-step-count {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.25);
+  margin: 0;
+  text-align: right;
+}
+
+/* ステップ共通 */
+.lesson-step-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 説明カード */
+.lesson-explain-card {
+  background: #13131d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lesson-piece-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.lesson-piece-symbol { font-size: 2.4rem; }
+.lesson-piece-name { font-size: 1.2rem; font-weight: 800; color: #fffffe; }
+.lesson-piece-en   { font-size: 0.78rem; color: rgba(255,255,255,0.35); margin-top: 2px; }
+.lesson-piece-points {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.lesson-description {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.lesson-rules {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lesson-rule-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+}
+.lesson-rule-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lesson-tip {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.83rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.5;
+}
+.lesson-tip-icon { flex-shrink: 0; }
+
+/* クイズ */
+.lesson-quiz-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #13131d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 18px;
+}
+.lesson-quiz-icon  { font-size: 1.8rem; flex-shrink: 0; }
+.lesson-quiz-title { font-size: 1rem; font-weight: 700; color: #fffffe; margin-bottom: 4px; }
+.lesson-quiz-instruction {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.45);
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+.lesson-board-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.lesson-quiz-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  gap: 12px;
+}
+.lesson-quiz-result--ok {
+  background: rgba(76,175,80,0.15);
+  border: 1px solid rgba(76,175,80,0.3);
+  color: #4CAF50;
+}
+
+.lesson-quiz-hint {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  margin: 0;
+}
+
+/* ボタン */
+.lesson-next-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 28px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  align-self: flex-end;
+}
+.lesson-next-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.lesson-secondary-btn {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 13px 28px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.lesson-secondary-btn:hover { background: rgba(255,255,255,0.1); }
+
+/* 完了画面 */
+.lesson-complete-wrap { align-items: center; }
+.lesson-complete-card {
+  background: #13131d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px;
+  padding: 40px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+.lesson-complete-icon  { font-size: 3rem; }
+.lesson-complete-title { font-size: 1.5rem; font-weight: 900; color: #fffffe; margin: 0; }
+.lesson-complete-msg   { font-size: 0.9rem; color: rgba(255,255,255,0.5); margin: 0; white-space: pre-line; line-height: 1.6; }
+.lesson-complete-badges { display: flex; gap: 12px; font-size: 1.8rem; }
+.lesson-complete-badge  { animation: lesson-pop 0.3s ease both; }
+.lesson-complete-badge:nth-child(1) { animation-delay: 0.05s; }
+.lesson-complete-badge:nth-child(2) { animation-delay: 0.1s; }
+.lesson-complete-badge:nth-child(3) { animation-delay: 0.15s; }
+.lesson-complete-badge:nth-child(4) { animation-delay: 0.2s; }
+.lesson-complete-badge:nth-child(5) { animation-delay: 0.25s; }
+.lesson-complete-badge:nth-child(6) { animation-delay: 0.3s; }
+@keyframes lesson-pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.lesson-complete-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    PUZZLES PAGE
    ══════════════════════════════════════════════════════════════════════════ */
