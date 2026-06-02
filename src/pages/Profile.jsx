@@ -9,16 +9,24 @@ const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずか
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
 const TOTAL_OPENINGS = 65;
 
+const AVATAR_EMOJIS = [
+  '♟','♞','♝','♜','♛','♚',
+  '🤺','🧠','👑','⚔️','🛡️','🎯',
+  '🦁','🐉','🦊','🐺','🐯','🦅',
+  '🔥','⚡','🌟','💎','🎭','🎪',
+];
+
 function loadAllData() {
   try {
     const gameData = JSON.parse(localStorage.getItem('chess-master-data') || '{}');
     const logs     = JSON.parse(localStorage.getItem('chess-master-logs') || '[]');
     const solved   = JSON.parse(localStorage.getItem('chess-solved-puzzles') || '[]');
     const practiced = JSON.parse(localStorage.getItem('chess-opening-practice') || '[]');
-    const name     = localStorage.getItem('chess-player-name') || 'あなた';
-    return { gameData, logs, solved, practiced, name };
+    const name       = localStorage.getItem('chess-player-name') || 'あなた';
+    const avatarEmoji = localStorage.getItem('chess-avatar-emoji') || '';
+    return { gameData, logs, solved, practiced, name, avatarEmoji };
   } catch {
-    return { gameData: {}, logs: [], solved: [], practiced: [], name: 'あなた' };
+    return { gameData: {}, logs: [], solved: [], practiced: [], name: 'あなた', avatarEmoji: '' };
   }
 }
 
@@ -65,18 +73,55 @@ export default function Profile() {
   const [data, setData] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [customEmojiInput, setCustomEmojiInput] = useState('');
+  const [customEmojiError, setCustomEmojiError] = useState('');
 
   useEffect(() => {
     const d = loadAllData();
+    // Googleログイン済みで名前未設定の場合はGoogle名をデフォルトに
+    if (user && (!localStorage.getItem('chess-player-name') || localStorage.getItem('chess-player-name') === 'あなた')) {
+      const googleName = user.user_metadata?.full_name?.split(' ')[0] ?? 'あなた';
+      localStorage.setItem('chess-player-name', googleName);
+      d.name = googleName;
+    }
     setData(d);
     setNameInput(d.name);
-  }, []);
+  }, [user]);
 
   const saveName = () => {
     const trimmed = nameInput.trim() || 'あなた';
     localStorage.setItem('chess-player-name', trimmed);
     setData(prev => ({ ...prev, name: trimmed }));
     setEditingName(false);
+  };
+
+  const saveAvatar = (emoji) => {
+    localStorage.setItem('chess-avatar-emoji', emoji);
+    setData(prev => ({ ...prev, avatarEmoji: emoji }));
+    setShowAvatarPicker(false);
+    setCustomEmojiInput('');
+    setCustomEmojiError('');
+  };
+
+  const submitCustomEmoji = () => {
+    const segments = [...new Intl.Segmenter().segment(customEmojiInput.trim())];
+    if (segments.length === 0) {
+      setCustomEmojiError('絵文字を入力してください');
+      return;
+    }
+    if (segments.length > 1) {
+      setCustomEmojiError('1つだけ入力してください');
+      return;
+    }
+    const char = segments[0].segment;
+    // 通常の文字（半角英数・ひらがな等）を弾く
+    if (/^[a-zA-Z0-9\s]$/.test(char)) {
+      setCustomEmojiError('絵文字を入力してください');
+      return;
+    }
+    setCustomEmojiError('');
+    saveAvatar(char);
   };
 
   if (!data) return null;
@@ -98,26 +143,58 @@ export default function Profile() {
 
         {/* プレイヤー名 */}
         <section className="profile-hero">
-          {/* アバター: ログイン済みなら Google 画像、未ログインなら♟ */}
-          {user?.user_metadata?.avatar_url
-            ? <img
+          {/* アバター（クリックで絵文字ピッカー） */}
+          <div className="profile-avatar-wrap" onClick={() => setShowAvatarPicker(p => !p)}>
+            {data.avatarEmoji ? (
+              <div className="profile-avatar">{data.avatarEmoji}</div>
+            ) : user?.user_metadata?.avatar_url ? (
+              <img
                 className="profile-avatar profile-avatar--google"
                 src={user.user_metadata.avatar_url}
-                alt={user.user_metadata.full_name}
+                alt=""
                 referrerPolicy="no-referrer"
               />
-            : <div className="profile-avatar">♟</div>
-          }
-          <div className="profile-hero-body">
-            {/* Googleログイン済みの場合はGoogle名を表示 */}
-            {user ? (
-              <div className="profile-name-row">
-                <h1 className="profile-name">{user.user_metadata?.full_name ?? user.email}</h1>
-                <button className="profile-google-signout" onClick={signOut} title="ログアウト">
-                  ログアウト
+            ) : (
+              <div className="profile-avatar">♟</div>
+            )}
+            <div className="profile-avatar-edit-hint">変更</div>
+          </div>
+
+          {/* 絵文字ピッカー */}
+          {showAvatarPicker && (
+            <div className="profile-avatar-picker">
+              {AVATAR_EMOJIS.map(e => (
+                <button
+                  key={e}
+                  className={`avatar-emoji-btn ${data.avatarEmoji === e ? 'avatar-emoji-active' : ''}`}
+                  onClick={() => saveAvatar(e)}
+                >
+                  {e}
                 </button>
+              ))}
+              {data.avatarEmoji && (
+                <button className="avatar-emoji-reset" onClick={() => saveAvatar('')}>
+                  リセット
+                </button>
+              )}
+              <div className="avatar-custom-input-row">
+                <input
+                  className="avatar-custom-input"
+                  type="text"
+                  placeholder="好きな絵文字を入力"
+                  value={customEmojiInput}
+                  onChange={e => { setCustomEmojiInput(e.target.value); setCustomEmojiError(''); }}
+                  maxLength={4}
+                />
+                <button className="avatar-custom-submit" onClick={submitCustomEmoji}>追加</button>
               </div>
-            ) : editingName ? (
+              {customEmojiError && <p className="avatar-custom-error">{customEmojiError}</p>}
+            </div>
+          )}
+
+          <div className="profile-hero-body">
+            {/* 表示名（ログイン状況にかかわらず常に編集可能） */}
+            {editingName ? (
               <div className="profile-name-edit">
                 <input
                   className="profile-name-input"
@@ -137,8 +214,17 @@ export default function Profile() {
               </div>
             )}
             <p className="profile-sub">総勝利数 {wins} · 現在 {streak} 連勝</p>
-            {/* 未ログインの場合はログインボタンを表示 */}
-            {!user && (
+
+            {/* 認証エリア */}
+            {user ? (
+              <div className="profile-auth-row">
+                <span className="profile-google-badge">
+                  <span className="profile-google-icon">G</span>
+                  {user.email}
+                </span>
+                <button className="profile-google-signout" onClick={signOut}>ログアウト</button>
+              </div>
+            ) : (
               <button className="profile-google-login-btn" onClick={signInWithGoogle}>
                 <span className="profile-google-icon">G</span>
                 Googleでログイン

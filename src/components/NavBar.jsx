@@ -2,18 +2,20 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const NAV_LINKS = [
-  { path: '/play',    label: '対局',  icon: '♟' },
-  { path: '/learn',   label: '学習',  icon: '📖' },
-  { path: '/puzzles', label: 'パズル', icon: '♞' },
-  { path: '/profile', label: '成績',  icon: '👤' },
+  { path: '/play',    label: '対局',   icon: '♟' },
+  { path: '/online',  label: 'オンライン', icon: '🌐' },
+  { path: '/learn',   label: '学習',   icon: '📖' },
+  { path: '/puzzles', label: 'パズル',  icon: '♞' },
+  { path: '/profile', label: '成績',   icon: '👤' },
 ];
 
 export default function NavBar() {
   const { pathname } = useLocation();
   const { user, loading, signInWithGoogle, signOut } = useAuth();
 
-  const avatarUrl  = user?.user_metadata?.avatar_url;
-  const displayName = user?.user_metadata?.full_name ?? user?.email ?? '';
+  const avatarEmoji  = localStorage.getItem('chess-avatar-emoji') || '';
+  const displayName  = localStorage.getItem('chess-player-name') || user?.user_metadata?.full_name?.split(' ')[0] || 'あなた';
+  const avatarUrl    = !avatarEmoji ? user?.user_metadata?.avatar_url : null;
 
   return (
     <nav className="navbar">
@@ -40,11 +42,13 @@ export default function NavBar() {
         <div className="navbar-auth">
           {user ? (
             <div className="navbar-user">
-              {avatarUrl
-                ? <img className="navbar-avatar" src={avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
-                : <div className="navbar-avatar-placeholder">{displayName[0]?.toUpperCase() ?? '?'}</div>
+              {avatarEmoji
+                ? <div className="navbar-avatar-emoji">{avatarEmoji}</div>
+                : avatarUrl
+                  ? <img className="navbar-avatar" src={avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
+                  : <div className="navbar-avatar-placeholder">{displayName[0]?.toUpperCase() ?? '?'}</div>
               }
-              <span className="navbar-user-name">{displayName.split(' ')[0]}</span>
+              <span className="navbar-user-name">{displayName}</span>
               <button className="navbar-signout-btn" onClick={signOut} title="ログアウト">
                 ↩
               </button>

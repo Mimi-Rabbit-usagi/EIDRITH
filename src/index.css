@@ -4322,3 +4322,291 @@ body {
   transition: color 0.15s;
 }
 .profile-google-signout:hover { color: #ccc; }
+
+/* ── Avatar Picker ───────────────────────────────────────────────────────── */
+.profile-avatar-wrap {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.profile-avatar-edit-hint {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 0.65rem;
+  text-align: center;
+  border-radius: 0 0 50% 50%;
+  padding: 2px 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.profile-avatar-wrap:hover .profile-avatar-edit-hint { opacity: 1; }
+
+.profile-avatar-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: rgba(20,20,35,0.97);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+.avatar-emoji-btn {
+  font-size: 1.6rem;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-emoji-btn:hover { background: rgba(255,255,255,0.14); }
+.avatar-emoji-active { border-color: var(--gold) !important; }
+.avatar-emoji-reset {
+  font-size: 0.75rem;
+  color: #888;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 4px;
+}
+.avatar-emoji-reset:hover { color: #ccc; }
+
+.avatar-custom-input-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  width: 100%;
+}
+.avatar-custom-input {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 1rem;
+  padding: 4px 8px;
+  outline: none;
+}
+.avatar-custom-input:focus { border-color: var(--gold); }
+.avatar-custom-submit {
+  background: var(--gold);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.avatar-custom-submit:hover { opacity: 0.85; }
+.avatar-custom-error {
+  color: #F44336;
+  font-size: 0.72rem;
+  margin: 4px 0 0;
+  width: 100%;
+  text-align: left;
+}
+
+.profile-auth-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.profile-google-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.navbar-avatar-emoji {
+  font-size: 1.3rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Online Page ─────────────────────────────────────────────────────────── */
+.online-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 60px);
+  padding: 16px;
+}
+
+/* ロビー */
+.online-lobby {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+.online-lobby-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin: 0;
+}
+.online-profile-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 10px 20px;
+}
+.online-preview-avatar { font-size: 1.6rem; }
+.online-preview-name   { font-size: 1rem; color: #ddd; }
+.online-lobby-desc     { color: #999; font-size: 0.9rem; line-height: 1.6; margin: 0; }
+.online-start-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #6C63FF, #9B8FA6);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.online-start-btn:hover { opacity: 0.85; }
+.online-back-link {
+  background: none;
+  border: none;
+  color: #777;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+
+/* 待機画面 */
+.online-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+.online-waiting-avatar { font-size: 3rem; }
+.online-waiting-name   { font-size: 1rem; color: #ccc; margin: 0; }
+.online-waiting-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.online-waiting-text  { color: #999; font-size: 0.95rem; margin: 0; min-width: 200px; }
+.online-cancel-btn {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #aaa;
+  border-radius: 8px;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* 対局画面 */
+.online-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 520px;
+}
+.online-player-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.online-player-avatar { font-size: 1.4rem; }
+.online-player-name   { font-size: 0.9rem; color: #ccc; flex: 1; }
+.online-player-color  { font-size: 0.75rem; color: #777; }
+.online-left-badge    { font-size: 0.75rem; color: #FF5722; background: rgba(255,87,34,0.15); border-radius: 4px; padding: 2px 6px; }
+.online-board-wrap    { width: 100%; }
+
+.online-status-bar {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.online-turn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.online-turn-indicator {
+  font-size: 0.9rem;
+  color: #888;
+}
+.online-turn-indicator.my-turn {
+  color: #69F0AE;
+  font-weight: 700;
+}
+.online-resign-btn {
+  background: rgba(244,67,54,0.1);
+  border: 1px solid rgba(244,67,54,0.3);
+  color: #EF9A9A;
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.online-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #ddd;
+}
+.online-back-btn {
+  background: rgba(108,99,255,0.2);
+  border: 1px solid rgba(108,99,255,0.4);
+  color: #B39DDB;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.online-error {
+  text-align: center;
+  color: #aaa;
+  line-height: 1.8;
+}
