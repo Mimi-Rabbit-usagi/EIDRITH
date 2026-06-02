@@ -105,17 +105,30 @@ export default function Profile() {
   };
 
   const submitCustomEmoji = () => {
-    const segments = [...new Intl.Segmenter().segment(customEmojiInput.trim())];
-    if (segments.length === 0) {
+    const val = customEmojiInput.trim();
+    if (!val) {
       setCustomEmojiError('絵文字を入力してください');
       return;
     }
-    if (segments.length > 1) {
-      setCustomEmojiError('1つだけ入力してください');
-      return;
+
+    let char = val;
+    try {
+      const segs = [...new Intl.Segmenter().segment(val)];
+      if (segs.length > 1) {
+        setCustomEmojiError('1つだけ入力してください');
+        return;
+      }
+      char = segs[0].segment;
+    } catch {
+      // Intl.Segmenter 非対応ブラウザ: スプレッドでコードポイント分割
+      const pts = [...val];
+      if (pts.length > 6) {
+        setCustomEmojiError('1つだけ入力してください');
+        return;
+      }
+      char = val;
     }
-    const char = segments[0].segment;
-    // 通常の文字（半角英数・ひらがな等）を弾く
+
     if (/^[a-zA-Z0-9\s]$/.test(char)) {
       setCustomEmojiError('絵文字を入力してください');
       return;
@@ -148,38 +161,6 @@ export default function Profile() {
             <div className="profile-avatar">{data.avatarEmoji || '♟'}</div>
             <div className="profile-avatar-edit-hint">変更</div>
           </div>
-
-          {/* 絵文字ピッカー */}
-          {showAvatarPicker && (
-            <div className="profile-avatar-picker">
-              {AVATAR_EMOJIS.map(e => (
-                <button
-                  key={e}
-                  className={`avatar-emoji-btn ${data.avatarEmoji === e ? 'avatar-emoji-active' : ''}`}
-                  onClick={() => saveAvatar(e)}
-                >
-                  {e}
-                </button>
-              ))}
-              {data.avatarEmoji && (
-                <button className="avatar-emoji-reset" onClick={() => saveAvatar('')}>
-                  リセット
-                </button>
-              )}
-              <div className="avatar-custom-input-row">
-                <input
-                  className="avatar-custom-input"
-                  type="text"
-                  placeholder="好きな絵文字を入力"
-                  value={customEmojiInput}
-                  onChange={e => { setCustomEmojiInput(e.target.value); setCustomEmojiError(''); }}
-                  maxLength={4}
-                />
-                <button className="avatar-custom-submit" onClick={submitCustomEmoji}>追加</button>
-              </div>
-              {customEmojiError && <p className="avatar-custom-error">{customEmojiError}</p>}
-            </div>
-          )}
 
           <div className="profile-hero-body">
             {/* 表示名（ログイン状況にかかわらず常に編集可能） */}
@@ -220,6 +201,39 @@ export default function Profile() {
               </button>
             )}
           </div>
+
+          {/* 絵文字ピッカー（ヒーロー下部に全幅で表示） */}
+          {showAvatarPicker && (
+            <div className="profile-avatar-picker">
+              {AVATAR_EMOJIS.map(e => (
+                <button
+                  key={e}
+                  className={`avatar-emoji-btn ${data.avatarEmoji === e ? 'avatar-emoji-active' : ''}`}
+                  onClick={() => saveAvatar(e)}
+                >
+                  {e}
+                </button>
+              ))}
+              {data.avatarEmoji && (
+                <button className="avatar-emoji-reset" onClick={() => saveAvatar('')}>
+                  リセット
+                </button>
+              )}
+              <div className="avatar-custom-input-row">
+                <input
+                  className="avatar-custom-input"
+                  type="text"
+                  placeholder="好きな絵文字を入力"
+                  value={customEmojiInput}
+                  onChange={e => { setCustomEmojiInput(e.target.value); setCustomEmojiError(''); }}
+                  onKeyDown={e => e.key === 'Enter' && submitCustomEmoji()}
+                  maxLength={12}
+                />
+                <button className="avatar-custom-submit" onClick={submitCustomEmoji}>追加</button>
+              </div>
+              {customEmojiError && <p className="avatar-custom-error">{customEmojiError}</p>}
+            </div>
+          )}
         </section>
 
         {/* メインスタッツ */}

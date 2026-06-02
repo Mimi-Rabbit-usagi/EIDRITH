@@ -3961,6 +3961,7 @@ body {
 .profile-hero {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 20px;
   background: #13131d;
   border: 1px solid rgba(255,255,255,0.07);
@@ -4342,6 +4343,9 @@ body {
   transition: opacity 0.15s;
 }
 .profile-avatar-wrap:hover .profile-avatar-edit-hint { opacity: 1; }
+@media (hover: none) {
+  .profile-avatar-edit-hint { opacity: 1; }
+}
 
 .profile-avatar-picker {
   display: flex;
@@ -4351,9 +4355,8 @@ body {
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 12px;
   padding: 12px;
-  margin-bottom: 8px;
   width: 100%;
-  max-width: 320px;
+  margin-top: 4px;
 }
 .avatar-emoji-btn {
   font-size: 1.6rem;
@@ -4385,31 +4388,33 @@ body {
 
 .avatar-custom-input-row {
   display: flex;
+  flex-direction: column;
   gap: 6px;
   margin-top: 8px;
   width: 100%;
 }
 .avatar-custom-input {
-  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
   color: #fff;
   font-size: 1rem;
-  padding: 4px 8px;
+  padding: 6px 10px;
   outline: none;
 }
 .avatar-custom-input:focus { border-color: var(--gold); }
 .avatar-custom-submit {
+  width: 100%;
   background: var(--gold);
   color: #1a1a1a;
   border: none;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  padding: 4px 10px;
+  padding: 8px 0;
   cursor: pointer;
-  white-space: nowrap;
 }
 .avatar-custom-submit:hover { opacity: 0.85; }
 .avatar-custom-error {
