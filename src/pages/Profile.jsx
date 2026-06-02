@@ -145,18 +145,7 @@ export default function Profile() {
         <section className="profile-hero">
           {/* アバター（クリックで絵文字ピッカー） */}
           <div className="profile-avatar-wrap" onClick={() => setShowAvatarPicker(p => !p)}>
-            {data.avatarEmoji ? (
-              <div className="profile-avatar">{data.avatarEmoji}</div>
-            ) : user?.user_metadata?.avatar_url ? (
-              <img
-                className="profile-avatar profile-avatar--google"
-                src={user.user_metadata.avatar_url}
-                alt=""
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="profile-avatar">♟</div>
-            )}
+            <div className="profile-avatar">{data.avatarEmoji || '♟'}</div>
             <div className="profile-avatar-edit-hint">変更</div>
           </div>
 

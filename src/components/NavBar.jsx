@@ -15,7 +15,6 @@ export default function NavBar() {
 
   const avatarEmoji  = localStorage.getItem('chess-avatar-emoji') || '';
   const displayName  = localStorage.getItem('chess-player-name') || user?.user_metadata?.full_name?.split(' ')[0] || 'あなた';
-  const avatarUrl    = !avatarEmoji ? user?.user_metadata?.avatar_url : null;
 
   return (
     <nav className="navbar">
@@ -42,12 +41,7 @@ export default function NavBar() {
         <div className="navbar-auth">
           {user ? (
             <div className="navbar-user">
-              {avatarEmoji
-                ? <div className="navbar-avatar-emoji">{avatarEmoji}</div>
-                : avatarUrl
-                  ? <img className="navbar-avatar" src={avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
-                  : <div className="navbar-avatar-placeholder">{displayName[0]?.toUpperCase() ?? '?'}</div>
-              }
+              <div className="navbar-avatar-emoji">{avatarEmoji || '♟'}</div>
               <span className="navbar-user-name">{displayName}</span>
               <button className="navbar-signout-btn" onClick={signOut} title="ログアウト">
                 ↩
