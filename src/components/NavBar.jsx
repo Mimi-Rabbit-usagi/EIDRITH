@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const NAV_LINKS = [
   { path: '/play',    label: '対局',  icon: '♟' },
@@ -9,6 +10,10 @@ const NAV_LINKS = [
 
 export default function NavBar() {
   const { pathname } = useLocation();
+  const { user, loading, signInWithGoogle, signOut } = useAuth();
+
+  const avatarUrl  = user?.user_metadata?.avatar_url;
+  const displayName = user?.user_metadata?.full_name ?? user?.email ?? '';
 
   return (
     <nav className="navbar">
@@ -29,6 +34,29 @@ export default function NavBar() {
           </Link>
         ))}
       </div>
+
+      {/* ── 認証エリア ── */}
+      {!loading && (
+        <div className="navbar-auth">
+          {user ? (
+            <div className="navbar-user">
+              {avatarUrl
+                ? <img className="navbar-avatar" src={avatarUrl} alt={displayName} referrerPolicy="no-referrer" />
+                : <div className="navbar-avatar-placeholder">{displayName[0]?.toUpperCase() ?? '?'}</div>
+              }
+              <span className="navbar-user-name">{displayName.split(' ')[0]}</span>
+              <button className="navbar-signout-btn" onClick={signOut} title="ログアウト">
+                ↩
+              </button>
+            </div>
+          ) : (
+            <button className="navbar-login-btn" onClick={signInWithGoogle}>
+              <span>G</span>
+              <span>ログイン</span>
+            </button>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

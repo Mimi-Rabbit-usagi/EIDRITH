@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import { useAuth } from '../hooks/useAuth';
 import { ACHIEVEMENTS } from '../data/achievements';
 import { PUZZLES } from '../data/puzzles';
 
@@ -60,6 +61,7 @@ function ResultDot({ result }) {
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { user, signInWithGoogle, signOut } = useAuth();
   const [data, setData] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
@@ -96,9 +98,26 @@ export default function Profile() {
 
         {/* プレイヤー名 */}
         <section className="profile-hero">
-          <div className="profile-avatar">♟</div>
+          {/* アバター: ログイン済みなら Google 画像、未ログインなら♟ */}
+          {user?.user_metadata?.avatar_url
+            ? <img
+                className="profile-avatar profile-avatar--google"
+                src={user.user_metadata.avatar_url}
+                alt={user.user_metadata.full_name}
+                referrerPolicy="no-referrer"
+              />
+            : <div className="profile-avatar">♟</div>
+          }
           <div className="profile-hero-body">
-            {editingName ? (
+            {/* Googleログイン済みの場合はGoogle名を表示 */}
+            {user ? (
+              <div className="profile-name-row">
+                <h1 className="profile-name">{user.user_metadata?.full_name ?? user.email}</h1>
+                <button className="profile-google-signout" onClick={signOut} title="ログアウト">
+                  ログアウト
+                </button>
+              </div>
+            ) : editingName ? (
               <div className="profile-name-edit">
                 <input
                   className="profile-name-input"
@@ -118,6 +137,13 @@ export default function Profile() {
               </div>
             )}
             <p className="profile-sub">総勝利数 {wins} · 現在 {streak} 連勝</p>
+            {/* 未ログインの場合はログインボタンを表示 */}
+            {!user && (
+              <button className="profile-google-login-btn" onClick={signInWithGoogle}>
+                <span className="profile-google-icon">G</span>
+                Googleでログイン
+              </button>
+            )}
           </div>
         </section>
 

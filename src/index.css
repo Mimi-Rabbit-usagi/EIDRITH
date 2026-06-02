@@ -4194,3 +4194,131 @@ body {
   .profile-diff-row { grid-template-columns: 70px 1fr auto; }
   .profile-diff-bar-wrap { display: none; }
 }
+
+
+/* ── Auth UI ─────────────────────────────────────────────────────────────── */
+.navbar-auth {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #ddd;
+  border-radius: 20px;
+  padding: 5px 14px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.navbar-login-btn span:first-child {
+  font-weight: 700;
+  color: #fff;
+  background: #4285F4;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+.navbar-login-btn:hover { background: rgba(255,255,255,0.15); }
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.navbar-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold);
+}
+.navbar-avatar-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.navbar-user-name {
+  font-size: 0.85rem;
+  color: #ccc;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.navbar-signout-btn {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.navbar-signout-btn:hover { color: #ccc; }
+
+/* Profile Auth */
+.profile-avatar--google {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--gold);
+}
+.profile-google-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  background: rgba(66,133,244,0.15);
+  border: 1px solid rgba(66,133,244,0.4);
+  color: #90CAF9;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+.profile-google-login-btn:hover { background: rgba(66,133,244,0.25); }
+.profile-google-icon {
+  font-weight: 700;
+  color: #fff;
+  background: #4285F4;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+.profile-google-signout {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #888;
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-left: 8px;
+  transition: color 0.15s;
+}
+.profile-google-signout:hover { color: #ccc; }
