@@ -1,6 +1,9 @@
 import { Chess } from 'chess.js';
 import { TECHNIQUES } from '../data/techniques';
 
+// ピン・スキュアー判定用の駒価値テーブル
+const PIECE_VALUES_DETECT = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
+
 // ── ヘルパー: 盤上のキング位置を返す ────────────────────────────────────
 function findKing(board, color) {
   for (let r = 0; r < 8; r++) {
@@ -70,6 +73,176 @@ function getAttackers(board, targetRow, targetCol, attackerColor) {
   }
 
   return attackers;
+}
+
+// ── スライディング方向列挙ヘルパー ────────────────────────────────────────
+function getSlidingDirs(pieceType) {
+  const rookDirs   = [[0,1],[0,-1],[1,0],[-1,0]];
+  const bishopDirs = [[1,1],[1,-1],[-1,1],[-1,-1]];
+  if (pieceType === 'r') return rookDirs;
+  if (pieceType === 'b') return bishopDirs;
+  if (pieceType === 'q') return [...rookDirs, ...bishopDirs];
+  return [];
+}
+
+function canSlideInDir(pieceType, dr, dc) {
+  const isRookDir   = dr === 0 || dc === 0;
+  const isBishopDir = Math.abs(dr) === 1 && Math.abs(dc) === 1;
+  return (
+    (pieceType === 'r' && isRookDir) ||
+    (pieceType === 'b' && isBishopDir) ||
+    (pieceType === 'q' && (isRookDir || isBishopDir))
+  );
+}
+
+// ── ピン検出 ─────────────────────────────────────────────────────────────────
+// 移動した駒→敵駒（ピン対象）→より価値の高い敵駒（またはキング）が一直線になっているか
+export function detectPin(chess, move) {
+  const board = chess.board();
+  const mover = chess.get(move.to);
+  if (!mover) return false;
+
+  const enemyColor = mover.color === 'w' ? 'b' : 'w';
+  const toFile = move.to.charCodeAt(0) - 97;
+  const toRank = 8 - parseInt(move.to[1]);
+
+  for (const [dr, dc] of getSlidingDirs(mover.type)) {
+    let r = toRank + dr, c = toFile + dc;
+    let firstEnemy = null;
+    while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+      const p = board[r][c];
+      if (p) {
+        if (p.color === enemyColor) {
+          if (!firstEnemy) {
+            if (p.type === 'k') break; // キングはピンされない（相手キングへのチェックは別処理）
+            firstEnemy = p;
+          } else {
+            // 2枚目が1枚目より価値が高い（またはキング）→ ピン成立
+            if (PIECE_VALUES_DETECT[p.type] > PIECE_VALUES_DETECT[firstEnemy.type]) {
+              return true;
+            }
+            break;
+          }
+        } else {
+          break; // 味方駒がブロック
+        }
+      }
+      r += dr; c += dc;
+    }
+  }
+  return false;
+}
+
+// ── スキュアー検出 ────────────────────────────────────────────────────────────
+// 移動した駒→高価値の敵駒→さらに別の敵駒 が一直線（ピンの逆）
+export function detectSkewer(chess, move) {
+  const board = chess.board();
+  const mover = chess.get(move.to);
+  if (!mover) return false;
+
+  const enemyColor = mover.color === 'w' ? 'b' : 'w';
+  const toFile = move.to.charCodeAt(0) - 97;
+  const toRank = 8 - parseInt(move.to[1]);
+
+  for (const [dr, dc] of getSlidingDirs(mover.type)) {
+    let r = toRank + dr, c = toFile + dc;
+    let firstEnemy = null;
+    while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+      const p = board[r][c];
+      if (p) {
+        if (p.color === enemyColor) {
+          if (!firstEnemy) {
+            // スキュアーの対象は高価値駒（k/q/r）
+            if (!['k', 'q', 'r'].includes(p.type)) break;
+            firstEnemy = p;
+          } else {
+            // 後ろに何か駒がある → スキュアー成立
+            return true;
+          }
+        } else {
+          break;
+        }
+      }
+      r += dr; c += dc;
+    }
+  }
+  return false;
+}
+
+// ── 発見攻撃検出 ──────────────────────────────────────────────────────────────
+// 駒が動いた空きマス（move.from）の後ろにいた味方スライディング駒が
+// 反対方向の価値ある敵駒を攻撃できるようになった
+export function detectDiscoveredAttack(chess, move) {
+  if (chess.isCheck()) return false; // discoveredCheck が優先
+
+  const board = chess.board();
+  const movedPiece = chess.get(move.to);
+  if (!movedPiece) return false;
+
+  const moverColor = movedPiece.color;
+  const enemyColor = moverColor === 'w' ? 'b' : 'w';
+  const fromFile   = move.from.charCodeAt(0) - 97;
+  const fromRank   = 8 - parseInt(move.from[1]);
+
+  const allDirs = [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+
+  for (const [dr, dc] of allDirs) {
+    // Step1: (dr, dc) 方向に味方スライディング駒を探す
+    let fr = fromRank + dr, fc = fromFile + dc;
+    let allyFound = false;
+    while (fr >= 0 && fr < 8 && fc >= 0 && fc < 8) {
+      const p = board[fr][fc];
+      if (p) {
+        if (p.color === moverColor && canSlideInDir(p.type, dr, dc)) {
+          allyFound = true;
+        }
+        break;
+      }
+      fr += dr; fc += dc;
+    }
+    if (!allyFound) continue;
+
+    // Step2: 反対方向 (-dr, -dc) に価値ある敵駒がいるか
+    let er = fromRank - dr, ec = fromFile - dc;
+    while (er >= 0 && er < 8 && ec >= 0 && ec < 8) {
+      const ep = board[er][ec];
+      if (ep) {
+        if (ep.color === enemyColor && ['q', 'r', 'b', 'n', 'k'].includes(ep.type)) {
+          return true;
+        }
+        break;
+      }
+      er -= dr; ec -= dc;
+    }
+  }
+  return false;
+}
+
+// ── バッテリー検出 ────────────────────────────────────────────────────────────
+// 移動した駒の背後に同方向を攻撃できる味方スライディング駒がいる
+export function detectBattery(chess, move) {
+  const board = chess.board();
+  const mover = chess.get(move.to);
+  if (!mover || !['r', 'q', 'b'].includes(mover.type)) return false;
+
+  const moverColor = mover.color;
+  const toFile = move.to.charCodeAt(0) - 97;
+  const toRank = 8 - parseInt(move.to[1]);
+
+  for (const [dr, dc] of getSlidingDirs(mover.type)) {
+    let r = toRank + dr, c = toFile + dc;
+    while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+      const p = board[r][c];
+      if (p) {
+        if (p.color === moverColor && canSlideInDir(p.type, dr, dc)) {
+          return true; // 同方向を攻撃できる味方スライディング駒 → バッテリー成立
+        }
+        break;
+      }
+      r += dr; c += dc;
+    }
+  }
+  return false;
 }
 
 // ── フォーク検出 ─────────────────────────────────────────────────────────
@@ -243,7 +416,11 @@ export function detectTechnique(chess, move) {
   }
 
   // 戦術
-  if (detectFork(chess, move)) return TECHNIQUES.fork;
+  if (detectFork(chess, move))             return TECHNIQUES.fork;
+  if (detectPin(chess, move))              return TECHNIQUES.pin;
+  if (detectSkewer(chess, move))           return TECHNIQUES.skewer;
+  if (detectDiscoveredAttack(chess, move)) return TECHNIQUES.discoveredAttack;
+  if (detectBattery(chess, move))          return TECHNIQUES.battery;
 
   return null;
 }

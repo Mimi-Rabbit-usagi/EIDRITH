@@ -63,19 +63,19 @@ export const TECHNIQUES = {
     detail: 'ナイトフォークが最も有名で強力。キングとクイーンを同時に狙う「ロイヤルフォーク」は特に決定的。ポーンフォークも侮れない。',
   },
   pin: {
-    id: 'pin', category: 'tactics', detectable: false,
+    id: 'pin', category: 'tactics', detectable: true,
     name: 'ピン（釘付け）', nameEn: 'Pin', icon: '📌', color: '#9C27B0',
     description: '駒が動くと後ろにいるより価値の高い駒が危険になる状態。動けない（アブソリュートピン）か動きたくない（リラティブピン）状態に追い込む。',
     detail: 'アブソリュートピン: 後ろがキングのため絶対に動けない。リラティブピン: 動けるが損をするため動きにくい。ビショップやルーク・クイーンでよく作られる。',
   },
   skewer: {
-    id: 'skewer', category: 'tactics', detectable: false,
+    id: 'skewer', category: 'tactics', detectable: true,
     name: 'スキュアー（串刺し）', nameEn: 'Skewer', icon: '🏹', color: '#FF5722',
     description: 'ピンの逆。価値の高い駒が前にあり、逃げると後ろの駒が取られる。高い駒を逃がすと安い駒が取られる構造。',
     detail: '例: ルークがキングを攻撃→キングが逃げると後ろのクイーンが取られる。ピンと並んで基本的な戦術の一つ。',
   },
   discoveredAttack: {
-    id: 'discoveredAttack', category: 'tactics', detectable: false,
+    id: 'discoveredAttack', category: 'tactics', detectable: true,
     name: '発見攻撃', nameEn: 'Discovered Attack', icon: '🔍', color: '#2196F3',
     description: '駒を動かすことで、後ろにいた別の駒が相手の駒を攻撃できるようになる手。2つの脅威が同時に発生！',
     detail: '動かした駒も別の攻撃をすれば「二重攻撃」になる。相手は2つの脅威を同時に対処できず、必ず損をする。',
@@ -135,7 +135,7 @@ export const TECHNIQUES = {
     detail: 'ドイツ語で「中間の手」の意味。相手が次の手を読んでいるところに予想外の手を挟むことで、局面を有利に変える。',
   },
   battery: {
-    id: 'battery', category: 'tactics', detectable: false,
+    id: 'battery', category: 'tactics', detectable: true,
     name: 'バッテリー（重ね利き）', nameEn: 'Battery', icon: '🔋', color: '#66BB6A',
     description: '同じ方向に2つ以上の遠距離駒（クイーン・ルーク・ビショップ）を並べて威力を倍増させる配置。',
     detail: '例: ルーク2枚を同じファイルに重ねる「二重ルーク」、クイーン+ビショップを同じ対角線に並べる形など。',
