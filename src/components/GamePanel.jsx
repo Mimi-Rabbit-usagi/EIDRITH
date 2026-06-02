@@ -106,10 +106,10 @@ export default function GamePanel({
   capturedPieces, moveHistory, wins,
   difficulty, soundEnabled, technique, techniqueLog, hint,
   currentOpening,
-  playerColor, playerName, clockMode,
-  onDifficultyChange, onNewGame, onShowHistory,
+  gameMode, playerColor, playerName, player2Name, clockMode,
+  onGameModeChange, onDifficultyChange, onNewGame, onShowHistory,
   onToggleSound, onHint, onClearHint, onUndo, onPlayerColorChange, onClockModeChange,
-  onPlayerNameChange, onShowStats, onShowPuzzle, onShowOpening, onShowCustomize,
+  onPlayerNameChange, onPlayer2NameChange, onShowStats, onShowPuzzle, onShowOpening, onShowCustomize,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
   const moveListRef = (el) => { if (el) el.scrollTop = el.scrollHeight; };
@@ -183,13 +183,15 @@ export default function GamePanel({
             ) : (
               <div className={`turn-chip ${currentTurn === 'w' ? 'turn-white' : 'turn-black'}`}>
                 <div className="turn-dot" />
-                <span>{currentTurn === playerColor
-                  ? `${playerName}の番（${playerColor === 'w' ? '白' : '黒'}）`
-                  : `CPUの番（${playerColor === 'w' ? '黒' : '白'}）`
+                <span>{gameMode === 'local'
+                  ? `${currentTurn === 'w' ? `${playerName}（白）` : `${player2Name}（黒）`}の番`
+                  : currentTurn === playerColor
+                    ? `${playerName}の番（${playerColor === 'w' ? '白' : '黒'}）`
+                    : `CPUの番（${playerColor === 'w' ? '黒' : '白'}）`
                 }</span>
               </div>
             )}
-            {currentTurn === playerColor && !isThinking && (
+            {(gameMode === 'local' || currentTurn === playerColor) && !isThinking && (
               <div className="action-btn-row">
                 <button
                   className={`hint-btn ${hint ? 'hint-btn-active' : ''}`}
@@ -200,7 +202,7 @@ export default function GamePanel({
                 <button
                   className="undo-btn"
                   onClick={onUndo}
-                  disabled={moveHistory.length < 2}
+                  disabled={gameMode === 'local' ? moveHistory.length < 1 : moveHistory.length < 2}
                   title="直前の1手を取り消す"
                 >
                   ↩ 待った
@@ -211,7 +213,10 @@ export default function GamePanel({
         ) : (
           <div className="game-over-message">
             {(gameStatus === 'checkmate' || gameStatus === 'timeout') && (
-              <p>{winner === playerColor ? '🎉 あなたの勝ち！' : '😔 CPUの勝ち...'}</p>
+              <p>{gameMode === 'local'
+                ? `🎉 ${winner === 'w' ? `${playerName}（白）` : `${player2Name}（黒）`}の勝ち！`
+                : winner === playerColor ? '🎉 あなたの勝ち！' : '😔 CPUの勝ち...'
+              }</p>
             )}
             {(gameStatus === 'stalemate' || gameStatus === 'draw') && <p>引き分け</p>}
           </div>
@@ -246,12 +251,38 @@ export default function GamePanel({
       {/* 取った駒 */}
       <div className={`captured-section${mobileTab === 'settings' ? ' mobile-hidden' : ''}`}>
         <CapturedPieces pieces={capturedPieces[playerColor]} label={playerName} />
-        <CapturedPieces pieces={capturedPieces[playerColor === 'w' ? 'b' : 'w']} label="CPU" />
+        <CapturedPieces
+          pieces={capturedPieces[playerColor === 'w' ? 'b' : 'w']}
+          label={gameMode === 'local' ? player2Name : 'CPU'}
+        />
       </div>
 
       {/* ── 設定タブ ── */}
-      {/* 難易度 */}
+      {/* 対戦モード */}
       <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
+        <p className="section-title">対戦モード</p>
+        <div className="difficulty-row">
+          <button
+            className={`difficulty-btn ${gameMode === 'cpu' ? 'difficulty-btn-active' : ''}`}
+            style={gameMode === 'cpu' ? { borderColor: '#9B8FA6', color: '#9B8FA6' } : {}}
+            onClick={() => onGameModeChange('cpu')}
+          >
+            <span>🤖</span>
+            <span>CPU対戦</span>
+          </button>
+          <button
+            className={`difficulty-btn ${gameMode === 'local' ? 'difficulty-btn-active' : ''}`}
+            style={gameMode === 'local' ? { borderColor: '#64B5F6', color: '#64B5F6' } : {}}
+            onClick={() => onGameModeChange('local')}
+          >
+            <span>👥</span>
+            <span>2人対戦</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 難易度（CPU対戦のみ） */}
+      <div className={mobileTab === 'game' || gameMode === 'local' ? 'mobile-hidden' : ''}>
         <p className="section-title">難易度</p>
         <div className="difficulty-row">
           {DIFFICULTY_CONFIG.map(d => (
@@ -270,7 +301,7 @@ export default function GamePanel({
 
       {/* プレイヤー名 */}
       <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
-        <p className="section-title">プレイヤー名</p>
+        <p className="section-title">{gameMode === 'local' ? '白プレイヤー名' : 'プレイヤー名'}</p>
         <div className="player-name-row">
           <input
             className="player-name-input"
@@ -285,6 +316,23 @@ export default function GamePanel({
           </button>
         </div>
       </div>
+
+      {/* 黒プレイヤー名（2人対戦のみ） */}
+      {gameMode === 'local' && (
+        <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
+          <p className="section-title">黒プレイヤー名</p>
+          <div className="player-name-row">
+            <input
+              className="player-name-input"
+              type="text"
+              maxLength={16}
+              value={player2Name}
+              onChange={e => onPlayer2NameChange(e.target.value)}
+              placeholder="プレイヤー2"
+            />
+          </div>
+        </div>
+      )}
 
       {/* 持ち時間 */}
       <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
@@ -304,8 +352,8 @@ export default function GamePanel({
         </div>
       </div>
 
-      {/* 手番選択 */}
-      <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
+      {/* 手番選択（CPU対戦のみ） */}
+      <div className={mobileTab === 'game' || gameMode === 'local' ? 'mobile-hidden' : ''}>
         <p className="section-title">手番</p>
         <div className="difficulty-row">
           <button

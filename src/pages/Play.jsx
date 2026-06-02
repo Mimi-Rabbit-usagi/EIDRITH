@@ -69,6 +69,8 @@ export default function Play() {
   const [winCounted, setWinCounted] = useState(false);
   const [difficulty, setDifficulty] = useState('easy');
   const [playerColor, setPlayerColor] = useState('w');
+  const [gameMode, setGameMode] = useState(() => localStorage.getItem('chess-game-mode') || 'cpu');
+  const [player2Name, setPlayer2Name] = useState(() => localStorage.getItem('chess-player2-name') || 'プレイヤー2');
   const [clockMode, setClockMode] = useState('none');
   const [clockTimeout, setClockTimeout] = useState(null);
   const [playerName, setPlayerName] = useState(() => localStorage.getItem('chess-player-name') || 'あなた');
@@ -83,6 +85,11 @@ export default function Play() {
   const handlePlayerNameChange = useCallback((name) => {
     setPlayerName(name);
     localStorage.setItem('chess-player-name', name);
+  }, []);
+
+  const handlePlayer2NameChange = useCallback((name) => {
+    setPlayer2Name(name);
+    localStorage.setItem('chess-player2-name', name);
   }, []);
 
   const activeBoardTheme = BOARD_THEMES.find(t => t.id === gameData.activeBoardTheme) || BOARD_THEMES[0];
@@ -116,7 +123,7 @@ export default function Play() {
     currentOpening,
     positionEval,
     undoMove,
-  } = useChessGame(difficulty, playerColor);
+  } = useChessGame(difficulty, playerColor, gameMode === 'local' ? 'human' : 'cpu');
 
   moveHistoryRef.current = moveHistory;
   techniqueLogRef.current = techniqueLog;
@@ -133,8 +140,10 @@ export default function Play() {
 
   const effectiveGameStatus = clockTimeout !== null ? 'timeout' : gameStatus;
   const effectiveWinner     = clockTimeout !== null ? (clockTimeout === 'w' ? 'b' : 'w') : winner;
-  const playerWon = (gameStatus === 'checkmate' && winner === playerColor)
-                 || (clockTimeout !== null && clockTimeout !== playerColor);
+  const playerWon = gameMode === 'local'
+    ? (gameStatus === 'checkmate' || clockTimeout !== null)
+    : (gameStatus === 'checkmate' && winner === playerColor)
+      || (clockTimeout !== null && clockTimeout !== playerColor);
 
   useEffect(() => {
     const isOver = gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'draw' || clockTimeout !== null;
@@ -183,10 +192,11 @@ export default function Play() {
 
     const history = moveHistoryRef.current;
     const techLog = techniqueLogRef.current;
+    const isLocalMode = gameMode === 'local';
     const entry = {
       id: Date.now(),
       date: new Date().toISOString(),
-      difficulty,
+      difficulty: isLocalMode ? 'local' : difficulty,
       result,
       moveCount: history.length,
       moves: history.map(m => m.san),
@@ -198,6 +208,9 @@ export default function Play() {
       saveLogs(updated);
       return updated;
     });
+
+    // ローカル2人対戦ではCPU用のwin/streak/実績カウントをスキップ
+    if (isLocalMode) return;
 
     setGameData(prev => {
       const isWin = result === 'win';
@@ -249,7 +262,7 @@ export default function Play() {
       return newData;
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStatus, winner, winCounted, clockTimeout]);
+  }, [gameStatus, winner, winCounted, clockTimeout, gameMode]);
 
   const handleNewGame = useCallback(() => {
     resetGame();
@@ -261,6 +274,17 @@ export default function Play() {
 
   const handleDifficultyChange = useCallback((d) => {
     setDifficulty(d);
+    resetGame();
+    resetClock();
+    setClockTimeout(null);
+    setWinCounted(false);
+    setShowSummary(false);
+  }, [resetGame, resetClock]);
+
+  const handleGameModeChange = useCallback((mode) => {
+    setGameMode(mode);
+    localStorage.setItem('chess-game-mode', mode);
+    if (mode === 'local') setPlayerColor('w'); // 2人対戦では白を下に固定
     resetGame();
     resetClock();
     setClockTimeout(null);
@@ -330,9 +354,11 @@ export default function Play() {
         <div className="board-section">
           <div className="opponent-label">
             <div className={`player-chip player-chip-${playerColor === 'w' ? 'black' : 'white'}`}>
-              CPU（{playerColor === 'w' ? '黒' : '白'}）
+              {gameMode === 'local'
+                ? `${player2Name}（${playerColor === 'w' ? '黒' : '白'}）`
+                : `CPU（${playerColor === 'w' ? '黒' : '白'}）`}
             </div>
-            {isThinking && <div className="thinking-text">考え中...</div>}
+            {gameMode === 'cpu' && isThinking && <div className="thinking-text">考え中...</div>}
             <ChessClock
               time={cpuTime}
               isActive={currentTurn !== playerColor && !isChessOver && clockTimeout === null}
@@ -349,7 +375,7 @@ export default function Play() {
             boardTheme={activeBoardTheme}
             pieceSet={gameData.activePieceSet}
             hint={hint}
-            flipped={playerColor === 'b'}
+            flipped={gameMode === 'cpu' && playerColor === 'b'}
             onSquareClick={handleSquareClick}
             onDrop={handleDrop}
             onCancelDrag={clearSelection}
@@ -380,11 +406,15 @@ export default function Play() {
           techniqueLog={techniqueLog}
           hint={hint}
           currentOpening={currentOpening}
+          gameMode={gameMode}
           playerColor={playerColor}
           playerName={playerName}
+          player2Name={player2Name}
           clockMode={clockMode}
+          onGameModeChange={handleGameModeChange}
           onDifficultyChange={handleDifficultyChange}
           onPlayerNameChange={handlePlayerNameChange}
+          onPlayer2NameChange={handlePlayer2NameChange}
           onShowStats={() => setShowStats(true)}
           onClockModeChange={handleClockModeChange}
           onPlayerColorChange={handlePlayerColorChange}
@@ -409,6 +439,8 @@ export default function Play() {
           techniqueLog={techniqueLog}
           capturedPieces={capturedPieces}
           difficulty={difficulty}
+          gameMode={gameMode}
+          player2Name={player2Name}
           onNewGame={handleNewGame}
           onClose={() => setShowSummary(false)}
           onReplay={handleReplayCurrentGame}

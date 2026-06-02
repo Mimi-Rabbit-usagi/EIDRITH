@@ -106,7 +106,7 @@ function getAdvice({ gameStatus, winner, playerColor, moveHistory, techniqueLog,
   return 'ヒント機能を活用しながら対局を重ねて、感覚を磨いていきましょう！';
 }
 
-const RESULT_CONFIG = {
+const BASE_RESULT_CONFIG = {
   win:  {
     emoji: '🏆',
     title: 'あなたの勝ち！',
@@ -132,7 +132,7 @@ const RESULT_CONFIG = {
 
 export default function GameSummary({
   gameStatus, winner, playerColor = 'w', moveHistory, techniqueLog,
-  capturedPieces, difficulty, onNewGame, onClose, onReplay,
+  capturedPieces, difficulty, gameMode, player2Name, onNewGame, onClose, onReplay,
 }) {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const analysis = useMemo(() => {
@@ -140,16 +140,34 @@ export default function GameSummary({
     return computeAnalysis(moveHistory.map(m => m.san), playerColor);
   }, [showAnalysis, moveHistory, playerColor]);
 
+  const isLocal = gameMode === 'local';
   const cpuColor = playerColor === 'w' ? 'b' : 'w';
   const result = (gameStatus === 'checkmate' || gameStatus === 'timeout')
     ? (winner === playerColor ? 'win' : 'loss') : 'draw';
+
+  // 2人対戦では勝者名を表示（playerColor は常に 'w' に固定される）
+  const localWinnerName = isLocal && winner
+    ? (winner === 'w' ? `${playerColor === 'w' ? 'あなた' : (player2Name ?? 'プレイヤー2')}（白）`
+                      : `${playerColor === 'b' ? 'あなた' : (player2Name ?? 'プレイヤー2')}（黒）`)
+    : null;
+
+  const RESULT_CONFIG = {
+    ...BASE_RESULT_CONFIG,
+    ...(isLocal && winner ? {
+      win:  { ...BASE_RESULT_CONFIG.win,  title: `${localWinnerName}の勝ち！` },
+      loss: { ...BASE_RESULT_CONFIG.win,  title: `${localWinnerName}の勝ち！` },
+    } : {}),
+  };
+
   const cfg = RESULT_CONFIG[result];
 
   const endLabel = { checkmate: 'チェックメイト', stalemate: 'ステイルメイト', draw: '引き分け', timeout: '時間切れ' }[gameStatus] || '';
   const moveCount = moveHistory.length;
   const lostMaterial   = calcMaterial(capturedPieces[cpuColor]);
   const gainedMaterial = calcMaterial(capturedPieces[playerColor]);
-  const advice = getAdvice({ gameStatus, winner, playerColor, moveHistory, techniqueLog, capturedPieces, difficulty });
+  const advice = isLocal
+    ? `${moveCount}手の対局でした。棋譜を振り返って次の対局に活かしましょう！`
+    : getAdvice({ gameStatus, winner, playerColor, moveHistory, techniqueLog, capturedPieces, difficulty });
 
   return (
     <div className="summary-overlay" onClick={onClose}>

@@ -13,7 +13,7 @@ function buildGameStatus(chess) {
 }
 
 
-export function useChessGame(difficulty = 'normal', playerColor = 'w') {
+export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 'cpu') {
   const chessRef = useRef(new Chess());
 
   // fen changes on every move, driving re-renders
@@ -37,8 +37,10 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
   // プレイヤーカラーのref（再レンダーのたびに更新されるので常に最新値を参照できる）
   const playerColorRef = useRef(playerColor);
   const cpuColorRef = useRef(playerColor === 'w' ? 'b' : 'w');
+  const vsModeRef = useRef(vsMode);
   playerColorRef.current = playerColor;
   cpuColorRef.current = playerColor === 'w' ? 'b' : 'w';
+  vsModeRef.current = vsMode;
 
   // Snapshot of derived state
   const gameStatus = buildGameStatus(chess);
@@ -88,7 +90,11 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
 
   const handleSquareClick = useCallback((square) => {
     const c = chessRef.current;
-    if (c.turn() !== playerColorRef.current || isThinking || c.isGameOver()) return;
+    const isHuman = vsModeRef.current === 'human';
+    const activeColor = isHuman ? c.turn() : playerColorRef.current;
+
+    if (isThinking || c.isGameOver()) return;
+    if (!isHuman && c.turn() !== playerColorRef.current) return;
 
     const piece = c.get(square);
 
@@ -120,13 +126,13 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
           setSelectedSquare(null);
           setLegalMoves([]);
           setHint(null);
-          triggerAI();
+          if (!isHuman) triggerAI();
           return;
         }
       }
 
       // Re-select a different own piece
-      if (piece && piece.color === playerColorRef.current) {
+      if (piece && piece.color === activeColor) {
         setSelectedSquare(square);
         setLegalMoves(c.moves({ square, verbose: true }).map(m => m.to));
         return;
@@ -139,7 +145,7 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
     }
 
     // Select an own piece
-    if (piece && piece.color === playerColorRef.current) {
+    if (piece && piece.color === activeColor) {
       setSelectedSquare(square);
       setLegalMoves(c.moves({ square, verbose: true }).map(m => m.to));
     }
@@ -147,7 +153,8 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
 
   const requestHint = useCallback(() => {
     const c = chessRef.current;
-    if (c.turn() !== playerColorRef.current || c.isGameOver() || isThinking) return;
+    const isHuman = vsModeRef.current === 'human';
+    if ((!isHuman && c.turn() !== playerColorRef.current) || c.isGameOver() || isThinking) return;
 
     // normal強度（depth=2）でベスト手を取得
     const hintSan = getBestMove(c.fen(), 'normal');
@@ -168,10 +175,14 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
   // ドラッグ&ドロップ用: from→to を直接実行
   const handleDrop = useCallback((from, to) => {
     const c = chessRef.current;
-    if (c.turn() !== playerColorRef.current || isThinking || c.isGameOver()) return;
+    const isHuman = vsModeRef.current === 'human';
+    const activeColor = isHuman ? c.turn() : playerColorRef.current;
+
+    if (isThinking || c.isGameOver()) return;
+    if (!isHuman && c.turn() !== playerColorRef.current) return;
 
     const piece = c.get(from);
-    if (!piece || piece.color !== playerColorRef.current) { clearSelection(); return; }
+    if (!piece || piece.color !== activeColor) { clearSelection(); return; }
 
     const moves = c.moves({ square: from, verbose: true });
     if (!moves.some(m => m.to === to)) { clearSelection(); return; }
@@ -198,7 +209,7 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
       setSelectedSquare(null);
       setLegalMoves([]);
       setHint(null);
-      triggerAI();
+      if (vsModeRef.current !== 'human') triggerAI();
     }
   }, [isThinking, clearSelection, syncFen, showTechnique, triggerAI]);
 
@@ -219,7 +230,7 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
       syncFen();
       setPendingPromotion(null);
       setHint(null);
-      triggerAI();
+      if (vsModeRef.current !== 'human') triggerAI();
     }
   }, [pendingPromotion, syncFen, showTechnique, triggerAI]);
 
@@ -244,11 +255,11 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
   // 新しいゲーム開始時、またはplayerColorが変わったとき：CPUが先手なら即発動
   useEffect(() => {
     const c = chessRef.current;
-    if (!c.isGameOver() && c.turn() === cpuColorRef.current) {
+    if (vsModeRef.current !== 'human' && !c.isGameOver() && c.turn() === cpuColorRef.current) {
       triggerAI();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameResetKey, playerColor]);
+  }, [gameResetKey, playerColor, vsMode]);
 
   // 戦術の「NEW」バッジを8秒後に自動クリア
   useEffect(() => {
@@ -260,17 +271,25 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w') {
   const closeTechnique = useCallback(() => setTechnique(null), []);
   const clearHint = useCallback(() => setHint(null), []);
 
-  // 1手前（自分の手）に戻す：CPUの手→自分の手 の順でundo
+  // 1手前に戻す：CPUモードは2手undo、2人対戦は1手undo
   const undoMove = useCallback(() => {
     const c = chessRef.current;
-    // 白の番・2手以上指されている・AI待機中でない、の場合のみ許可
-    if (c.turn() !== playerColorRef.current || c.history().length < 2 || isThinking) return;
+    const isHuman = vsModeRef.current === 'human';
 
-    clearTimeout(aiTimerRef.current);
-    setIsThinking(false);
-
-    c.undo(); // 黒（CPU）の手を取り消す
-    c.undo(); // 白（自分）の手を取り消す
+    if (isHuman) {
+      // 2人対戦：1手undo、制限なし
+      if (c.history().length < 1 || isThinking) return;
+      clearTimeout(aiTimerRef.current);
+      setIsThinking(false);
+      c.undo();
+    } else {
+      // CPUモード：プレイヤーの番・2手以上ある場合のみ許可
+      if (c.turn() !== playerColorRef.current || c.history().length < 2 || isThinking) return;
+      clearTimeout(aiTimerRef.current);
+      setIsThinking(false);
+      c.undo(); // 黒（CPU）の手を取り消す
+      c.undo(); // 白（自分）の手を取り消す
+    }
 
     // 取った駒リストを棋譜から再計算
     const history = c.history({ verbose: true });
