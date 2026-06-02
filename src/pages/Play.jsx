@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { useChessGame } from '../hooks/useChessGame';
 import { useChessClock } from '../hooks/useChessClock';
@@ -13,7 +14,6 @@ import ConfettiEffect from '../components/ConfettiEffect';
 import GamePanel from '../components/GamePanel';
 import UnlockToast from '../components/UnlockToast';
 import GameHistory from '../components/GameHistory';
-import ReplayModal from '../components/ReplayModal';
 import StatsModal from '../components/StatsModal';
 import PuzzleModal from '../components/PuzzleModal';
 import OpeningModal from '../components/OpeningModal';
@@ -61,6 +61,7 @@ function saveLogs(logs) {
 
 // ── Play Page ─────────────────────────────────────────────────────────────────
 export default function Play() {
+  const navigate = useNavigate();
   const [gameData, setGameData] = useState(loadGameData);
   const [logs, setLogs] = useState(loadLogs);
   const [pendingUnlock, setPendingUnlock] = useState(null);
@@ -80,7 +81,6 @@ export default function Play() {
   const [showPuzzle, setShowPuzzle] = useState(false);
   const [showOpening, setShowOpening] = useState(false);
   const [showCustomize, setShowCustomize] = useState(false);
-  const [replayGame, setReplayGame] = useState(null);
 
   const handlePlayerNameChange = useCallback((name) => {
     setPlayerName(name);
@@ -338,13 +338,17 @@ export default function Play() {
   const handleReplayCurrentGame = useCallback(() => {
     const moves = moveHistoryRef.current.map(m => m.san);
     setShowSummary(false);
-    setReplayGame({ moves, moveCount: moves.length });
-  }, []);
+    navigate('/review', {
+      state: { game: { moves, moveCount: moves.length }, boardThemeId: gameData.activeBoardTheme },
+    });
+  }, [navigate, gameData.activeBoardTheme]);
 
   const handleReplayHistorical = useCallback((game) => {
     setShowHistory(false);
-    setReplayGame(game);
-  }, []);
+    navigate('/review', {
+      state: { game, boardThemeId: gameData.activeBoardTheme },
+    });
+  }, [navigate, gameData.activeBoardTheme]);
 
   return (
     <div className="app-container">
@@ -502,14 +506,6 @@ export default function Play() {
       )}
 
       {playerWon && <ConfettiEffect />}
-
-      {replayGame && (
-        <ReplayModal
-          game={replayGame}
-          boardTheme={activeBoardTheme}
-          onClose={() => setReplayGame(null)}
-        />
-      )}
     </div>
   );
 }

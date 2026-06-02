@@ -5,6 +5,7 @@ import Learn from './pages/Learn';
 import Puzzles from './pages/Puzzles';
 import Profile from './pages/Profile';
 import LessonPlayer from './pages/LessonPlayer';
+import Review from './pages/Review';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
       <Route path="/learn/:lessonId" element={<LessonPlayer />} />
       <Route path="/puzzles" element={<Puzzles />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/review" element={<Review />} />
     </Routes>
   );
 }
