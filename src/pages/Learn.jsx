@@ -1,19 +1,26 @@
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 
-const LESSONS = [
-  { id: 'pieces',    icon: '♟', title: '駒の動き',         desc: 'ポーン・ナイト・ビショップ・ルーク・クイーン・キングの動き方',   available: true },
-  { id: 'check',     icon: '⚠️', title: 'チェックとチェックメイト', desc: '王手のかけ方、逃げ方、詰み方を理解しよう',                available: true },
-  { id: 'fork',      icon: '🍴', title: 'フォーク（両取り）',   desc: '1つの駒で相手の2駒を同時に攻撃する強力な戦術',           available: true },
-  { id: 'pin',       icon: '📌', title: 'ピン',             desc: '相手の駒を動けなくする戦術テクニック',                    available: true },
-  { id: 'skewer',    icon: '🗡️', title: 'スキュア',          desc: '価値の高い駒を攻撃し、その後ろの駒を取る',                available: true },
-  { id: 'opening',   icon: '🎯', title: '序盤の考え方',       desc: 'センターコントロール・駒の展開・キャスリング',               done: false },
-  { id: 'endgame',   icon: '🏁', title: 'エンドゲーム入門',    desc: 'キングの活用・ポーン昇格の狙い方',                       done: false },
-  { id: 'strategy',  icon: '🧠', title: '中盤の戦略',         desc: 'コマの協力・弱点マスの狙い方',                          done: false },
+// hasContent: true = レッスンデータが存在する（コンテンツあり）
+// hasContent: false = 近日公開
+const LESSON_DEFS = [
+  { id: 'pieces',   icon: '♟',  title: '駒の動き',              desc: 'ポーン・ナイト・ビショップ・ルーク・クイーン・キングの動き方', hasContent: true },
+  { id: 'check',    icon: '⚠️', title: 'チェックとチェックメイト', desc: '王手のかけ方、逃げ方、詰み方を理解しよう',                 hasContent: true },
+  { id: 'fork',     icon: '🍴', title: 'フォーク（両取り）',       desc: '1つの駒で相手の2駒を同時に攻撃する強力な戦術',            hasContent: true },
+  { id: 'pin',      icon: '📌', title: 'ピン',                  desc: '相手の駒を動けなくする戦術テクニック',                    hasContent: true },
+  { id: 'skewer',   icon: '🗡️', title: 'スキュア',               desc: '価値の高い駒を攻撃し、その後ろの駒を取る',               hasContent: true },
+  { id: 'opening',  icon: '🎯', title: '序盤の考え方',            desc: 'センターコントロール・駒の展開・キャスリング',              hasContent: false },
+  { id: 'endgame',  icon: '🏁', title: 'エンドゲーム入門',        desc: 'キングの活用・ポーン昇格の狙い方',                       hasContent: false },
+  { id: 'strategy', icon: '🧠', title: '中盤の戦略',             desc: 'コマの協力・弱点マスの狙い方',                          hasContent: false },
 ];
 
 export default function Learn() {
   const navigate = useNavigate();
+
+  // progressは1回だけ読み込む
+  const progress = (() => {
+    try { return JSON.parse(localStorage.getItem('chess-lesson-progress') || '[]'); } catch { return []; }
+  })();
 
   return (
     <div className="learn-container">
@@ -32,13 +39,13 @@ export default function Learn() {
 
       {/* レッスン一覧 */}
       <section className="learn-grid">
-        {LESSONS.map((lesson, index) => {
-          const progress = (() => {
-            try { return JSON.parse(localStorage.getItem('chess-lesson-progress') || '[]'); } catch { return []; }
-          })();
+        {LESSON_DEFS.map((lesson, index) => {
           const done = progress.includes(lesson.id);
+          // 最初のレッスンは常にアンロック。それ以降は前のレッスンが完了済みでアンロック
+          const unlocked = lesson.hasContent && (index === 0 || progress.includes(LESSON_DEFS[index - 1].id));
 
-          if (lesson.available) {
+          // ── アンロック済み ──────────────────────────────────────────────
+          if (unlocked) {
             return (
               <div
                 key={lesson.id}
@@ -59,6 +66,25 @@ export default function Learn() {
             );
           }
 
+          // ── コンテンツあり・ロック中（前のレッスン未完了）─────────────────
+          if (lesson.hasContent) {
+            const prevLesson = LESSON_DEFS[index - 1];
+            return (
+              <div key={lesson.id} className="learn-card learn-card--locked">
+                <div className="learn-card-number">#{index + 1}</div>
+                <div className="learn-card-icon">{lesson.icon}</div>
+                <div className="learn-card-body">
+                  <div className="learn-card-title">{lesson.title}</div>
+                  <p className="learn-card-desc">{lesson.desc}</p>
+                </div>
+                <div className="learn-card-badge learn-card-badge--locked">
+                  🔒 {prevLesson.title}を先に
+                </div>
+              </div>
+            );
+          }
+
+          // ── 近日公開 ───────────────────────────────────────────────────
           return (
             <div key={lesson.id} className="learn-card learn-card--locked">
               <div className="learn-card-number">#{index + 1}</div>

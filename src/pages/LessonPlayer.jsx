@@ -24,7 +24,7 @@ function saveProgress(lessonId) {
 }
 
 // ── 説明ステップ ──────────────────────────────────────────────────────────────
-function ExplainStep({ step, onNext, stepNum, totalSteps }) {
+function ExplainStep({ step, onNext, nextType, stepNum, totalSteps }) {
   return (
     <div className="lesson-step-wrap">
       <div className="lesson-explain-card">
@@ -63,7 +63,7 @@ function ExplainStep({ step, onNext, stepNum, totalSteps }) {
       </div>
 
       <button className="lesson-next-btn" onClick={onNext}>
-        実際に動かしてみる →
+        {nextType === 'quiz' ? '実際に動かしてみる →' : '次へ →'}
       </button>
     </div>
   );
@@ -229,6 +229,7 @@ export default function LessonPlayer() {
   }
 
   const step = lesson.steps[stepIdx];
+  const nextStep = lesson.steps[stepIdx + 1];
   const progress = ((stepIdx) / (lesson.steps.length - 1)) * 100;
 
   const handleNext = () => {
@@ -265,6 +266,7 @@ export default function LessonPlayer() {
           <ExplainStep
             step={step}
             onNext={handleNext}
+            nextType={nextStep?.type}
             stepNum={stepIdx}
             totalSteps={lesson.steps.length}
           />
