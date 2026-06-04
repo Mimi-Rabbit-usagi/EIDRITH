@@ -3239,7 +3239,7 @@ body {
   pointer-events: none;
   z-index: 0;
   filter: blur(120px);
-  opacity: 0.15;
+  opacity: 0.18;
 }
 .home-bg-glow--left  { background: #6c63ff; left: -200px; top: 10%; }
 .home-bg-glow--right { background: #c89b3c; right: -200px; bottom: 10%; }
@@ -3343,21 +3343,34 @@ body {
   width: 3px;
   background: var(--card-accent, #6c63ff);
   border-radius: 3px 0 0 3px;
-  opacity: 0;
+  opacity: 0.35;
   transition: opacity 0.18s ease;
 }
 .home-mode-card:hover {
   transform: translateY(-2px);
   border-color: rgba(255,255,255,0.15);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.4),
+    0 0 0 1px color-mix(in srgb, var(--card-accent, #6c63ff) 30%, transparent);
 }
 .home-mode-card:hover::before { opacity: 1; }
 
 .home-mode-icon {
-  font-size: 2rem;
+  font-size: 1.6rem;
   flex-shrink: 0;
-  width: 48px;
-  text-align: center;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--card-accent, #6c63ff) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--card-accent, #6c63ff) 30%, transparent);
+  transition: background 0.18s ease;
+}
+
+.home-mode-card:hover .home-mode-icon {
+  background: color-mix(in srgb, var(--card-accent, #6c63ff) 25%, transparent);
 }
 
 .home-mode-body { flex: 1; }
@@ -3384,13 +3397,21 @@ body {
 }
 
 .home-mode-arrow {
-  font-size: 1.2rem;
-  color: rgba(255,255,255,0.25);
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.2);
   flex-shrink: 0;
   transition: color 0.18s ease, transform 0.18s ease;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 .home-mode-card:hover .home-mode-arrow {
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.8);
+  border-color: rgba(255,255,255,0.25);
   transform: translateX(3px);
 }
 
@@ -3400,7 +3421,7 @@ body {
   align-items: center;
   gap: 0;
   background: #13131d;
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 14px;
   padding: 18px 32px;
   margin-top: 28px;
@@ -3408,6 +3429,9 @@ body {
   max-width: 560px;
   position: relative;
   z-index: 1;
+  box-shadow:
+    0 4px 24px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .home-stat {
