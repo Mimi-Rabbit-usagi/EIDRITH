@@ -16,7 +16,7 @@ body {
 
 /* ── CSS Variables ──────────────────────────────────────────────────────── */
 :root {
-  --sq: clamp(42px, calc((100vw - 400px) / 8), 72px);
+  --sq: clamp(42px, calc((100vw - 440px) / 8), 72px);
   --panel-bg: #1a1a2e;
   --panel-border: rgba(255,255,255,0.08);
   --accent: #6c63ff;
@@ -292,8 +292,8 @@ body {
 
 /* ── Game Panel ─────────────────────────────────────────────────────────── */
 .game-panel {
-  width: 260px;
-  min-width: 220px;
+  width: 300px;
+  min-width: 240px;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: 16px;
@@ -799,13 +799,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 7px 4px;
+  gap: 4px;
+  padding: 9px 6px;
   border-radius: 8px;
   border: 1.5px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.04);
   color: rgba(255,255,255,0.5);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1099,11 +1099,15 @@ body {
 
 /* ── Panel Buttons ──────────────────────────────────────────────────────── */
 .panel-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
 }
 
-.panel-buttons .new-game-btn { flex: 1; }
+.panel-buttons .new-game-btn {
+  grid-column: 1 / -1;
+  white-space: nowrap;
+}
 
 .history-btn {
   padding: 10px 14px;
