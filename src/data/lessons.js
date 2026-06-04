@@ -301,7 +301,8 @@ export const LESSONS = {
         // 白: Nc3, Kf1  黒: Qe7, Kf4 (Qe7はKf1を攻撃しない)
         fen: '8/4q3/8/8/5k2/2N5/8/5K2 w - - 0 1',
         highlight: 'c3',
-        successCondition: 'anyMove',
+        successCondition: 'specificTo',
+        targetSquare: 'd5',
       },
       {
         type: 'complete',
@@ -343,7 +344,8 @@ export const LESSONS = {
         // Bb3→a4: a4-c6-e8の斜めラインでNc6をKe8にピン
         fen: '4k3/8/2n5/8/8/1B6/8/4K3 w - - 0 1',
         highlight: 'b3',
-        successCondition: 'anyMove',
+        successCondition: 'specificTo',
+        targetSquare: 'a4',
       },
       {
         type: 'complete',
@@ -385,7 +387,8 @@ export const LESSONS = {
         // Ra1→a5: 5段目ラインでKe5(チェック)とQh5が一直線 → キング逃げた後Qh5を取る
         fen: '8/8/8/4k2q/8/8/8/R3K3 w - - 0 1',
         highlight: 'a1',
-        successCondition: 'anyMove',
+        successCondition: 'specificTo',
+        targetSquare: 'a5',
       },
       {
         type: 'complete',

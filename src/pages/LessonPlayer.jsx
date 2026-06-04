@@ -103,8 +103,18 @@ function QuizStep({ step, onNext, boardTheme }) {
           if (chess.isCheckmate()) {
             setCleared(true);
           } else {
-            // 不正解 → 1秒後に戻す
             setWrongMsg('まだ詰んでいません！もう一度試してみよう');
+            setTimeout(() => {
+              chess.undo();
+              setLastMove(null);
+              setWrongMsg('');
+            }, 1200);
+          }
+        } else if (condition === 'specificTo') {
+          if (move.to === step.targetSquare) {
+            setCleared(true);
+          } else {
+            setWrongMsg(`${step.targetSquare} に動かしてみよう！`);
             setTimeout(() => {
               chess.undo();
               setLastMove(null);
