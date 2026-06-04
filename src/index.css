@@ -98,7 +98,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
@@ -301,7 +301,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 @media (max-width: 800px) {
@@ -457,6 +459,8 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 
 .panel-top-right {
@@ -629,8 +633,7 @@ body {
 
 /* ── Hint Button ─────────────────────────────────────────────────────────── */
 .hint-btn {
-  margin-top: 6px;
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: 1px dashed rgba(128, 222, 234, 0.5);
   background: rgba(128, 222, 234, 0.07);
@@ -679,14 +682,25 @@ body {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
+  gap: 6px;
+  padding: 6px 14px;
   border-radius: 20px;
   border: 1.5px solid;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   align-self: flex-start;
+  background: rgba(255,255,255,0.03);
+}
+
+.status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
 }
 
 .turn-indicator { margin-top: 4px; }
@@ -695,22 +709,24 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
+  width: 100%;
 }
 
 .turn-white {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25);
   color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .turn-black {
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: #aaa;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #ccc;
 }
 
 .turn-dot {
@@ -817,21 +833,25 @@ body {
 }
 
 .difficulty-btn-active {
-  background: rgba(255,255,255,0.08) !important;
-  color: #fff;
+  background: rgba(108, 99, 255, 0.2) !important;
+  border-color: rgba(108, 99, 255, 0.6) !important;
+  color: #fff !important;
   font-weight: 700;
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.2);
 }
 
 /* Theme selector */
 .theme-section {}
 
 .section-title {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: rgba(255,255,255,0.3);
-  margin: 0 0 8px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.45);
+  margin: 4px 0 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 
 .theme-grid {
@@ -1110,16 +1130,17 @@ body {
 }
 
 .history-btn {
-  padding: 10px 14px;
+  padding: 10px 8px;
   border-radius: 10px;
-  border: 1.5px solid rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.7);
-  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  text-align: center;
 }
 
 .history-btn:hover {
@@ -2379,7 +2400,7 @@ body {
 
 .undo-btn {
   flex: 1;
-  padding: 6px 10px;
+  padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid rgba(255, 152, 0, 0.35);
   background: rgba(255, 152, 0, 0.08);
@@ -2466,11 +2487,11 @@ body {
 
 /* バートラック：盤グリッド(8*sq + 4px枠)に合わせた高さ */
 .eval-bar-track {
-  width: 12px;
+  width: 16px;
   height: calc(var(--sq) * 8 + 4px);
   background: #1a1a2e;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
   overflow: hidden;
   position: relative;
 }
