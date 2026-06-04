@@ -49,7 +49,7 @@ export default function Learn() {
             return (
               <div
                 key={lesson.id}
-                className="learn-card learn-card--available"
+                className={`learn-card learn-card--available${done ? ' learn-card--done' : ''}`}
                 onClick={() => navigate(`/learn/${lesson.id}`)}
               >
                 <div className="learn-card-number">#{index + 1}</div>
