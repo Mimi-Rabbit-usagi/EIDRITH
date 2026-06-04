@@ -1441,22 +1441,35 @@ body {
 .summary-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
-.summary-emoji { font-size: 48px; line-height: 1; }
+.summary-emoji {
+  font-size: 40px;
+  line-height: 1;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  flex-shrink: 0;
+}
 
 .summary-title {
-  margin: 0 0 4px;
-  font-size: 24px;
+  margin: 0 0 6px;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
 
 .summary-subtitle {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: rgba(255,255,255,0.4);
+  letter-spacing: 0.3px;
 }
 
 .summary-stats {
@@ -1486,9 +1499,10 @@ body {
 }
 
 .summary-stat-value {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: #fff;
+  letter-spacing: -0.5px;
 }
 
 .summary-stat-gain { color: #69F0AE; }
@@ -1545,17 +1559,27 @@ body {
 
 .summary-buttons {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
 }
-.summary-buttons .new-game-btn { flex: 1; }
+.summary-buttons .new-game-btn {
+  width: 100%;
+  padding: 13px;
+  font-size: 15px;
+}
+.summary-buttons-sub {
+  display: flex;
+  gap: 8px;
+}
 
 .summary-close-btn {
-  padding: 10px 16px;
+  flex: 1;
+  padding: 11px 16px;
   border-radius: 10px;
-  border: 1.5px solid rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.7);
-  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -2733,12 +2757,13 @@ body {
 
 /* GameSummary の「棋譜を見る」ボタン */
 .replay-from-summary-btn {
+  flex: 1;
   background: rgba(108, 99, 255, 0.15);
   border: 1px solid rgba(108, 99, 255, 0.35);
   border-radius: 10px;
   color: #9b94ff;
-  padding: 10px 20px;
-  font-size: 14px;
+  padding: 11px 16px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
