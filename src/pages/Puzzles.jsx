@@ -170,10 +170,11 @@ export default function Puzzles() {
                 <button
                   key={p.id}
                   className={`puzzle-list-item ${solved ? 'puzzle-solved' : ''}`}
+                  style={{ '--diff-color': DIFF_COLOR[p.difficulty] }}
                   onClick={() => openPuzzle(i)}
                 >
                   <div className="puzzle-list-left">
-                    <span className="puzzle-list-status">{solved ? '✅' : '⬜'}</span>
+                    <span className={`puzzle-list-status-dot ${solved ? 'puzzle-list-status-dot--done' : ''}`} />
                     <div>
                       <p className="puzzle-list-title">{p.title}</p>
                       <p className="puzzle-list-theme">{p.themeLabel}</p>

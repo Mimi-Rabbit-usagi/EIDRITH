@@ -2175,7 +2175,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 10px;
   background: rgba(255,255,255,0.04);
   border: 1.5px solid transparent;
@@ -2183,15 +2183,48 @@ body {
   text-align: left;
   transition: all 0.15s;
   color: #fff;
+  position: relative;
+  overflow: hidden;
 }
-.puzzle-list-item:hover { background: rgba(255,255,255,0.08); border-color: rgba(108,99,255,0.3); }
-.puzzle-solved { border-color: rgba(76,175,80,0.3); background: rgba(76,175,80,0.06); }
+.puzzle-list-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--diff-color, #6c63ff);
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.puzzle-list-item:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.1);
+}
+.puzzle-list-item:hover::before { opacity: 1; }
+.puzzle-solved {
+  border-color: rgba(76,175,80,0.25);
+  background: rgba(76,175,80,0.05);
+}
+.puzzle-solved::before { background: #4CAF50; opacity: 0.8; }
 
-.puzzle-list-left { display: flex; align-items: center; gap: 10px; }
-.puzzle-list-status { font-size: 16px; }
+.puzzle-list-left { display: flex; align-items: center; gap: 12px; }
+
+.puzzle-list-status-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.puzzle-list-status-dot--done {
+  background: #4CAF50;
+  border-color: #4CAF50;
+  box-shadow: 0 0 8px rgba(76,175,80,0.4);
+}
+
 .puzzle-list-title { font-size: 13px; font-weight: 600; margin: 0 0 2px; }
 .puzzle-list-theme { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; }
-.puzzle-list-diff  { font-size: 11px; font-weight: 600; }
+.puzzle-list-diff  { font-size: 11px; font-weight: 700; }
 
 .puzzle-solved-count {
   text-align: center;
