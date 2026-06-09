@@ -235,7 +235,7 @@ export default function GamePanel({
         <div className={`technique-log-section${mobileTab === 'settings' ? ' mobile-hidden' : ''}`}>
           <p className="section-title">発動した戦術（{techniqueLog.length}）</p>
           <div className="technique-log-list">
-            {[...techniqueLog].reverse().map(t => (
+            {[...techniqueLog].filter((t, i, arr) => arr.findIndex(x => x.id === t.id) === i).reverse().map(t => (
               <TechniqueLogItem
                 key={t.id}
                 t={t}

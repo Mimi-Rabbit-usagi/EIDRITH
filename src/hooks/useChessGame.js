@@ -56,9 +56,8 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
   const showTechnique = useCallback((tech) => {
     if (!tech) return;
     setTechnique(tech);
-    setTechniqueLog(prev =>
-      prev.find(t => t.id === tech.id) ? prev : [...prev, tech]
-    );
+    const moveIndex = chessRef.current.history().length;
+    setTechniqueLog(prev => [...prev, { ...tech, moveIndex }]);
   }, []);
 
   const triggerAI = useCallback(() => {

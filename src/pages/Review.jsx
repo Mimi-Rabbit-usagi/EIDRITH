@@ -17,13 +17,64 @@ function buildPositions(moves) {
   return positions;
 }
 
+// ── 手番コメント生成 ──────────────────────────────────────────────────────────
+function getMoveComment(step, moves, techniques) {
+  if (step === 0) return { text: '対局開始前の局面です。', type: 'neutral' };
+
+  const san = moves[step - 1];
+  const isWhite = step % 2 === 1;
+  const moveNum = Math.ceil(step / 2);
+  const side = isWhite ? '白' : '黒';
+
+  // この手番に発動した戦術を探す
+  const tech = techniques?.find(t => t.moveIndex === step);
+
+  if (tech) {
+    return {
+      text: `${moveNum}手目（${side}）：${tech.icon} ${tech.name} が発動！`,
+      sub: tech.description,
+      type: 'technique',
+      color: tech.color,
+    };
+  }
+
+  // チェック記号
+  if (san?.includes('+')) {
+    return { text: `${moveNum}手目（${side}）：チェック！ ${san}`, type: 'check' };
+  }
+  if (san?.includes('#')) {
+    return { text: `${moveNum}手目（${side}）：チェックメイト！ ${san}`, type: 'checkmate' };
+  }
+  // キャスリング
+  if (san === 'O-O' || san === 'O-O-O') {
+    return { text: `${moveNum}手目（${side}）：キャスリング ${san}`, type: 'special' };
+  }
+  // 昇格
+  if (san?.includes('=')) {
+    return { text: `${moveNum}手目（${side}）：昇格！ ${san}`, type: 'special' };
+  }
+  // 駒取り
+  if (san?.includes('x')) {
+    return { text: `${moveNum}手目（${side}）：駒を取る ${san}`, type: 'capture' };
+  }
+
+  return { text: `${moveNum}手目（${side}）： ${san}`, type: 'neutral' };
+}
+
 // ── 手順リスト ────────────────────────────────────────────────────────────────
-function MoveList({ moves, step, onGoTo }) {
+function MoveList({ moves, step, techniques, onGoTo }) {
   const activeRef = useRef(null);
 
   useEffect(() => {
     activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [step]);
+
+  // moveIndex → technique のマップ
+  const techByMove = useMemo(() => {
+    const map = {};
+    (techniques || []).forEach(t => { map[t.moveIndex] = t; });
+    return map;
+  }, [techniques]);
 
   const pairs = useMemo(() => {
     const result = [];
@@ -42,13 +93,24 @@ function MoveList({ moves, step, onGoTo }) {
       {pairs.map(pair => (
         <div key={pair.num} className="replay-pair">
           <span className="replay-pair-num">{pair.num}.</span>
+
           <button
             ref={step === pair.white.stepIndex ? activeRef : null}
             className={`replay-move-btn ${step === pair.white.stepIndex ? 'replay-move-active' : ''}`}
             onClick={() => onGoTo(pair.white.stepIndex)}
           >
             {pair.white.san}
+            {techByMove[pair.white.stepIndex] && (
+              <span
+                className="replay-tech-badge"
+                title={techByMove[pair.white.stepIndex].name}
+                style={{ color: techByMove[pair.white.stepIndex].color }}
+              >
+                {techByMove[pair.white.stepIndex].icon}
+              </span>
+            )}
           </button>
+
           {pair.black && (
             <button
               ref={step === pair.black.stepIndex ? activeRef : null}
@@ -56,10 +118,38 @@ function MoveList({ moves, step, onGoTo }) {
               onClick={() => onGoTo(pair.black.stepIndex)}
             >
               {pair.black.san}
+              {techByMove[pair.black.stepIndex] && (
+                <span
+                  className="replay-tech-badge"
+                  title={techByMove[pair.black.stepIndex].name}
+                  style={{ color: techByMove[pair.black.stepIndex].color }}
+                >
+                  {techByMove[pair.black.stepIndex].icon}
+                </span>
+              )}
             </button>
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+// ── コメントパネル ─────────────────────────────────────────────────────────────
+function MoveComment({ comment }) {
+  if (!comment) return null;
+  const borderColor = comment.color ?? (
+    comment.type === 'technique'  ? '#6C63FF' :
+    comment.type === 'check'      ? '#FF9800' :
+    comment.type === 'checkmate'  ? '#F44336' :
+    comment.type === 'special'    ? '#4FC3F7' :
+    comment.type === 'capture'    ? '#EF9A9A' :
+    'rgba(255,255,255,0.1)'
+  );
+  return (
+    <div className="replay-comment" style={{ borderLeftColor: borderColor }}>
+      <p className="replay-comment-text">{comment.text}</p>
+      {comment.sub && <p className="replay-comment-sub">{comment.sub}</p>}
     </div>
   );
 }
@@ -69,10 +159,11 @@ export default function Review() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Play.jsx から { moves, moveCount, boardThemeId } を state で受け取る
   const game = location.state?.game ?? null;
   const boardThemeId = location.state?.boardThemeId ?? 'classic';
   const boardTheme = BOARD_THEMES.find(t => t.id === boardThemeId) ?? BOARD_THEMES[0];
+
+  const techniques = game?.techniques ?? [];
 
   const positions = useMemo(
     () => (game ? buildPositions(game.moves) : []),
@@ -110,6 +201,11 @@ export default function Review() {
     if (step >= total) setStep(0);
     setIsPlaying(p => !p);
   };
+
+  const comment = useMemo(
+    () => game ? getMoveComment(step, game.moves, techniques) : null,
+    [step, game, techniques]
+  );
 
   // データなし
   if (!game) {
@@ -160,11 +256,13 @@ export default function Review() {
               onDrop={() => {}}
               onCancelDrag={() => {}}
             />
+            {/* コメントパネル（盤面の下） */}
+            <MoveComment comment={comment} />
           </div>
 
           <div className="replay-side">
             <p className="replay-moves-title">手順（{total}手）</p>
-            <MoveList moves={game.moves} step={step} onGoTo={goTo} />
+            <MoveList moves={game.moves} step={step} techniques={techniques} onGoTo={goTo} />
           </div>
         </div>
 

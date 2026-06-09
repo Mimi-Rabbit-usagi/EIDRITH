@@ -206,7 +206,7 @@ export default function GameSummary({
           <div className="summary-section">
             <p className="summary-section-title">⚔️ 発動した戦術（{techniqueLog.length}）</p>
             <div className="summary-techniques">
-              {techniqueLog.map(t => (
+              {techniqueLog.filter((t, i, arr) => arr.findIndex(x => x.id === t.id) === i).map(t => (
                 <div
                   key={t.id}
                   className="summary-technique-badge"

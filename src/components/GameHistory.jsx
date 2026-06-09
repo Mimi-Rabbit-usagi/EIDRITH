@@ -63,7 +63,7 @@ function GameEntry({ game, onReplay }) {
           <span className="history-date">{formatDate(game.date)}</span>
         </div>
         <div className="history-techniques">
-          {game.techniques.map(t => (
+          {game.techniques.filter((t, i, arr) => arr.findIndex(x => x.id === t.id) === i).map(t => (
             <span
               key={t.id}
               className="history-technique-badge"
@@ -85,7 +85,7 @@ function GameEntry({ game, onReplay }) {
             <div className="history-techniques-detail">
               <p className="history-detail-title">発生したテクニック</p>
               <div className="history-techniques-list">
-                {game.techniques.map(t => (
+                {game.techniques.filter((t, i, arr) => arr.findIndex(x => x.id === t.id) === i).map(t => (
                   <div key={t.id} className="history-technique-row" style={{ borderLeftColor: TECHNIQUE_COLOR[t.id] || '#666' }}>
                     <span className="ht-icon">{t.icon}</span>
                     <span className="ht-name">{t.name}</span>
