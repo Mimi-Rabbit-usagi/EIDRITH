@@ -2739,25 +2739,68 @@ body {
 
 /* コメントパネル */
 .replay-comment {
-  margin-top: 10px;
-  padding: 10px 14px;
+  margin: 0 18px 4px;
+  padding: 12px 16px;
   border-left: 3px solid rgba(255,255,255,0.15);
   background: rgba(255,255,255,0.04);
   border-radius: 0 8px 8px 0;
   min-height: 44px;
+  flex-shrink: 0;
 }
-.replay-comment-text {
+.replay-comment--neutral { opacity: 0.6; }
+
+/* 戦術コメント */
+.replay-comment--technique { background: rgba(255,255,255,0.05); }
+.replay-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.replay-comment-icon { font-size: 1.2rem; }
+.replay-comment-tech-name { font-weight: 700; font-size: 0.9rem; }
+.replay-comment-move { margin-left: auto; font-size: 0.72rem; color: rgba(255,255,255,0.35); }
+
+.replay-comment-body { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.replay-comment-row {
   margin: 0;
-  font-size: 0.82rem;
-  color: rgba(255,255,255,0.8);
-  font-weight: 500;
+  font-size: 0.76rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.5;
+  display: flex;
+  gap: 8px;
 }
-.replay-comment-sub {
-  margin: 4px 0 0;
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.4;
+.replay-comment-key {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  white-space: nowrap;
+  margin-top: 1px;
 }
+
+.replay-comment-verdict {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  background: rgba(0,0,0,0.2);
+}
+.replay-comment-verdict-label {
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: currentColor;
+  color: #111;
+}
+
+/* シンプルコメント */
+.replay-comment--simple { min-height: 0; padding: 8px 12px; }
+.replay-comment-label { font-size: 0.68rem; color: rgba(255,255,255,0.3); margin: 0 0 2px; }
+.replay-comment-text { margin: 0; font-size: 0.8rem; color: rgba(255,255,255,0.7); font-weight: 500; }
 
 /* コントロールボタン群 */
 .replay-controls {
