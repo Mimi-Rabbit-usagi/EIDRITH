@@ -1,12 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-const NAV_LINKS = [
-  { path: '/play',    label: '対局',   icon: '♟' },
+const BASE_NAV_LINKS = [
+  { path: '/play',    label: '対局',      icon: '♟' },
   { path: '/online',  label: 'オンライン', icon: '🌐' },
-  { path: '/learn',   label: '学習',   icon: '📖' },
-  { path: '/puzzles', label: 'パズル',  icon: '♞' },
-  { path: '/profile', label: '成績',   icon: '👤' },
+  { path: '/learn',   label: '学習',      icon: '📖' },
+  { path: '/puzzles', label: 'パズル',    icon: '♞' },
 ];
 
 export default function NavBar() {
@@ -24,7 +23,7 @@ export default function NavBar() {
       </Link>
 
       <div className="navbar-links">
-        {NAV_LINKS.map(link => (
+        {BASE_NAV_LINKS.map(link => (
           <Link
             key={link.path}
             to={link.path}
@@ -34,6 +33,13 @@ export default function NavBar() {
             <span className="navbar-link-label">{link.label}</span>
           </Link>
         ))}
+        <Link
+          to="/profile"
+          className={`navbar-link navbar-link--profile${pathname === '/profile' ? ' navbar-link--active' : ''}`}
+        >
+          <span className="navbar-link-icon navbar-profile-avatar">{avatarEmoji || '♟'}</span>
+          <span className="navbar-link-label">成績</span>
+        </Link>
       </div>
 
       {/* ── 認証エリア ── */}

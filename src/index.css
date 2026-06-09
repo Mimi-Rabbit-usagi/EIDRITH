@@ -3273,6 +3273,7 @@ body {
 }
 .navbar-link-icon  { font-size: 0.95rem; }
 .navbar-link-label { }
+.navbar-profile-avatar { font-size: 1.1rem; }
 
 @media (max-width: 480px) {
   .navbar { padding: 0 16px; }
@@ -4286,6 +4287,7 @@ body {
   transition: width 0.5s ease;
 }
 .profile-progress-bar--gold { background: #c89b3c; }
+.profile-progress-bar--lesson { background: #7c5cbf; }
 
 /* 実績 */
 .profile-achievements {
@@ -4311,15 +4313,21 @@ body {
 .profile-achievement--locked {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.06);
-  opacity: 0.45;
+  opacity: 0.6;
 }
 .profile-achievement-icon { font-size: 1.5rem; }
 .profile-achievement-name { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.75); }
-.profile-achievement-lock {
-  position: absolute;
-  top: 6px; right: 6px;
-  font-size: 0.6rem;
-  opacity: 0.4;
+.profile-achievement-hint {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.3;
+  text-align: center;
+}
+.profile-achievement-desc {
+  font-size: 0.62rem;
+  color: rgba(200,155,60,0.6);
+  line-height: 1.3;
+  text-align: center;
 }
 
 /* 直近の対局 */
@@ -4332,10 +4340,13 @@ body {
   padding: 6px 0;
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
+.profile-recent-row--clickable { cursor: pointer; }
+.profile-recent-row--clickable:hover { background: rgba(255,255,255,0.04); border-radius: 6px; padding-left: 6px; }
 .profile-result-dot { font-weight: 700; font-size: 1rem; width: 20px; }
 .profile-recent-diff  { flex: 1; }
 .profile-recent-moves { color: rgba(255,255,255,0.4); }
 .profile-recent-date  { color: rgba(255,255,255,0.25); width: 60px; text-align: right; }
+.profile-recent-review-icon { color: rgba(255,255,255,0.2); font-size: 0.65rem; }
 
 /* 空 */
 .profile-empty {

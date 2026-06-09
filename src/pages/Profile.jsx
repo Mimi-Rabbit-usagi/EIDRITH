@@ -4,6 +4,7 @@ import NavBar from '../components/NavBar';
 import { useAuth } from '../hooks/useAuth';
 import { ACHIEVEMENTS } from '../data/achievements';
 import { PUZZLES } from '../data/puzzles';
+import { LESSONS } from '../data/lessons';
 
 const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
@@ -22,11 +23,12 @@ function loadAllData() {
     const logs     = JSON.parse(localStorage.getItem('chess-master-logs') || '[]');
     const solved   = JSON.parse(localStorage.getItem('chess-solved-puzzles') || '[]');
     const practiced = JSON.parse(localStorage.getItem('chess-opening-practice') || '[]');
+    const completedLessons = JSON.parse(localStorage.getItem('chess-lesson-progress') || '[]');
     const name       = localStorage.getItem('chess-player-name') || 'あなた';
     const avatarEmoji = localStorage.getItem('chess-avatar-emoji') || '';
-    return { gameData, logs, solved, practiced, name, avatarEmoji };
+    return { gameData, logs, solved, practiced, completedLessons, name, avatarEmoji };
   } catch {
-    return { gameData: {}, logs: [], solved: [], practiced: [], name: 'あなた', avatarEmoji: '' };
+    return { gameData: {}, logs: [], solved: [], practiced: [], completedLessons: [], name: 'あなた', avatarEmoji: '' };
   }
 }
 
@@ -145,6 +147,21 @@ export default function Profile() {
   const streak = data.gameData.streak ?? 0;
   const solvedCount = data.solved.filter(id => PUZZLES.find(p => p.id === id)).length;
   const practicedCount = data.practiced.length;
+  const totalLessons = Object.keys(LESSONS).length;
+  const completedLessonsCount = data.completedLessons.filter(id => LESSONS[id]).length;
+
+  const achievementHints = {
+    first_win:    s.wins === 0 ? '初めて勝利すると解除' : null,
+    blitz_win:    '15手以内に勝利すると解除',
+    hard_win:     'むずかしい難易度で勝利すると解除',
+    win_streak_3: streak < 3 ? `あと${3 - streak}連勝で解除` : null,
+    ten_wins:     wins < 10  ? `あと${10 - wins}勝で解除` : null,
+    castling:     'キャスリングを1回行うと解除',
+    promotion:    'ポーンをクイーンに昇格させると解除',
+    fork:         '対局でフォーク（両取り）を発動すると解除',
+    pin:          '対局でピンを発動すると解除',
+    deep_opening: '定跡を8手以上辿ると解除',
+  };
 
   return (
     <div className="profile-container">
@@ -307,6 +324,19 @@ export default function Profile() {
                 />
               </div>
             </div>
+            <div className="profile-progress-item" onClick={() => navigate('/learn')}>
+              <div className="profile-progress-header">
+                <span className="profile-progress-icon">🎓</span>
+                <span className="profile-progress-name">レッスン</span>
+                <span className="profile-progress-count">{completedLessonsCount} / {totalLessons}</span>
+              </div>
+              <div className="profile-progress-bar-wrap">
+                <div
+                  className="profile-progress-bar profile-progress-bar--lesson"
+                  style={{ width: `${totalLessons > 0 ? (completedLessonsCount / totalLessons) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -319,15 +349,19 @@ export default function Profile() {
           <div className="profile-achievements">
             {ACHIEVEMENTS.map(a => {
               const unlocked = unlockedIds.includes(a.id);
+              const hint = !unlocked ? (achievementHints[a.id] ?? a.description) : null;
               return (
                 <div
                   key={a.id}
                   className={`profile-achievement ${unlocked ? 'profile-achievement--unlocked' : 'profile-achievement--locked'}`}
-                  title={a.description}
                 >
                   <span className="profile-achievement-icon">{a.icon}</span>
                   <span className="profile-achievement-name">{a.name}</span>
-                  {!unlocked && <span className="profile-achievement-lock">🔒</span>}
+                  {!unlocked ? (
+                    <span className="profile-achievement-hint">{hint}</span>
+                  ) : (
+                    <span className="profile-achievement-desc">{a.description}</span>
+                  )}
                 </div>
               );
             })}
@@ -340,15 +374,24 @@ export default function Profile() {
             <h2 className="profile-section-title">直近の対局</h2>
             <div className="profile-recent">
               {s.recent.map(l => (
-                <div key={l.id} className="profile-recent-row">
+                <div
+                  key={l.id}
+                  className={`profile-recent-row ${l.moves?.length > 0 ? 'profile-recent-row--clickable' : ''}`}
+                  onClick={() => {
+                    if (l.moves?.length > 0) {
+                      navigate('/review', { state: { game: l, boardThemeId: 'classic' } });
+                    }
+                  }}
+                >
                   <ResultDot result={l.result} />
-                  <span className="profile-recent-diff" style={{ color: DIFF_COLOR[l.difficulty] }}>
-                    {DIFF_LABEL[l.difficulty]}
+                  <span className="profile-recent-diff" style={{ color: DIFF_COLOR[l.difficulty] ?? '#9E9E9E' }}>
+                    {DIFF_LABEL[l.difficulty] ?? l.difficulty}
                   </span>
                   <span className="profile-recent-moves">{l.moveCount}手</span>
                   <span className="profile-recent-date">
                     {new Date(l.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
                   </span>
+                  {l.moves?.length > 0 && <span className="profile-recent-review-icon">▶</span>}
                 </div>
               ))}
             </div>
