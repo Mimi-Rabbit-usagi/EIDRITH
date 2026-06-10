@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { safeLoad } from '../lib/storage';
@@ -13,8 +14,20 @@ export default function NavBar() {
   const { pathname } = useLocation();
   const { user, loading, signInWithGoogle, signOut } = useAuth();
 
-  const avatarEmoji  = safeLoad('chess-avatar-emoji', '');
-  const displayName  = safeLoad('chess-player-name', null) || user?.user_metadata?.full_name?.split(' ')[0] || 'あなた';
+  // storage 読み込みはマウント時 + storage イベント時のみ（クロックのたびに呼ばない）
+  const [avatarEmoji, setAvatarEmoji] = useState(() => safeLoad('chess-avatar-emoji', ''));
+  const [savedName,   setSavedName]   = useState(() => safeLoad('chess-player-name', null));
+
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === 'chess-avatar-emoji') setAvatarEmoji(safeLoad('chess-avatar-emoji', ''));
+      if (e.key === 'chess-player-name')  setSavedName(safeLoad('chess-player-name', null));
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  const displayName = savedName || user?.user_metadata?.full_name?.split(' ')[0] || 'あなた';
 
   return (
     <nav className="navbar">

@@ -211,6 +211,7 @@ export default function Play() {
       moveCount: history.length,
       moves: history.map(m => m.san),
       techniques: techLog,
+      playerColor: isLocalMode ? 'w' : playerColor,
     };
 
     setLogs(prev => {
@@ -365,16 +366,26 @@ export default function Play() {
     const moves = moveHistoryRef.current.map(m => m.san);
     setShowSummary(false);
     navigate('/review', {
-      state: { game: { moves, moveCount: moves.length }, boardThemeId: gameData.activeBoardTheme },
+      state: {
+        game: { moves, moveCount: moves.length, techniques: techniqueLogRef.current, playerColor },
+        boardThemeId: gameData.activeBoardTheme,
+        pieceSet: gameData.activePieceSet,
+        flipped: gameMode === 'cpu' && playerColor === 'b',
+      },
     });
-  }, [navigate, gameData.activeBoardTheme]);
+  }, [navigate, gameData.activeBoardTheme, gameData.activePieceSet, playerColor, gameMode]);
 
   const handleReplayHistorical = useCallback((game) => {
     setShowHistory(false);
     navigate('/review', {
-      state: { game, boardThemeId: gameData.activeBoardTheme },
+      state: {
+        game,
+        boardThemeId: gameData.activeBoardTheme,
+        pieceSet: gameData.activePieceSet,
+        flipped: game.playerColor === 'b',
+      },
     });
-  }, [navigate, gameData.activeBoardTheme]);
+  }, [navigate, gameData.activeBoardTheme, gameData.activePieceSet]);
 
   return (
     <div className="app-container">

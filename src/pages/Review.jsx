@@ -4,6 +4,7 @@ import { Chess } from 'chess.js';
 import NavBar from '../components/NavBar';
 import ChessBoard from '../components/ChessBoard';
 import { BOARD_THEMES } from '../data/themes';
+import { getBestMove } from '../hooks/useAI';
 
 // ── 棋譜から全ポジションを事前計算 ───────────────────────────────────────────
 function buildPositions(moves) {
@@ -260,16 +261,65 @@ function MoveComment({ comment }) {
     castling:  { label: 'キャスリング',     color: '#4FC3F7' },
     promotion: { label: '昇格！',           color: '#FFB800' },
     capture:   { label: '駒を取る',         color: '#EF9A9A' },
-    neutral:   { label: '',                 color: 'rgba(255,255,255,0.15)' },
+    neutral:   { label: '',                 color: 'rgba(255,255,255,0.5)' },
   };
   const info = simpleMap[comment.type] ?? simpleMap.neutral;
   const labelText = [info.label, `${comment.moveNum}手目（${comment.side}）`, comment.san].filter(Boolean).join('　');
 
   return (
     <div className="replay-comment replay-comment--simple" style={{ borderLeftColor: info.color }}>
-      <p className="replay-comment-text" style={{ color: info.color || 'rgba(255,255,255,0.6)' }}>
+      <p className="replay-comment-text" style={{ color: info.color }}>
         {labelText}
       </p>
+    </div>
+  );
+}
+
+// ── エンジン評価カード ────────────────────────────────────────────────────────
+function EngineEval({ info, step }) {
+  if (step === 0 || info === undefined) return null;
+
+  if (info === null) {
+    return (
+      <div className="replay-eval-card replay-eval-card--loading">
+        <span className="replay-eval-loading-dot" />
+        <span className="replay-eval-loading-dot" />
+        <span className="replay-eval-loading-dot" />
+        <span className="replay-eval-loading-text">評価中</span>
+      </div>
+    );
+  }
+
+  const { isBest, bestSan, actualSan, isPlayerMove } = info;
+
+  return (
+    <div className={`replay-eval-card ${isBest ? 'replay-eval-card--best' : 'replay-eval-card--subopt'}`}>
+      <div className="replay-eval-header">
+        <span className="replay-eval-who">{isPlayerMove ? '🧑 あなたの手' : '🤖 CPU の手'}</span>
+        <span className={`replay-eval-badge ${isBest ? 'replay-eval-badge--best' : 'replay-eval-badge--subopt'}`}>
+          {isBest ? '最善手' : '改善余地あり'}
+        </span>
+      </div>
+
+      {isBest ? (
+        <div className="replay-eval-best-row">
+          <span className="replay-eval-check">✓</span>
+          <span className="replay-eval-san">{actualSan}</span>
+          <span className="replay-eval-best-label">最善手でした！</span>
+        </div>
+      ) : (
+        <div className="replay-eval-compare">
+          <div className="replay-eval-move-box replay-eval-move-box--actual">
+            <span className="replay-eval-move-label">指した手</span>
+            <span className="replay-eval-move-san">{actualSan}</span>
+          </div>
+          <span className="replay-eval-arrow">→</span>
+          <div className="replay-eval-move-box replay-eval-move-box--best">
+            <span className="replay-eval-move-label">より良い手</span>
+            <span className="replay-eval-move-san replay-eval-move-san--best">{bestSan}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -281,7 +331,9 @@ export default function Review() {
 
   const game = location.state?.game ?? null;
   const boardThemeId = location.state?.boardThemeId ?? 'classic';
-  const boardTheme = BOARD_THEMES.find(t => t.id === boardThemeId) ?? BOARD_THEMES[0];
+  const boardTheme   = BOARD_THEMES.find(t => t.id === boardThemeId) ?? BOARD_THEMES[0];
+  const pieceSet     = location.state?.pieceSet ?? 'classic';
+  const flipped      = location.state?.flipped  ?? false;
 
   const techniques = game?.techniques ?? [];
 
@@ -293,6 +345,41 @@ export default function Review() {
 
   const [step, setStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  // エンジン評価: null=計算中, undefined=非表示
+  const [bestMoveInfo, setBestMoveInfo] = useState(undefined);
+  const evalTimerRef = useRef(null);
+
+  useEffect(() => {
+    if (step === 0 || !game) {
+      setBestMoveInfo(undefined);
+      return;
+    }
+    // 計算中を示す null をセット（前の結果を消す）
+    setBestMoveInfo(null);
+    clearTimeout(evalTimerRef.current);
+    evalTimerRef.current = setTimeout(() => {
+      const prevFen = positions[step - 1]?.fen;
+      const actualSan = game.moves[step - 1];
+      if (!prevFen || !actualSan) { setBestMoveInfo(undefined); return; }
+
+      const bestSan = getBestMove(prevFen, 'normal');
+      if (!bestSan) { setBestMoveInfo(undefined); return; }
+
+      // SAN 正規化: +/# を除いて比較
+      const norm = (s) => s.replace(/[+#]/g, '');
+      const isBest = norm(bestSan) === norm(actualSan);
+
+      // step が奇数=白手番, playerColor が 'w' なら白=プレイヤー
+      const isWhiteTurn = step % 2 === 1;
+      const playerColor = game.playerColor ?? 'w';
+      const isPlayerMove = (isWhiteTurn && playerColor === 'w') || (!isWhiteTurn && playerColor === 'b');
+
+      setBestMoveInfo({ bestSan, actualSan, isBest, isPlayerMove });
+    }, 200);
+
+    return () => clearTimeout(evalTimerRef.current);
+  }, [step, game, positions]);
 
   const goTo = useCallback((s) => {
     setStep(Math.min(total, Math.max(0, s)));
@@ -371,7 +458,9 @@ export default function Review() {
               lastMove={lastMove}
               gameStatus="playing"
               boardTheme={boardTheme}
+              pieceSet={pieceSet}
               hint={null}
+              flipped={flipped}
               onSquareClick={() => {}}
               onDrop={() => {}}
               onCancelDrag={() => {}}
@@ -384,8 +473,11 @@ export default function Review() {
           </div>
         </div>
 
-        {/* ── コメントパネル（全幅） ── */}
-        <MoveComment comment={comment} />
+        {/* ── 解析パネル（ボード下・全幅） ── */}
+        <div className="replay-analysis">
+          <MoveComment comment={comment} />
+          <EngineEval info={bestMoveInfo} step={step} />
+        </div>
 
         {/* ── コントロール ── */}
         <div className="replay-controls">

@@ -2885,8 +2885,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  height: calc(var(--sq) * 8 + 20px);
-  overflow: hidden;
+  max-height: calc(var(--sq) * 8 + 20px);
+  overflow: visible;
 }
 
 .replay-moves-title {
@@ -2958,15 +2958,14 @@ body {
 
 /* コメントパネル */
 .replay-comment {
-  margin: 0 18px 4px;
-  padding: 12px 16px;
-  border-left: 3px solid rgba(255,255,255,0.15);
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid rgba(255,255,255,0.2);
   background: rgba(255,255,255,0.04);
   border-radius: 0 8px 8px 0;
-  min-height: 44px;
   flex-shrink: 0;
 }
-.replay-comment--neutral { opacity: 0.6; }
+.replay-comment--neutral { opacity: 1; }
 
 /* 戦術コメント */
 .replay-comment--technique { background: rgba(255,255,255,0.05); }
@@ -3020,6 +3019,142 @@ body {
 .replay-comment--simple { min-height: 0; padding: 8px 12px; }
 .replay-comment-label { font-size: 0.68rem; color: rgba(255,255,255,0.3); margin: 0 0 2px; }
 .replay-comment-text { margin: 0; font-size: 0.8rem; color: rgba(255,255,255,0.7); font-weight: 500; }
+
+/* ── 解析パネル（ボード下・全幅） ───────────────────────────────────────────── */
+.replay-analysis {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 0 18px 14px;
+  align-items: stretch;
+}
+.replay-analysis > * { flex: 1; min-width: 0; }
+
+/* コメントカードをパネル内に合わせてリセット */
+.replay-analysis .replay-comment {
+  margin: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-left: 3px solid rgba(255,255,255,0.2);
+}
+
+/* ── エンジン評価カード ── */
+.replay-eval-card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.replay-eval-card--loading {
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  color: rgba(255,255,255,0.3);
+  font-size: 0.78rem;
+  justify-content: center;
+}
+.replay-eval-loading-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  animation: eval-pulse 1.2s ease-in-out infinite;
+}
+.replay-eval-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.replay-eval-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.replay-eval-loading-text { margin-left: 4px; }
+@keyframes eval-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+.replay-eval-card--best  { border-color: rgba(76,175,80,0.35);  background: rgba(76,175,80,0.06); }
+.replay-eval-card--subopt{ border-color: rgba(255,152,0,0.35);  background: rgba(255,152,0,0.06); }
+
+.replay-eval-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.replay-eval-who {
+  font-size: 0.74rem;
+  color: rgba(255,255,255,0.45);
+  font-weight: 600;
+}
+.replay-eval-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.replay-eval-badge--best  { background: rgba(76,175,80,0.22);  color: #81C784; }
+.replay-eval-badge--subopt{ background: rgba(255,152,0,0.22);  color: #FFB74D; }
+
+/* 最善手のとき */
+.replay-eval-best-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.replay-eval-check { font-size: 1.3rem; color: #4CAF50; line-height: 1; }
+.replay-eval-san {
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-family: 'Courier New', monospace;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.replay-eval-best-label {
+  font-size: 0.8rem;
+  color: #81C784;
+}
+
+/* 改善余地ありのとき：比較ボックス */
+.replay-eval-compare {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.replay-eval-move-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 8px;
+  border-radius: 8px;
+}
+.replay-eval-move-box--actual {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.replay-eval-move-box--best {
+  background: rgba(255,152,0,0.1);
+  border: 1px solid rgba(255,152,0,0.3);
+}
+.replay-eval-move-label {
+  font-size: 0.63rem;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.replay-eval-move-san {
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-family: 'Courier New', monospace;
+  color: rgba(255,255,255,0.7);
+}
+.replay-eval-move-san--best { color: #FFB74D; }
+.replay-eval-arrow {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.25);
+  flex-shrink: 0;
+}
 
 /* コントロールボタン群 */
 .replay-controls {
@@ -3146,6 +3281,11 @@ body {
   .replay-side {
     height: 140px;
     width: 100%;
+  }
+
+  .replay-analysis {
+    flex-direction: column;
+    padding: 0 12px 14px;
   }
 }
 

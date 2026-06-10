@@ -34,13 +34,14 @@ export function isStorageAvailable() {
  */
 export function safeLoad(key, defaultValue) {
   if (!isStorageAvailable()) return defaultValue;
+  let raw = null;
   try {
-    const raw = localStorage.getItem(key);
+    raw = localStorage.getItem(key);
     if (raw === null) return defaultValue;
     return JSON.parse(raw);
   } catch {
-    console.warn(`[storage] "${key}" の読み込みに失敗しました。デフォルト値を使用します。`);
-    return defaultValue;
+    // JSON.parse に失敗した場合はプレーン文字列として返す（旧データとの後方互換）
+    return raw ?? defaultValue;
   }
 }
 
