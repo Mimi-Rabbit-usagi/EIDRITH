@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import { loadGameData, safeLoad } from '../lib/storage';
 
 function loadStats() {
-  try {
-    const data = JSON.parse(localStorage.getItem('chess-master-data') || '{}');
-    const solved = JSON.parse(localStorage.getItem('chess-solved-puzzles') || '[]');
-    return {
-      wins: data.wins ?? 0,
-      streak: data.streak ?? 0,
-      puzzlesSolved: solved.length,
-    };
-  } catch {
-    return { wins: 0, streak: 0, puzzlesSolved: 0 };
-  }
+  const data = loadGameData();
+  const solved = safeLoad('chess-solved-puzzles', []);
+  return {
+    wins: data.wins ?? 0,
+    streak: data.streak ?? 0,
+    puzzlesSolved: solved.length,
+  };
 }
 
 const MODES = [
@@ -56,7 +53,7 @@ export default function Home() {
 
   useEffect(() => {
     setStats(loadStats());
-    const name = localStorage.getItem('chess-player-name');
+    const name = safeLoad('chess-player-name', null);
     if (name) setPlayerName(name);
   }, []);
 

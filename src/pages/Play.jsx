@@ -20,44 +20,7 @@ import OpeningModal from '../components/OpeningModal';
 import CustomizeModal from '../components/CustomizeModal';
 import PromotionModal from '../components/PromotionModal';
 import GameSummary from '../components/GameSummary';
-
-// ── LocalStorage helpers ──────────────────────────────────────────────────────
-const DEFAULT_GAME_DATA = {
-  wins: 0,
-  streak: 0,
-  unlockedBoardThemes: ['classic'],
-  activeBoardTheme: 'classic',
-  activePieceSet: 'classic',
-  unlockedPieceSets: ['classic'],
-  unlockedAchievements: [],
-};
-
-function loadGameData() {
-  try {
-    const stored = localStorage.getItem('chess-master-data');
-    if (stored) {
-      const data = JSON.parse(stored);
-      return { ...DEFAULT_GAME_DATA, ...data };
-    }
-  } catch {}
-  return { ...DEFAULT_GAME_DATA };
-}
-
-function saveGameData(data) {
-  localStorage.setItem('chess-master-data', JSON.stringify(data));
-}
-
-function loadLogs() {
-  try {
-    const stored = localStorage.getItem('chess-master-logs');
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return [];
-}
-
-function saveLogs(logs) {
-  localStorage.setItem('chess-master-logs', JSON.stringify(logs.slice(0, 30)));
-}
+import { loadGameData, saveGameData, loadLogs, saveLogs, safeLoad, safeSave } from '../lib/storage';
 
 // ── Play Page ─────────────────────────────────────────────────────────────────
 export default function Play() {
@@ -70,11 +33,11 @@ export default function Play() {
   const [winCounted, setWinCounted] = useState(false);
   const [difficulty, setDifficulty] = useState('easy');
   const [playerColor, setPlayerColor] = useState('w');
-  const [gameMode, setGameMode] = useState(() => localStorage.getItem('chess-game-mode') || 'cpu');
-  const [player2Name, setPlayer2Name] = useState(() => localStorage.getItem('chess-player2-name') || 'プレイヤー2');
+  const [gameMode, setGameMode] = useState(() => safeLoad('chess-game-mode', 'cpu'));
+  const [player2Name, setPlayer2Name] = useState(() => safeLoad('chess-player2-name', 'プレイヤー2'));
   const [clockMode, setClockMode] = useState('none');
   const [clockTimeout, setClockTimeout] = useState(null);
-  const [playerName, setPlayerName] = useState(() => localStorage.getItem('chess-player-name') || 'あなた');
+  const [playerName, setPlayerName] = useState(() => safeLoad('chess-player-name', 'あなた'));
   const [showHistory, setShowHistory] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -84,12 +47,12 @@ export default function Play() {
 
   const handlePlayerNameChange = useCallback((name) => {
     setPlayerName(name);
-    localStorage.setItem('chess-player-name', name);
+    safeSave('chess-player-name', name);
   }, []);
 
   const handlePlayer2NameChange = useCallback((name) => {
     setPlayer2Name(name);
-    localStorage.setItem('chess-player2-name', name);
+    safeSave('chess-player2-name', name);
   }, []);
 
   const activeBoardTheme = BOARD_THEMES.find(t => t.id === gameData.activeBoardTheme) || BOARD_THEMES[0];
@@ -283,7 +246,7 @@ export default function Play() {
 
   const handleGameModeChange = useCallback((mode) => {
     setGameMode(mode);
-    localStorage.setItem('chess-game-mode', mode);
+    safeSave('chess-game-mode', mode);
     if (mode === 'local') setPlayerColor('w'); // 2人対戦では白を下に固定
     resetGame();
     resetClock();

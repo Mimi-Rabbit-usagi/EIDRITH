@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import { safeLoad } from '../lib/storage';
 
 // hasContent: true = レッスンデータが存在する（コンテンツあり）
 // hasContent: false = 近日公開
@@ -19,7 +20,7 @@ export default function Learn() {
 
   // progressは1回だけ読み込む
   const progress = (() => {
-    try { return JSON.parse(localStorage.getItem('chess-lesson-progress') || '[]'); } catch { return []; }
+    return safeLoad('chess-lesson-progress', []);
   })();
 
   return (

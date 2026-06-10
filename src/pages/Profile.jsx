@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { ACHIEVEMENTS } from '../data/achievements';
 import { PUZZLES } from '../data/puzzles';
 import { LESSONS } from '../data/lessons';
+import { loadGameData, safeLoad, safeSave } from '../lib/storage';
 
 const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
@@ -18,18 +19,14 @@ const AVATAR_EMOJIS = [
 ];
 
 function loadAllData() {
-  try {
-    const gameData = JSON.parse(localStorage.getItem('chess-master-data') || '{}');
-    const logs     = JSON.parse(localStorage.getItem('chess-master-logs') || '[]');
-    const solved   = JSON.parse(localStorage.getItem('chess-solved-puzzles') || '[]');
-    const practiced = JSON.parse(localStorage.getItem('chess-opening-practice') || '[]');
-    const completedLessons = JSON.parse(localStorage.getItem('chess-lesson-progress') || '[]');
-    const name       = localStorage.getItem('chess-player-name') || 'あなた';
-    const avatarEmoji = localStorage.getItem('chess-avatar-emoji') || '';
-    return { gameData, logs, solved, practiced, completedLessons, name, avatarEmoji };
-  } catch {
-    return { gameData: {}, logs: [], solved: [], practiced: [], completedLessons: [], name: 'あなた', avatarEmoji: '' };
-  }
+  const gameData         = loadGameData();
+  const logs             = safeLoad('chess-master-logs', []);
+  const solved           = safeLoad('chess-solved-puzzles', []);
+  const practiced        = safeLoad('chess-opening-practice', []);
+  const completedLessons = safeLoad('chess-lesson-progress', []);
+  const name             = safeLoad('chess-player-name', 'あなた');
+  const avatarEmoji      = safeLoad('chess-avatar-emoji', '');
+  return { gameData, logs, solved, practiced, completedLessons, name, avatarEmoji };
 }
 
 function calcStats(logs) {
@@ -82,9 +79,9 @@ export default function Profile() {
   useEffect(() => {
     const d = loadAllData();
     // Googleログイン済みで名前未設定の場合はGoogle名をデフォルトに
-    if (user && (!localStorage.getItem('chess-player-name') || localStorage.getItem('chess-player-name') === 'あなた')) {
+    if (user && (!safeLoad('chess-player-name', null) || safeLoad('chess-player-name', null) === 'あなた')) {
       const googleName = user.user_metadata?.full_name?.split(' ')[0] ?? 'あなた';
-      localStorage.setItem('chess-player-name', googleName);
+      safeSave('chess-player-name', googleName);
       d.name = googleName;
     }
     setData(d);
@@ -93,13 +90,13 @@ export default function Profile() {
 
   const saveName = () => {
     const trimmed = nameInput.trim() || 'あなた';
-    localStorage.setItem('chess-player-name', trimmed);
+    safeSave('chess-player-name', trimmed);
     setData(prev => ({ ...prev, name: trimmed }));
     setEditingName(false);
   };
 
   const saveAvatar = (emoji) => {
-    localStorage.setItem('chess-avatar-emoji', emoji);
+    safeSave('chess-avatar-emoji', emoji);
     setData(prev => ({ ...prev, avatarEmoji: emoji }));
     setShowAvatarPicker(false);
     setCustomEmojiInput('');

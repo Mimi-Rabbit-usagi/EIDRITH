@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
+import { safeLoad, safeSave } from '../lib/storage';
 
 // AudioContext を遅延生成（ブラウザの自動再生ポリシー対応）
 function getCtx(ctxRef) {
@@ -71,19 +72,12 @@ const SOUNDS = {
 export function useSoundEffects() {
   const ctxRef = useRef(null);
 
-  const [enabled, setEnabled] = useState(() => {
-    try {
-      const stored = localStorage.getItem('chess-sound-enabled');
-      return stored !== null ? JSON.parse(stored) : true;
-    } catch {
-      return true;
-    }
-  });
+  const [enabled, setEnabled] = useState(() => safeLoad('chess-sound-enabled', true));
 
   const toggle = useCallback(() => {
     setEnabled(prev => {
       const next = !prev;
-      localStorage.setItem('chess-sound-enabled', JSON.stringify(next));
+      safeSave('chess-sound-enabled', next);
       return next;
     });
   }, []);

@@ -3,6 +3,7 @@ import { Chess } from 'chess.js';
 import { PUZZLES, PUZZLE_THEMES } from '../data/puzzles';
 import ChessBoard from './ChessBoard';
 import { BOARD_THEMES } from '../data/themes';
+import { safeLoad, safeSave } from '../lib/storage';
 
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
 const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
@@ -23,7 +24,7 @@ export default function PuzzleModal({ activeBoardTheme, activePieceSet, onClose 
   const [status, setStatus]         = useState('idle'); // 'idle'|'correct'|'wrong'|'done'
   const [showHint, setShowHint]     = useState(false);
   const [solvedIds, setSolvedIds]   = useState(() => {
-    try { return JSON.parse(localStorage.getItem('chess-solved-puzzles') || '[]'); } catch { return []; }
+    return safeLoad('chess-solved-puzzles', []);
   });
   const boardTheme = buildBoardTheme(activeBoardTheme);
   const autoMoveTimer = useRef(null);
@@ -91,7 +92,7 @@ export default function PuzzleModal({ activeBoardTheme, activePieceSet, onClose 
             setStatus('done');
             setSolvedIds(prev => {
               const updated = prev.includes(puzzle.id) ? prev : [...prev, puzzle.id];
-              localStorage.setItem('chess-solved-puzzles', JSON.stringify(updated));
+              safeSave('chess-solved-puzzles', updated);
               return updated;
             });
           } else {

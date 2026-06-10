@@ -3,6 +3,7 @@ import { Chess } from 'chess.js';
 import { OPENINGS } from '../data/openings';
 import ChessBoard from './ChessBoard';
 import { BOARD_THEMES } from '../data/themes';
+import { safeLoad, safeSave } from '../lib/storage';
 
 function buildBoardTheme(activeTheme) {
   return BOARD_THEMES.find(t => t.id === activeTheme) || BOARD_THEMES[0];
@@ -34,7 +35,7 @@ export default function OpeningModal({ activeBoardTheme, activePieceSet, onClose
   const [moveIdx, setMoveIdx]       = useState(0);
   const [status, setStatus]         = useState('idle'); // 'idle'|'wrong'|'done'
   const [solvedIds, setSolvedIds]   = useState(() => {
-    try { return JSON.parse(localStorage.getItem('chess-opening-practice') || '[]'); } catch { return []; }
+    return safeLoad('chess-opening-practice', []);
   });
   const boardTheme = buildBoardTheme(activeBoardTheme);
   const autoTimer  = useRef(null);
@@ -56,7 +57,7 @@ export default function OpeningModal({ activeBoardTheme, activePieceSet, onClose
           setStatus('done');
           setSolvedIds(prev => {
             const updated = prev.includes(op.eco) ? prev : [...prev, op.eco];
-            localStorage.setItem('chess-opening-practice', JSON.stringify(updated));
+            safeSave('chess-opening-practice', updated);
             return updated;
           });
         }
@@ -121,7 +122,7 @@ export default function OpeningModal({ activeBoardTheme, activePieceSet, onClose
             setStatus('done');
             setSolvedIds(prev => {
               const updated = prev.includes(opening.eco) ? prev : [...prev, opening.eco];
-              localStorage.setItem('chess-opening-practice', JSON.stringify(updated));
+              safeSave('chess-opening-practice', updated);
               return updated;
             });
           } else {

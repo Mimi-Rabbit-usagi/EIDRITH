@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { safeLoad } from '../lib/storage';
 
 const BASE_NAV_LINKS = [
   { path: '/play',    label: '対局',      icon: '♟' },
@@ -12,8 +13,8 @@ export default function NavBar() {
   const { pathname } = useLocation();
   const { user, loading, signInWithGoogle, signOut } = useAuth();
 
-  const avatarEmoji  = localStorage.getItem('chess-avatar-emoji') || '';
-  const displayName  = localStorage.getItem('chess-player-name') || user?.user_metadata?.full_name?.split(' ')[0] || 'あなた';
+  const avatarEmoji  = safeLoad('chess-avatar-emoji', '');
+  const displayName  = safeLoad('chess-player-name', null) || user?.user_metadata?.full_name?.split(' ')[0] || 'あなた';
 
   return (
     <nav className="navbar">

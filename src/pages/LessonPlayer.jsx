@@ -5,22 +5,18 @@ import NavBar from '../components/NavBar';
 import ChessBoard from '../components/ChessBoard';
 import { BOARD_THEMES } from '../data/themes';
 import { LESSONS } from '../data/lessons';
+import { loadGameData, safeLoad, safeSave } from '../lib/storage';
 
 function loadBoardTheme() {
-  try {
-    const d = JSON.parse(localStorage.getItem('chess-master-data') || '{}');
-    return BOARD_THEMES.find(t => t.id === (d.activeBoardTheme || 'classic')) || BOARD_THEMES[0];
-  } catch { return BOARD_THEMES[0]; }
+  const d = loadGameData();
+  return BOARD_THEMES.find(t => t.id === (d.activeBoardTheme || 'classic')) || BOARD_THEMES[0];
 }
 
 function saveProgress(lessonId) {
-  try {
-    const key = 'chess-lesson-progress';
-    const prev = JSON.parse(localStorage.getItem(key) || '[]');
-    if (!prev.includes(lessonId)) {
-      localStorage.setItem(key, JSON.stringify([...prev, lessonId]));
-    }
-  } catch {}
+  const prev = safeLoad('chess-lesson-progress', []);
+  if (!prev.includes(lessonId)) {
+    safeSave('chess-lesson-progress', [...prev, lessonId]);
+  }
 }
 
 // ── 説明ステップ ──────────────────────────────────────────────────────────────
@@ -84,7 +80,7 @@ function QuizStep({ step, onNext, boardTheme }) {
   const condition = step.successCondition || 'anyMove';
 
   const pieceSet = (() => {
-    try { return JSON.parse(localStorage.getItem('chess-master-data') || '{}').activePieceSet || 'classic'; } catch { return 'classic'; }
+    return loadGameData().activePieceSet || 'classic';
   })();
 
   const handleSquareClick = useCallback((square) => {
