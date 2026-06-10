@@ -7,15 +7,17 @@ function formatTime(secs) {
 export default function ChessClock({ time, isActive }) {
   if (time === null) return null;
 
-  const isLow  = time > 0 && time <= 10;
-  const isDead = time === 0;
+  const isUrgent = time > 0 && time <= 5;   // 残り5秒以下: 超緊迫
+  const isLow    = time > 5 && time <= 10;  // 残り10秒以下: 警告
+  const isDead   = time === 0;
 
   return (
     <div className={[
       'chess-clock',
-      isActive ? 'clock-active' : '',
-      isLow    ? 'clock-low'    : '',
-      isDead   ? 'clock-dead'   : '',
+      isActive  ? 'clock-active'  : '',
+      isLow     ? 'clock-low'     : '',
+      isUrgent  ? 'clock-urgent'  : '',
+      isDead    ? 'clock-dead'    : '',
     ].filter(Boolean).join(' ')}>
       <span className="clock-time">{formatTime(time)}</span>
     </div>

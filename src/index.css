@@ -84,7 +84,15 @@ body {
 .opponent-label { grid-area: opponent; }
 .player-label   { grid-area: player; }
 .eval-bar       { grid-area: eval; }
-.chess-board-wrapper { grid-area: board; }
+/* grid-area は .board-timeout-wrap が担うので chess-board-wrapper には不要 */
+.chess-board-wrapper { /* grid-area: board は board-timeout-wrap が担当 */ }
+
+/* タイムアウトバナーを盤面中央に重ねるためのラッパー */
+.board-timeout-wrap {
+  grid-area: board;
+  position: relative;
+  display: inline-flex;
+}
 
 .opponent-label,
 .player-label {
@@ -2056,6 +2064,18 @@ body {
   animation: clock-pulse 0.9s ease-in-out infinite;
 }
 
+/* 残り5秒以下: さらに緊迫感を上げる */
+.clock-urgent {
+  background: rgba(244, 67, 54, 0.3) !important;
+  border-color: #F44336 !important;
+  animation: clock-shake 0.4s ease-in-out infinite;
+}
+.clock-urgent .clock-time {
+  color: #FF1744 !important;
+  font-size: 17px !important;
+  animation: clock-pulse-fast 0.4s ease-in-out infinite;
+}
+
 .clock-dead {
   background: rgba(244, 67, 54, 0.25) !important;
   border-color: #F44336 !important;
@@ -2068,6 +2088,55 @@ body {
 @keyframes clock-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.35; }
+}
+
+@keyframes clock-pulse-fast {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.1); }
+}
+
+@keyframes clock-shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-2px); }
+  75%       { transform: translateX(2px); }
+}
+
+/* ── タイムアウトバナー ──────────────────────────────────────────────────── */
+.timeout-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 50;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: timeout-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.timeout-banner--win {
+  background: rgba(30, 200, 120, 0.92);
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 4px 24px rgba(30, 200, 120, 0.5);
+}
+
+.timeout-banner--lose {
+  background: rgba(244, 67, 54, 0.92);
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 4px 24px rgba(244, 67, 54, 0.5);
+}
+
+@keyframes timeout-pop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  60%  { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 /* 持ち時間ボタン行 — 4ボタン横並びに調整 */

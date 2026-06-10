@@ -141,9 +141,14 @@ export default function Play() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moveHistory.length]);
 
+  const [showTimeoutBanner, setShowTimeoutBanner] = useState(false);
+
   useEffect(() => {
     if (clockTimeout === null) return;
     playSound(clockTimeout !== playerColor ? 'win' : 'lose');
+    setShowTimeoutBanner(true);
+    const t = setTimeout(() => setShowTimeoutBanner(false), 1200);
+    return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clockTimeout]);
 
@@ -336,20 +341,34 @@ export default function Play() {
           </div>
 
           <EvalBar score={positionEval} gameStatus={gameStatus} winner={winner} />
-          <ChessBoard
-            board={board}
-            selectedSquare={selectedSquare}
-            legalMoves={legalMoves}
-            lastMove={lastMove}
-            gameStatus={gameStatus}
-            boardTheme={activeBoardTheme}
-            pieceSet={gameData.activePieceSet}
-            hint={hint}
-            flipped={gameMode === 'cpu' && playerColor === 'b'}
-            onSquareClick={handleSquareClick}
-            onDrop={handleDrop}
-            onCancelDrag={clearSelection}
-          />
+
+          <div className="board-timeout-wrap">
+            {showTimeoutBanner && clockTimeout !== null && (() => {
+              const loserName = gameMode === 'local'
+                ? (clockTimeout === 'w' ? `${playerName}（白）` : `${player2Name}（黒）`)
+                : (clockTimeout === playerColor ? 'あなた' : 'CPU');
+              const isPlayerLoss = gameMode === 'local' ? false : clockTimeout === playerColor;
+              return (
+                <div className={`timeout-banner ${isPlayerLoss ? 'timeout-banner--lose' : 'timeout-banner--win'}`}>
+                  ⏰ {loserName}の時間切れ！
+                </div>
+              );
+            })()}
+            <ChessBoard
+              board={board}
+              selectedSquare={selectedSquare}
+              legalMoves={legalMoves}
+              lastMove={lastMove}
+              gameStatus={gameStatus}
+              boardTheme={activeBoardTheme}
+              pieceSet={gameData.activePieceSet}
+              hint={hint}
+              flipped={gameMode === 'cpu' && playerColor === 'b'}
+              onSquareClick={handleSquareClick}
+              onDrop={handleDrop}
+              onCancelDrag={clearSelection}
+            />
+          </div>
 
           <div className="player-label">
             <div className={`player-chip player-chip-${playerColor === 'w' ? 'white' : 'black'}`}>
