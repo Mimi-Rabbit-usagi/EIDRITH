@@ -158,6 +158,10 @@ export default function GamePanel({
           onClick={() => setMobileTab('game')}
         >
           ♟ 対局
+          {/* 設定タブ表示中に思考中なら対局タブにドット表示 */}
+          {isThinking && mobileTab === 'settings' && (
+            <span className="mobile-tab-thinking-dot" />
+          )}
         </button>
         <button
           className={`mobile-tab-btn ${mobileTab === 'settings' ? 'mobile-tab-active' : ''}`}
@@ -166,6 +170,14 @@ export default function GamePanel({
           ⚙ 設定
         </button>
       </div>
+
+      {/* CPU思考中バナー: どのタブを開いていても常時表示（スマホ限定） */}
+      {isThinking && gameMode === 'cpu' && (
+        <div className="mobile-thinking-banner">
+          <div className="thinking-dots thinking-dots--small"><span /><span /><span /></div>
+          CPUが考え中...
+        </div>
+      )}
 
       {/* ── 対局タブ ── */}
       {/* ゲーム状態 */}

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { safeLoad } from '../lib/storage';
+import { OPENINGS } from '../data/openings';
 
 // hasContent: true = レッスンデータが存在する（コンテンツあり）
 // hasContent: false = 近日公開
@@ -98,6 +99,20 @@ export default function Learn() {
             </div>
           );
         })}
+      </section>
+
+      {/* 定跡ライブラリへのリンク */}
+      <section className="learn-opening-banner" onClick={() => navigate('/openings')}>
+        <div className="learn-opening-banner-inner">
+          <span className="learn-opening-banner-icon">📖</span>
+          <div>
+            <p className="learn-opening-banner-title">定跡ライブラリ</p>
+            <p className="learn-opening-banner-desc">
+              {OPENINGS.length}種類の序盤定跡を学び、盤面で練習できます
+            </p>
+          </div>
+          <span className="learn-opening-banner-arrow">→</span>
+        </div>
       </section>
 
       {/* 足元のCTA */}

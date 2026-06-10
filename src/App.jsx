@@ -7,6 +7,7 @@ import Profile from './pages/Profile';
 import LessonPlayer from './pages/LessonPlayer';
 import Review from './pages/Review';
 import Online from './pages/Online';
+import Openings from './pages/Openings';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/review" element={<Review />} />
       <Route path="/online" element={<Online />} />
+      <Route path="/openings" element={<Openings />} />
     </Routes>
   );
 }
