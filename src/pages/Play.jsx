@@ -142,6 +142,7 @@ export default function Play() {
   }, [moveHistory.length]);
 
   const [showTimeoutBanner, setShowTimeoutBanner] = useState(false);
+  const [showKeyHelp, setShowKeyHelp] = useState(false);
 
   useEffect(() => {
     if (clockTimeout === null) return;
@@ -151,6 +152,40 @@ export default function Play() {
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clockTimeout]);
+
+  // ── キーボードショートカット ──────────────────────────────────────────────
+  useEffect(() => {
+    const onKey = (e) => {
+      // テキスト入力中は無視
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      // モーダルが開いている間は無視（? ヘルプだけ閉じる）
+      const anyModalOpen = showSummary || showHistory || showStats ||
+                           showPuzzle || showOpening || showCustomize;
+      if (e.key === '?' || e.key === '/') {
+        e.preventDefault();
+        setShowKeyHelp(p => !p);
+        return;
+      }
+      if (e.key === 'Escape') { setShowKeyHelp(false); return; }
+      if (anyModalOpen) return;
+
+      if ((e.key === 'u' || e.key === 'U') && !isChessOver) {
+        e.preventDefault();
+        undoMove();
+      }
+      if ((e.key === 'h' || e.key === 'H') && !isChessOver) {
+        e.preventDefault();
+        if (hint) clearHint(); else requestHint();
+      }
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        handleNewGame();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isChessOver, hint, showSummary, showHistory, showStats, showPuzzle, showOpening, showCustomize]);
 
   useEffect(() => {
     const isOver = gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'draw' || clockTimeout !== null;
@@ -440,6 +475,45 @@ export default function Play() {
       )}
 
       {pendingPromotion && <PromotionModal onConfirm={confirmPromotion} />}
+
+      {showKeyHelp && (
+        <div className="key-help-overlay" onClick={() => setShowKeyHelp(false)}>
+          <div className="key-help-modal" onClick={e => e.stopPropagation()}>
+            <div className="key-help-header">
+              <span>⌨️ キーボードショートカット</span>
+              <button className="key-help-close" onClick={() => setShowKeyHelp(false)}>✕</button>
+            </div>
+            <div className="key-help-section">
+              <p className="key-help-section-title">対局画面</p>
+              {[
+                { key: 'U', desc: '待った（直前の1手を取り消す）' },
+                { key: 'H', desc: 'ヒント ON / OFF' },
+                { key: 'N', desc: '新しいゲームを始める' },
+                { key: '?', desc: 'このヘルプを開く / 閉じる' },
+                { key: 'Esc', desc: 'ヘルプを閉じる' },
+              ].map(({ key, desc }) => (
+                <div key={key} className="key-help-row">
+                  <kbd className="key-help-key">{key}</kbd>
+                  <span className="key-help-desc">{desc}</span>
+                </div>
+              ))}
+            </div>
+            <div className="key-help-section">
+              <p className="key-help-section-title">レビュー・リプレイ画面</p>
+              {[
+                { key: '←', desc: '1手前へ' },
+                { key: '→', desc: '1手次へ' },
+                { key: 'Esc', desc: '閉じる' },
+              ].map(({ key, desc }) => (
+                <div key={key} className="key-help-row">
+                  <kbd className="key-help-key">{key}</kbd>
+                  <span className="key-help-desc">{desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <UnlockToast unlock={pendingUnlock} onClose={closeUnlock} />
       <UnlockToast
