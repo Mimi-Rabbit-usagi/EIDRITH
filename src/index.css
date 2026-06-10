@@ -4418,6 +4418,85 @@ body {
 }
 .profile-diff-rate { font-size: 0.78rem; color: rgba(255,255,255,0.5); width: 36px; text-align: right; }
 
+/* ── 勝率グラフ ── */
+.win-rate-graph-wrap {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 12px 10px 8px;
+}
+.win-rate-graph-legend {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.wg-legend-item { font-size: 11px; color: rgba(255,255,255,0.45); }
+.wg-win  { color: #4CAF50; }
+.wg-loss { color: #F44336; }
+.wg-draw { color: #9E9E9E; }
+.wg-line { color: #FFD700; }
+
+/* ── 対局傾向分析 ── */
+.profile-tendency { display: flex; flex-direction: column; gap: 18px; }
+
+.tendency-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.tendency-stat {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.tendency-stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #FFD700;
+  line-height: 1;
+}
+.tendency-stat-label {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+}
+
+.tendency-techs { display: flex; flex-direction: column; gap: 8px; }
+.tendency-techs-title {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 2px;
+}
+.tendency-tech-row {
+  display: grid;
+  grid-template-columns: 22px 22px 1fr 36px 100px;
+  align-items: center;
+  gap: 8px;
+}
+.tendency-tech-rank  { font-size: 0.75rem; color: rgba(255,255,255,0.35); }
+.tendency-tech-icon  { font-size: 1rem; }
+.tendency-tech-name  { font-size: 0.83rem; color: rgba(255,255,255,0.8); }
+.tendency-tech-count { font-size: 0.75rem; color: rgba(255,255,255,0.45); text-align: right; }
+.tendency-tech-bar-wrap {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.tendency-tech-bar {
+  height: 100%;
+  border-radius: 3px;
+  opacity: 0.75;
+  transition: width 0.6s ease;
+}
+
 /* 学習進捗 */
 .profile-progress-list { display: flex; flex-direction: column; gap: 14px; }
 .profile-progress-item {

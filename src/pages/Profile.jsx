@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { useAuth } from '../hooks/useAuth';
 import { ACHIEVEMENTS } from '../data/achievements';
+import { TECHNIQUES } from '../data/techniques';
 import { PUZZLES } from '../data/puzzles';
 import { LESSONS } from '../data/lessons';
 import { loadGameData, safeLoad, safeSave } from '../lib/storage';
@@ -53,7 +54,117 @@ function calcStats(logs) {
   });
 
   const recent = logs.slice(0, 10);
-  return { total, wins, losses, draws, winRate, bestStreak, byDiff, recent };
+
+  // ── 戦術ランキング（全対局のtechniquesを集計） ──
+  const techCounts = {};
+  logs.forEach(l => {
+    (l.techniques || []).forEach(t => {
+      if (t.id) techCounts[t.id] = (techCounts[t.id] || 0) + 1;
+    });
+  });
+  const topTechs = Object.entries(techCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([id, count]) => ({ id, count, ...TECHNIQUES[id] }));
+
+  // ── 手数統計 ──
+  const allMoveCounts  = logs.filter(l => l.moveCount > 0).map(l => l.moveCount);
+  const winMoveCounts  = logs.filter(l => l.result === 'win' && l.moveCount > 0).map(l => l.moveCount);
+  const avgMoves       = allMoveCounts.length > 0
+    ? Math.round(allMoveCounts.reduce((s, v) => s + v, 0) / allMoveCounts.length) : null;
+  const shortestWin    = winMoveCounts.length > 0 ? Math.min(...winMoveCounts) : null;
+  const longestGame    = allMoveCounts.length > 0 ? Math.max(...allMoveCounts) : null;
+
+  // ── お気に入り難易度（最も多くプレイした難易度） ──
+  const diffCounts = { easy: 0, normal: 0, hard: 0 };
+  logs.forEach(l => { if (diffCounts[l.difficulty] !== undefined) diffCounts[l.difficulty]++; });
+  const favDifficulty = Object.entries(diffCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+  return { total, wins, losses, draws, winRate, bestStreak, byDiff, recent,
+           topTechs, avgMoves, shortestWin, longestGame, favDifficulty };
+}
+
+// ── 勝率グラフ（SVG、外部ライブラリなし） ─────────────────────────────────
+// 下段: 直近20対局の勝敗カラーバー
+// 上段: 5試合移動平均の勝率折れ線（ゴールド）
+function WinRateGraph({ logs }) {
+  const recent = [...logs].slice(0, 20).reverse(); // 古い順→新しい順
+  if (recent.length < 2) return null;
+
+  const VW = 320, BAR_H = 28, LINE_H = 56, SEP_Y = LINE_H + 4;
+  const H = SEP_Y + BAR_H + 4;
+  const LEFT = 24, RIGHT = 4;
+  const chartW = VW - LEFT - RIGHT;
+  const barW   = chartW / recent.length;
+
+  const COLOR = { win: '#4CAF50', loss: '#F44336', draw: '#9E9E9E' };
+
+  // 5試合移動平均
+  const points = recent.map((_, i) => {
+    const window = recent.slice(Math.max(0, i - 4), i + 1);
+    const rate = window.filter(l => l.result === 'win').length / window.length;
+    const x = LEFT + (i + 0.5) * barW;
+    const y = LINE_H - rate * (LINE_H - 10) - 4;
+    return { x, y };
+  });
+  const polyline = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  return (
+    <div className="win-rate-graph-wrap">
+      <svg width="100%" viewBox={`0 0 ${VW} ${H}`} style={{ overflow: 'visible', display: 'block' }}>
+        {/* Y軸ガイドライン */}
+        {[0, 50, 100].map(pct => {
+          const y = LINE_H - (pct / 100) * (LINE_H - 10) - 4;
+          return (
+            <g key={pct}>
+              <line x1={LEFT} y1={y} x2={VW - RIGHT} y2={y}
+                stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+              <text x={LEFT - 3} y={y + 3} fontSize="7"
+                fill="rgba(255,255,255,0.3)" textAnchor="end">{pct}%</text>
+            </g>
+          );
+        })}
+
+        {/* 区切り線 */}
+        <line x1={LEFT} y1={SEP_Y} x2={VW - RIGHT} y2={SEP_Y}
+          stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+
+        {/* 下段: 対局バー */}
+        {recent.map((log, i) => (
+          <rect
+            key={log.id ?? i}
+            x={LEFT + i * barW + 1}
+            y={SEP_Y + 3}
+            width={barW - 2}
+            height={BAR_H}
+            rx="2"
+            fill={COLOR[log.result] || COLOR.draw}
+            opacity="0.8"
+          />
+        ))}
+
+        {/* 上段: 移動平均折れ線 */}
+        <polyline
+          points={polyline}
+          fill="none"
+          stroke="#FFD700"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.9"
+        />
+        {points.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r="2" fill="#FFD700" opacity="0.9" />
+        ))}
+      </svg>
+      <div className="win-rate-graph-legend">
+        <span className="wg-legend-item wg-win">■ 勝ち</span>
+        <span className="wg-legend-item wg-loss">■ 負け</span>
+        <span className="wg-legend-item wg-draw">■ 引き分け</span>
+        <span className="wg-legend-item wg-line">— 5試合平均</span>
+      </div>
+    </div>
+  );
 }
 
 function ResultDot({ result }) {
@@ -268,6 +379,14 @@ export default function Profile() {
           ))}
         </section>
 
+        {/* 勝率グラフ */}
+        {data.logs.length >= 2 && (
+          <section className="profile-section">
+            <h2 className="profile-section-title">直近20対局 勝率推移</h2>
+            <WinRateGraph logs={data.logs} />
+          </section>
+        )}
+
         {/* 難易度別 */}
         <section className="profile-section">
           <h2 className="profile-section-title">難易度別成績</h2>
@@ -290,6 +409,62 @@ export default function Profile() {
             })}
           </div>
         </section>
+
+        {/* 対局傾向分析 */}
+        {s.total > 0 && (
+          <section className="profile-section">
+            <h2 className="profile-section-title">対局の傾向</h2>
+            <div className="profile-tendency">
+
+              {/* 手数統計 */}
+              <div className="tendency-row">
+                <div className="tendency-stat">
+                  <span className="tendency-stat-value">{s.avgMoves ?? '–'}</span>
+                  <span className="tendency-stat-label">平均手数</span>
+                </div>
+                <div className="tendency-stat">
+                  <span className="tendency-stat-value">{s.shortestWin ?? '–'}</span>
+                  <span className="tendency-stat-label">最短勝利</span>
+                </div>
+                <div className="tendency-stat">
+                  <span className="tendency-stat-value">{s.longestGame ?? '–'}</span>
+                  <span className="tendency-stat-label">最長対局</span>
+                </div>
+                <div className="tendency-stat">
+                  <span className="tendency-stat-value" style={{ color: DIFF_COLOR[s.favDifficulty] }}>
+                    {DIFF_LABEL[s.favDifficulty] ?? '–'}
+                  </span>
+                  <span className="tendency-stat-label">よく遊ぶ難易度</span>
+                </div>
+              </div>
+
+              {/* 戦術ランキング */}
+              {s.topTechs.length > 0 && (
+                <div className="tendency-techs">
+                  <p className="tendency-techs-title">よく使う戦術 Top{s.topTechs.length}</p>
+                  {s.topTechs.map((t, i) => (
+                    <div key={t.id} className="tendency-tech-row">
+                      <span className="tendency-tech-rank">#{i + 1}</span>
+                      <span className="tendency-tech-icon">{t.icon ?? '♟'}</span>
+                      <span className="tendency-tech-name">{t.name ?? t.id}</span>
+                      <span className="tendency-tech-count">{t.count}回</span>
+                      <div className="tendency-tech-bar-wrap">
+                        <div
+                          className="tendency-tech-bar"
+                          style={{
+                            width: `${Math.round((t.count / s.topTechs[0].count) * 100)}%`,
+                            background: t.color ?? '#FFD700',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
+          </section>
+        )}
 
         {/* 学習進捗 */}
         <section className="profile-section">
