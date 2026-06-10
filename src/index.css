@@ -5158,6 +5158,329 @@ body {
   line-height: 1.8;
 }
 
+/* ── Puzzle: 解答手順パネル ──────────────────────────────────────────────── */
+.puzzles-solution-panel {
+  background: rgba(26,26,46,0.95);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.puzzles-solution-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.puzzles-solution-badge {
+  background: rgba(108,99,255,0.3);
+  color: #B39DDB;
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  animation: thinking-dot-pulse 1s ease-in-out infinite;
+}
+.puzzles-solution-moves { display: flex; flex-direction: column; gap: 3px; }
+.puzzles-solution-row {
+  display: flex;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-family: monospace;
+  align-items: baseline;
+}
+.puzzles-sol-num { color: #555; min-width: 18px; }
+.puzzles-sol-move {
+  min-width: 52px;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.puzzles-sol-move.sol-hidden { color: #444; letter-spacing: 0.1em; }
+.puzzles-sol-move.sol-revealed { color: #ccc; }
+.puzzles-sol-move.sol-current {
+  background: rgba(108,99,255,0.35);
+  color: #fff;
+  font-weight: 700;
+}
+.puzzle-solution-btn {
+  width: 100%;
+  padding: 8px;
+  background: rgba(255,193,7,0.12);
+  border: 1px solid rgba(255,193,7,0.3);
+  border-radius: 8px;
+  color: #ffe082;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+.puzzle-solution-btn:hover { background: rgba(255,193,7,0.22); }
+
+/* ── FEN Input Modal ─────────────────────────────────────────────────────── */
+.fen-input-modal {
+  background: #1a1a2e;
+  border: 1px solid rgba(108,99,255,0.4);
+  border-radius: 16px;
+  padding: 24px;
+  width: min(480px, 94vw);
+}
+.fen-input-desc {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin: 12px 0 10px;
+  line-height: 1.5;
+}
+.fen-input-textarea {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #fffffe;
+  font-family: monospace;
+  font-size: 0.82rem;
+  padding: 10px 12px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.fen-input-textarea:focus { border-color: rgba(108,99,255,0.6); }
+.fen-input-error {
+  color: #F44336;
+  font-size: 0.82rem;
+  margin: 6px 0 0;
+}
+.fen-input-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.fen-input-start-btn {
+  flex: 1;
+  padding: 10px;
+  background: linear-gradient(135deg, #6c63ff, #ff6584);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.fen-input-start-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.fen-input-start-btn:not(:disabled):hover { opacity: 0.88; }
+.fen-input-cancel-btn {
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #aaa;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.fen-input-cancel-btn:hover { background: rgba(255,255,255,0.1); }
+
+/* ── Endgame Page ────────────────────────────────────────────────────────── */
+.endgame-page {
+  min-height: 100vh;
+  padding-top: 52px;
+  background: radial-gradient(ellipse at 20% 50%, #16213e 0%, #0f0e17 60%);
+}
+.endgame-hero {
+  text-align: center;
+  padding: 40px 16px 24px;
+}
+.endgame-title {
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+.endgame-subtitle { color: #aaa; font-size: 1rem; margin: 0 0 12px; }
+.endgame-progress-summary { font-size: 0.9rem; color: #888; margin: 0; }
+.endgame-progress-summary strong { color: #6c63ff; }
+
+/* レッスン一覧 */
+.endgame-list-section {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 16px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.endgame-lesson-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(26,26,46,0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px 20px;
+  cursor: pointer;
+  text-align: left;
+  color: #fffffe;
+  transition: background 0.18s, border-color 0.18s, transform 0.15s;
+}
+.endgame-lesson-card:hover {
+  background: rgba(108,99,255,0.15);
+  border-color: rgba(108,99,255,0.5);
+  transform: translateY(-2px);
+}
+.endgame-lesson-card--done { border-color: rgba(76,175,80,0.4); background: rgba(76,175,80,0.07); }
+.endgame-lesson-icon { font-size: 2.2rem; flex-shrink: 0; }
+.endgame-lesson-body { flex: 1; }
+.endgame-lesson-title { font-size: 1.1rem; font-weight: 700; margin: 0 0 4px; }
+.endgame-lesson-desc { font-size: 0.82rem; color: #999; margin: 0 0 8px; }
+.endgame-lesson-steps-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.endgame-step-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.endgame-step-dot--done { background: #4CAF50; border-color: #4CAF50; }
+.endgame-steps-count { font-size: 0.75rem; color: #666; margin-left: 4px; }
+.endgame-lesson-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.endgame-lesson-badge--done { background: rgba(76,175,80,0.2); color: #81C784; }
+.endgame-lesson-badge--go   { background: rgba(108,99,255,0.2); color: #B39DDB; }
+
+/* レッスンビュー */
+.endgame-lesson-wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+.endgame-lesson-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.endgame-back-btn {
+  background: rgba(108,99,255,0.2);
+  border: 1px solid rgba(108,99,255,0.4);
+  color: #B39DDB;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.endgame-back-btn:hover { background: rgba(108,99,255,0.35); }
+.endgame-lesson-header-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.endgame-lesson-header-icon { font-size: 1.4rem; }
+.endgame-lesson-header-title { font-size: 1.2rem; font-weight: 700; margin: 0; }
+.endgame-step-progress {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
+}
+.endgame-step-pip {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: background 0.2s;
+}
+.endgame-step-pip.pip-current { background: #6c63ff; border-color: #6c63ff; }
+.endgame-step-pip.pip-done    { background: #4CAF50; border-color: #4CAF50; }
+
+.endgame-lesson-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 640px) {
+  .endgame-lesson-body { grid-template-columns: 1fr; }
+}
+.endgame-board-col { max-width: 480px; }
+.endgame-text-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+.endgame-step-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #888;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.endgame-type-tag {
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.endgame-type-tag--explain  { background: rgba(255,193,7,0.2);   color: #ffe082; }
+.endgame-type-tag--challenge { background: rgba(108,99,255,0.25); color: #B39DDB; }
+.endgame-step-title { font-size: 1.15rem; font-weight: 700; margin: 0; }
+.endgame-step-text {
+  font-size: 0.9rem;
+  color: #bbb;
+  line-height: 1.65;
+  margin: 0;
+  background: rgba(255,255,255,0.04);
+  border-left: 3px solid #6c63ff;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+}
+.endgame-actions { display: flex; flex-direction: column; gap: 8px; }
+.endgame-next-btn {
+  padding: 12px;
+  background: linear-gradient(135deg, #6c63ff, #ff6584);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.endgame-next-btn:hover { opacity: 0.88; }
+.endgame-reset-btn {
+  padding: 9px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #aaa;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.endgame-reset-btn:hover { background: rgba(255,255,255,0.1); }
+
 /* ── Learn: 定跡ライブラリ バナー ─────────────────────────────────────────── */
 .learn-opening-banner {
   max-width: 860px;

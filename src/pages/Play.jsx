@@ -88,6 +88,7 @@ export default function Play() {
     undoMove,
     offerDraw,
     drawReason,
+    resetWithFen,
   } = useChessGame(difficulty, playerColor, gameMode === 'local' ? 'human' : 'cpu');
 
   moveHistoryRef.current = moveHistory;
@@ -143,6 +144,9 @@ export default function Play() {
 
   const [showTimeoutBanner, setShowTimeoutBanner] = useState(false);
   const [showKeyHelp, setShowKeyHelp] = useState(false);
+  const [showFenInput, setShowFenInput] = useState(false);
+  const [fenValue, setFenValue] = useState('');
+  const [fenError, setFenError] = useState(null);
 
   useEffect(() => {
     if (clockTimeout === null) return;
@@ -277,6 +281,22 @@ export default function Play() {
     setWinCounted(false);
     setShowSummary(false);
   }, [resetGame, resetClock]);
+
+  const handleFenStart = useCallback(() => {
+    const trimmed = fenValue.trim();
+    const ok = resetWithFen(trimmed);
+    if (!ok) {
+      setFenError('無効なFEN形式です。正しいFENを入力してください。');
+      return;
+    }
+    resetClock();
+    setClockTimeout(null);
+    setWinCounted(false);
+    setShowSummary(false);
+    setShowFenInput(false);
+    setFenValue('');
+    setFenError(null);
+  }, [fenValue, resetWithFen, resetClock]);
 
   const handleDifficultyChange = useCallback((d) => {
     setDifficulty(d);
@@ -449,6 +469,7 @@ export default function Play() {
           onShowPuzzle={() => setShowPuzzle(true)}
           onShowOpening={() => setShowOpening(true)}
           onShowCustomize={() => setShowCustomize(true)}
+          onShowFenInput={() => { setFenValue(''); setFenError(null); setShowFenInput(true); }}
           onToggleSound={toggleSound}
           onHint={requestHint}
           onClearHint={clearHint}
@@ -510,6 +531,41 @@ export default function Play() {
                   <span className="key-help-desc">{desc}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showFenInput && (
+        <div className="key-help-overlay" onClick={() => setShowFenInput(false)}>
+          <div className="fen-input-modal" onClick={e => e.stopPropagation()}>
+            <div className="key-help-header">
+              <span>♟ FEN入力で局面を設定</span>
+              <button className="key-help-close" onClick={() => setShowFenInput(false)}>✕</button>
+            </div>
+            <p className="fen-input-desc">
+              FEN（チェスの局面記法）を貼り付けると、その局面から対局できます。
+            </p>
+            <textarea
+              className="fen-input-textarea"
+              placeholder="例: rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+              value={fenValue}
+              onChange={e => { setFenValue(e.target.value); setFenError(null); }}
+              rows={3}
+              spellCheck={false}
+              autoComplete="off"
+            />
+            {fenError && <p className="fen-input-error">{fenError}</p>}
+            <div className="fen-input-actions">
+              <button
+                className="fen-input-start-btn"
+                onClick={handleFenStart}
+                disabled={!fenValue.trim()}
+              >この局面で対局開始</button>
+              <button
+                className="fen-input-cancel-btn"
+                onClick={() => setShowFenInput(false)}
+              >キャンセル</button>
             </div>
           </div>
         </div>

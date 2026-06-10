@@ -35,10 +35,18 @@ export default function Puzzles() {
   const [solvedIds, setSolvedIds]   = useState(() => {
     return safeLoad('chess-solved-puzzles', []);
   });
-  const autoMoveTimer = useRef(null);
+  const [solutionMode, setSolutionMode] = useState(false);
+  const [solutionStep, setSolutionStep] = useState(-1);
+  const autoMoveTimer  = useRef(null);
+  const solutionTimers = useRef([]);
 
   const filteredPuzzles = filter === 'all' ? PUZZLES : PUZZLES.filter(p => p.difficulty === filter);
   const puzzle = puzzleIdx !== null ? filteredPuzzles[puzzleIdx] : null;
+
+  const clearSolutionTimers = useCallback(() => {
+    solutionTimers.current.forEach(clearTimeout);
+    solutionTimers.current = [];
+  }, []);
 
   const openPuzzle = useCallback((idx) => {
     const p = filteredPuzzles[idx];
@@ -51,8 +59,37 @@ export default function Puzzles() {
     setLastMove(null);
     setStatus('idle');
     setShowHint(false);
+    setSolutionMode(false);
+    setSolutionStep(-1);
     clearTimeout(autoMoveTimer.current);
-  }, [chess, filteredPuzzles]);
+    clearSolutionTimers();
+  }, [chess, filteredPuzzles, clearSolutionTimers]);
+
+  const startSolutionReplay = useCallback(() => {
+    if (!puzzle) return;
+    clearTimeout(autoMoveTimer.current);
+    clearSolutionTimers();
+    chess.load(puzzle.fen);
+    setFen(chess.fen());
+    setLastMove(null);
+    setSelectedSq(null);
+    setLegalMoves([]);
+    setSolutionMode(true);
+    setSolutionStep(-1);
+    setStatus('idle');
+
+    puzzle.solution.forEach((san, i) => {
+      const t = setTimeout(() => {
+        const move = chess.move(san);
+        if (move) {
+          setFen(chess.fen());
+          setLastMove({ from: move.from, to: move.to });
+          setSolutionStep(i);
+        }
+      }, (i + 1) * 900);
+      solutionTimers.current.push(t);
+    });
+  }, [puzzle, chess, clearSolutionTimers]);
 
   const playOpponentMove = useCallback((p, nextIdx) => {
     if (nextIdx >= p.solution.length) return;
@@ -68,7 +105,7 @@ export default function Puzzles() {
   }, [chess]);
 
   const handleSquareClick = useCallback((square) => {
-    if (!puzzle || status === 'done' || status === 'wrong') return;
+    if (!puzzle || status === 'done' || status === 'wrong' || solutionMode) return;
     const turn = chess.turn();
     const piece = chess.get(square);
 
@@ -128,7 +165,10 @@ export default function Puzzles() {
     }
   }, [puzzle, status, chess, selectedSq, legalMoves, moveIdx, playOpponentMove]);
 
-  useEffect(() => () => clearTimeout(autoMoveTimer.current), []);
+  useEffect(() => () => {
+    clearTimeout(autoMoveTimer.current);
+    solutionTimers.current.forEach(clearTimeout);
+  }, []);
 
   const solvedCount = solvedIds.filter(id => PUZZLES.find(p => p.id === id)).length;
 
@@ -246,14 +286,60 @@ export default function Puzzles() {
             </div>
           </div>
 
+          {/* 解答手順パネル */}
+          <div className="puzzles-solution-panel">
+            <div className="puzzles-solution-header">
+              <span>解答手順</span>
+              {solutionMode && <span className="puzzles-solution-badge">▶ 再生中</span>}
+            </div>
+            <div className="puzzles-solution-moves">
+              {Array.from({ length: Math.ceil(puzzle.solution.length / 2) }, (_, i) => {
+                const wIdx = i * 2;
+                const bIdx = i * 2 + 1;
+                const reveal = solutionMode || status === 'done';
+                return (
+                  <div key={i} className="puzzles-solution-row">
+                    <span className="puzzles-sol-num">{i + 1}.</span>
+                    <span className={[
+                      'puzzles-sol-move',
+                      reveal ? 'sol-revealed' : 'sol-hidden',
+                      solutionStep === wIdx ? 'sol-current' : '',
+                    ].filter(Boolean).join(' ')}>
+                      {reveal ? puzzle.solution[wIdx] : '??'}
+                    </span>
+                    {puzzle.solution[bIdx] !== undefined && (
+                      <span className={[
+                        'puzzles-sol-move',
+                        reveal ? 'sol-revealed' : 'sol-hidden',
+                        solutionStep === bIdx ? 'sol-current' : '',
+                      ].filter(Boolean).join(' ')}>
+                        {reveal ? puzzle.solution[bIdx] : '??'}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="puzzles-actions">
-            {status !== 'done' && (
-              <button className="puzzle-hint-btn" onClick={() => setShowHint(h => !h)}>
-                💡 {showHint ? 'ヒントを隠す' : 'ヒントを見る'}
-              </button>
+            {status !== 'done' && !solutionMode && (
+              <>
+                <button className="puzzle-hint-btn" onClick={() => setShowHint(h => !h)}>
+                  💡 {showHint ? 'ヒントを隠す' : 'ヒントを見る'}
+                </button>
+                <button className="puzzle-solution-btn" onClick={startSolutionReplay}>
+                  📖 解答を見る
+                </button>
+              </>
             )}
-            {showHint && status !== 'done' && (
+            {showHint && status !== 'done' && !solutionMode && (
               <p className="puzzle-hint-text">{puzzle.hint}</p>
+            )}
+            {solutionMode && (
+              <button className="puzzle-retry-btn" onClick={() => openPuzzle(puzzleIdx)}>
+                もう一度挑戦する
+              </button>
             )}
             {status === 'done' && (
               <div className="puzzle-next-row">

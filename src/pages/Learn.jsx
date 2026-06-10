@@ -101,6 +101,21 @@ export default function Learn() {
         })}
       </section>
 
+      {/* エンドゲームレッスンへのリンク */}
+      <section className="learn-opening-banner" onClick={() => navigate('/endgame')}
+        style={{ marginBottom: '12px' }}>
+        <div className="learn-opening-banner-inner">
+          <span className="learn-opening-banner-icon">🏁</span>
+          <div>
+            <p className="learn-opening-banner-title">エンドゲームレッスン</p>
+            <p className="learn-opening-banner-desc">
+              オポジション・ポーン昇格・ルーク詰みをインタラクティブに学ぶ
+            </p>
+          </div>
+          <span className="learn-opening-banner-arrow">→</span>
+        </div>
+      </section>
+
       {/* 定跡ライブラリへのリンク */}
       <section className="learn-opening-banner" onClick={() => navigate('/openings')}>
         <div className="learn-opening-banner-inner">

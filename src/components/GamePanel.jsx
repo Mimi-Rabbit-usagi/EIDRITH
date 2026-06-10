@@ -110,6 +110,7 @@ export default function GamePanel({
   onGameModeChange, onDifficultyChange, onNewGame, onShowHistory,
   onToggleSound, onHint, onClearHint, onUndo, onOfferDraw, onPlayerColorChange, onClockModeChange,
   onPlayerNameChange, onPlayer2NameChange, onShowStats, onShowPuzzle, onShowOpening, onShowCustomize,
+  onShowFenInput,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
   const moveListRef = (el) => { if (el) el.scrollTop = el.scrollHeight; };
@@ -423,6 +424,9 @@ export default function GamePanel({
         <button className="history-btn" onClick={onShowHistory}>📋 履歴</button>
         <button className="history-btn" onClick={onShowPuzzle}>🧩 パズル</button>
         <button className="history-btn" onClick={onShowOpening}>📖 定跡</button>
+        {onShowFenInput && (
+          <button className="history-btn" onClick={onShowFenInput}>♟ FEN入力</button>
+        )}
       </div>
 
     </div>

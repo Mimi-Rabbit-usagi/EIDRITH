@@ -8,6 +8,7 @@ import LessonPlayer from './pages/LessonPlayer';
 import Review from './pages/Review';
 import Online from './pages/Online';
 import Openings from './pages/Openings';
+import Endgame from './pages/Endgame';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
       <Route path="/review" element={<Review />} />
       <Route path="/online" element={<Online />} />
       <Route path="/openings" element={<Openings />} />
+      <Route path="/endgame" element={<Endgame />} />
     </Routes>
   );
 }

@@ -264,6 +264,33 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
     setGameResetKey(prev => prev + 1);
   }, []);
 
+  /** 任意FENから対局開始。成功時 true、無効FENなら false を返す */
+  const resetWithFen = useCallback((fen) => {
+    try {
+      const c = new Chess();
+      c.load(fen);
+      clearTimeout(aiTimerRef.current);
+      chessRef.current = c;
+      setFen(c.fen());
+      setSelectedSquare(null);
+      setLegalMoves([]);
+      setLastMove(null);
+      setIsThinking(false);
+      setTechnique(null);
+      setTechniqueLog([]);
+      setCapturedPieces({ w: [], b: [] });
+      setPendingPromotion(null);
+      setHint(null);
+      setCurrentOpening(null);
+      setPositionEval(evaluatePosition(c));
+      setAgreedDraw(false);
+      setGameResetKey(prev => prev + 1);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
   // 新しいゲーム開始時、またはplayerColorが変わったとき：CPUが先手なら即発動
   useEffect(() => {
     const c = chessRef.current;
@@ -343,6 +370,7 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
     moveHistory: chess.history({ verbose: true }),
     handleSquareClick,
     resetGame,
+    resetWithFen,
     closeTechnique,
     pendingPromotion,
     confirmPromotion,
