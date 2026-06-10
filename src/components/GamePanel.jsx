@@ -108,7 +108,7 @@ export default function GamePanel({
   currentOpening,
   gameMode, playerColor, playerName, player2Name, clockMode,
   onGameModeChange, onDifficultyChange, onNewGame, onShowHistory,
-  onToggleSound, onHint, onClearHint, onUndo, onPlayerColorChange, onClockModeChange,
+  onToggleSound, onHint, onClearHint, onUndo, onOfferDraw, onPlayerColorChange, onClockModeChange,
   onPlayerNameChange, onPlayer2NameChange, onShowStats, onShowPuzzle, onShowOpening, onShowCustomize,
 }) {
   const status = STATUS_CONFIG[gameStatus] || STATUS_CONFIG.playing;
@@ -206,6 +206,13 @@ export default function GamePanel({
                   title="直前の1手を取り消す"
                 >
                   ↩ 待った
+                </button>
+                <button
+                  className="draw-offer-btn"
+                  onClick={onOfferDraw}
+                  title="引き分けを申し出る"
+                >
+                  🤝 引き分け
                 </button>
               </div>
             )}

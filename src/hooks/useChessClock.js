@@ -8,62 +8,87 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  * playerColor: 'w' | 'b'
  * isGameOver: boolean
  * onTimeout(loserColor): 時間切れ時コールバック
+ *
+ * 精度改善ポイント:
+ * - setInterval(1000ms) の±100ms 誤差を排除するため、
+ *   Date.now() 基準で経過秒を計算し 200ms ごとに UI を更新
+ * - バックグラウンドタブ復帰時に visibilitychange で即座に補正
+ * - タイムアウトは非同期ではなく即座に呼び出す
  */
 export function useChessClock({ clockMode, currentTurn, playerColor, isGameOver, onTimeout }) {
   const getInitTime = () => clockMode === 'none' ? null : parseInt(clockMode) * 60;
 
   const [playerTime, setPlayerTime] = useState(getInitTime);
-  const [cpuTime, setCpuTime] = useState(getInitTime);
+  const [cpuTime, setCpuTime]       = useState(getInitTime);
 
-  const timedOutRef = useRef(false);
-  const onTimeoutRef = useRef(onTimeout);
+  // Ref で「現在の残り時間」を保持する（エフェクト再起動時の初期値として使う）
+  const playerTimeRef = useRef(playerTime);
+  const cpuTimeRef    = useRef(cpuTime);
+  const timedOutRef   = useRef(false);
+  const onTimeoutRef  = useRef(onTimeout);
   onTimeoutRef.current = onTimeout;
 
   // clockMode が変わったらリセット
   useEffect(() => {
     const t = clockMode === 'none' ? null : parseInt(clockMode) * 60;
+    playerTimeRef.current = t;
+    cpuTimeRef.current    = t;
     setPlayerTime(t);
     setCpuTime(t);
     timedOutRef.current = false;
+  // clockMode だけに反応すればよい
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clockMode]);
 
-  // 1秒ごとにカウントダウン
   useEffect(() => {
     if (clockMode === 'none' || isGameOver || timedOutRef.current) return;
 
     const isPlayerTurn = currentTurn === playerColor;
-    const cpuColor = playerColor === 'w' ? 'b' : 'w';
+    const cpuColor     = playerColor === 'w' ? 'b' : 'w';
+    const loserColor   = isPlayerTurn ? playerColor : cpuColor;
+    const setTime      = isPlayerTurn ? setPlayerTime : setCpuTime;
+    const timeRef      = isPlayerTurn ? playerTimeRef : cpuTimeRef;
 
-    const tick = setInterval(() => {
-      if (isPlayerTurn) {
-        setPlayerTime(prev => {
-          if (prev === null || prev <= 0) return prev;
-          const next = prev - 1;
-          if (next <= 0 && !timedOutRef.current) {
-            timedOutRef.current = true;
-            setTimeout(() => onTimeoutRef.current(playerColor), 0);
-          }
-          return next;
-        });
-      } else {
-        setCpuTime(prev => {
-          if (prev === null || prev <= 0) return prev;
-          const next = prev - 1;
-          if (next <= 0 && !timedOutRef.current) {
-            timedOutRef.current = true;
-            setTimeout(() => onTimeoutRef.current(cpuColor), 0);
-          }
-          return next;
-        });
+    // このターンが始まった瞬間の壁時計と残り時間を固定する
+    const startWallMs    = Date.now();
+    const startRemaining = timeRef.current;
+
+    if (startRemaining === null || startRemaining <= 0) return;
+
+    const update = () => {
+      const elapsedSec  = (Date.now() - startWallMs) / 1000;
+      const remaining   = Math.max(0, startRemaining - elapsedSec);
+      // Math.ceil: 0.9秒 → 表示1、0.0秒 → 表示0（タイムアウト）
+      const displaySec  = Math.ceil(remaining);
+
+      timeRef.current = displaySec;
+      setTime(displaySec);
+
+      if (remaining <= 0 && !timedOutRef.current) {
+        timedOutRef.current = true;
+        onTimeoutRef.current(loserColor); // 非同期にせず即座に呼ぶ
       }
-    }, 1000);
+    };
 
-    return () => clearInterval(tick);
+    // 200ms ごとに更新することで setInterval(1000ms) の誤差を大幅削減
+    const tick = setInterval(update, 200);
+
+    // バックグラウンドタブから復帰した直後に即座に補正
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') update();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      clearInterval(tick);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [clockMode, currentTurn, playerColor, isGameOver]);
 
   const resetClock = useCallback(() => {
     const t = clockMode === 'none' ? null : parseInt(clockMode) * 60;
+    playerTimeRef.current = t;
+    cpuTimeRef.current    = t;
     setPlayerTime(t);
     setCpuTime(t);
     timedOutRef.current = false;

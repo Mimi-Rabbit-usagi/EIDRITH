@@ -2480,6 +2480,26 @@ body {
   cursor: not-allowed;
 }
 
+.draw-offer-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 200, 150, 0.35);
+  background: rgba(100, 200, 150, 0.08);
+  color: #81c995;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.draw-offer-btn:hover {
+  background: rgba(100, 200, 150, 0.2);
+  color: #fff;
+}
+
 /* ── Piece Values ────────────────────────────────────────────────────────── */
 .piece-values-grid {
   display: flex;

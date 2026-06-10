@@ -86,6 +86,8 @@ export default function Play() {
     currentOpening,
     positionEval,
     undoMove,
+    offerDraw,
+    drawReason,
   } = useChessGame(difficulty, playerColor, gameMode === 'local' ? 'human' : 'cpu');
 
   moveHistoryRef.current = moveHistory;
@@ -104,7 +106,8 @@ export default function Play() {
   const effectiveGameStatus = clockTimeout !== null ? 'timeout' : gameStatus;
   const effectiveWinner     = clockTimeout !== null ? (clockTimeout === 'w' ? 'b' : 'w') : winner;
   const playerWon = gameMode === 'local'
-    ? (gameStatus === 'checkmate' || clockTimeout !== null)
+    // 2人対戦: 決着あり（チェックメイト or 時間切れ）のときだけ紙吹雪
+    ? (effectiveWinner !== null && (gameStatus === 'checkmate' || clockTimeout !== null))
     : (gameStatus === 'checkmate' && winner === playerColor)
       || (clockTimeout !== null && clockTimeout !== playerColor);
 
@@ -386,6 +389,7 @@ export default function Play() {
           onClockModeChange={handleClockModeChange}
           onPlayerColorChange={handlePlayerColorChange}
           onUndo={undoMove}
+          onOfferDraw={offerDraw}
           onNewGame={handleNewGame}
           onShowHistory={() => setShowHistory(true)}
           onShowPuzzle={() => setShowPuzzle(true)}
@@ -407,7 +411,9 @@ export default function Play() {
           capturedPieces={capturedPieces}
           difficulty={difficulty}
           gameMode={gameMode}
+          playerName={playerName}
           player2Name={player2Name}
+          drawReason={drawReason}
           onNewGame={handleNewGame}
           onClose={() => setShowSummary(false)}
           onReplay={handleReplayCurrentGame}

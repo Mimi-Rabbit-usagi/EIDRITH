@@ -130,9 +130,17 @@ const BASE_RESULT_CONFIG = {
   },
 };
 
+const DRAW_REASON_LABEL = {
+  repetition:  '三回繰り返し',
+  fifty:       '50手ルール',
+  insufficient: '駒不足',
+  agreement:   '合意による引き分け',
+};
+
 export default function GameSummary({
   gameStatus, winner, playerColor = 'w', moveHistory, techniqueLog,
-  capturedPieces, difficulty, gameMode, player2Name, onNewGame, onClose, onReplay,
+  capturedPieces, difficulty, gameMode, playerName, player2Name, drawReason,
+  onNewGame, onClose, onReplay,
 }) {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const analysis = useMemo(() => {
@@ -145,10 +153,11 @@ export default function GameSummary({
   const result = (gameStatus === 'checkmate' || gameStatus === 'timeout')
     ? (winner === playerColor ? 'win' : 'loss') : 'draw';
 
-  // 2人対戦では勝者名を表示（playerColor は常に 'w' に固定される）
+  // 2人対戦では「プレイヤー名（色）」で勝者を表示
+  const p1Name = playerName ?? 'プレイヤー1';
+  const p2Name = player2Name ?? 'プレイヤー2';
   const localWinnerName = isLocal && winner
-    ? (winner === 'w' ? `${playerColor === 'w' ? 'あなた' : (player2Name ?? 'プレイヤー2')}（白）`
-                      : `${playerColor === 'b' ? 'あなた' : (player2Name ?? 'プレイヤー2')}（黒）`)
+    ? (winner === 'w' ? `${p1Name}（白）` : `${p2Name}（黒）`)
     : null;
 
   const RESULT_CONFIG = {
@@ -161,7 +170,8 @@ export default function GameSummary({
 
   const cfg = RESULT_CONFIG[result];
 
-  const endLabel = { checkmate: 'チェックメイト', stalemate: 'ステイルメイト', draw: '引き分け', timeout: '時間切れ' }[gameStatus] || '';
+  const drawLabel = drawReason ? `引き分け（${DRAW_REASON_LABEL[drawReason] ?? drawReason}）` : '引き分け';
+  const endLabel = { checkmate: 'チェックメイト', stalemate: 'ステイルメイト', draw: drawLabel, timeout: '時間切れ' }[gameStatus] || '';
   const moveCount = moveHistory.length;
   const lostMaterial   = calcMaterial(capturedPieces[cpuColor]);
   const gainedMaterial = calcMaterial(capturedPieces[playerColor]);

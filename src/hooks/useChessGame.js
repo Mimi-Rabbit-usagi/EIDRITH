@@ -12,6 +12,14 @@ function buildGameStatus(chess) {
   return 'playing';
 }
 
+/** 引き分けになった理由を返す（draw でない場合は null） */
+function buildDrawReason(chess) {
+  if (chess.isInsufficientMaterial()) return 'insufficient';
+  if (chess.isThreefoldRepetition()) return 'repetition';
+  if (chess.isDraw()) return 'fifty'; // 上2つに該当しない isDraw は50手ルール
+  return null;
+}
+
 
 export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 'cpu') {
   const chessRef = useRef(new Chess());
@@ -30,6 +38,7 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
   const [currentOpening, setCurrentOpening] = useState(null);
   const [positionEval, setPositionEval] = useState(0);
   const [gameResetKey, setGameResetKey] = useState(0);
+  const [agreedDraw, setAgreedDraw] = useState(false); // 引き分け合意フラグ
   const aiTimerRef = useRef(null);
 
   const chess = chessRef.current;
@@ -43,8 +52,11 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
   vsModeRef.current = vsMode;
 
   // Snapshot of derived state
-  const gameStatus = buildGameStatus(chess);
+  const gameStatus = agreedDraw ? 'draw' : buildGameStatus(chess);
   const winner = gameStatus === 'checkmate' ? (chess.turn() === 'w' ? 'b' : 'w') : null;
+  const drawReason = gameStatus === 'draw'
+    ? (agreedDraw ? 'agreement' : buildDrawReason(chess))
+    : null;
 
   const syncFen = useCallback(() => {
     const c = chessRef.current;
@@ -248,6 +260,7 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
     setHint(null);
     setCurrentOpening(null);
     setPositionEval(0);
+    setAgreedDraw(false);
     setGameResetKey(prev => prev + 1);
   }, []);
 
@@ -307,6 +320,12 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
     syncFen();
   }, [isThinking, syncFen]);
 
+  /** CPU戦: 引き分け申し出 → 即承認。2人対戦用に外部で確認ダイアログを挟む場合もある */
+  const offerDraw = useCallback(() => {
+    if (gameStatus !== 'playing' && gameStatus !== 'check') return;
+    setAgreedDraw(true);
+  }, [gameStatus]);
+
   return {
     board: chess.board(),
     fen,
@@ -319,6 +338,7 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
     capturedPieces,
     gameStatus,
     winner,
+    drawReason,
     currentTurn: chess.turn(),
     moveHistory: chess.history({ verbose: true }),
     handleSquareClick,
@@ -334,5 +354,6 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
     currentOpening,
     positionEval,
     undoMove,
+    offerDraw,
   };
 }
