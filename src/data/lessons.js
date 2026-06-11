@@ -31,7 +31,7 @@ export const LESSONS = {
         pieceSymbol: '♟',
         pieceName: 'ポーン',
         instruction: 'ポーンを動かしてみよう！\ne2 のポーンをクリックして、進めるマスへ移動させてください。',
-        fen: '8/8/8/8/8/8/4P3/8 w - - 0 1',
+        fen: '6k1/8/8/8/8/8/4P3/6K1 w - - 0 1',
         highlight: 'e2',
       },
 
@@ -57,7 +57,7 @@ export const LESSONS = {
         pieceSymbol: '♞',
         pieceName: 'ナイト',
         instruction: 'ナイトを動かしてみよう！\nd4 のナイトをクリックして、L字に動かしてみてください。',
-        fen: '8/8/8/8/3N4/8/8/8 w - - 0 1',
+        fen: '7k/8/8/8/3N4/8/8/7K w - - 0 1',
         highlight: 'd4',
       },
 
@@ -83,7 +83,7 @@ export const LESSONS = {
         pieceSymbol: '♝',
         pieceName: 'ビショップ',
         instruction: 'ビショップを動かしてみよう！\nd4 のビショップをクリックして、斜めに動かしてみてください。',
-        fen: '8/8/8/8/3B4/8/8/8 w - - 0 1',
+        fen: 'k7/8/8/8/3B4/8/8/7K w - - 0 1',
         highlight: 'd4',
       },
 
@@ -109,7 +109,7 @@ export const LESSONS = {
         pieceSymbol: '♜',
         pieceName: 'ルーク',
         instruction: 'ルークを動かしてみよう！\nd4 のルークをクリックして、縦か横に動かしてみてください。',
-        fen: '8/8/8/8/3R4/8/8/8 w - - 0 1',
+        fen: 'k7/8/8/8/3R4/8/8/7K w - - 0 1',
         highlight: 'd4',
       },
 
@@ -135,7 +135,7 @@ export const LESSONS = {
         pieceSymbol: '♛',
         pieceName: 'クイーン',
         instruction: 'クイーンを動かしてみよう！\nd4 のクイーンをクリックして、好きな方向に動かしてみてください。',
-        fen: '8/8/8/8/3Q4/8/8/8 w - - 0 1',
+        fen: 'k7/8/8/8/3Q4/8/8/7K w - - 0 1',
         highlight: 'd4',
       },
 
@@ -161,7 +161,7 @@ export const LESSONS = {
         pieceSymbol: '♚',
         pieceName: 'キング',
         instruction: 'キングを動かしてみよう！\nd4 のキングをクリックして、1マス動かしてみてください。',
-        fen: '8/8/8/8/3K4/8/8/8 w - - 0 1',
+        fen: '7k/8/8/8/3K4/8/8/8 w - - 0 1',
         highlight: 'd4',
       },
 
@@ -207,7 +207,7 @@ export const LESSONS = {
         pieceName: 'キング',
         instruction: 'チェックから逃げよう！\nキングが攻撃されています。e1 のキングを安全なマスへ移動させてください。',
         // e1にキング、d1に黒ルーク（チェック中）、白番
-        fen: '8/8/8/8/8/8/8/3rK3 w - - 0 1',
+        fen: '6k1/8/8/8/8/8/8/3rK3 w - - 0 1',
         highlight: 'e1',
         successCondition: 'anyMove',
       },
