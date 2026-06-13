@@ -130,10 +130,14 @@ export default function ChessBoard({
               const isSource = ghost?.from === square; // ドラッグ中の元マス
               const playerPieceColor = flipped ? 'b' : 'w';
 
+              const isKingInCheck = (gameStatus === 'check' || gameStatus === 'checkmate')
+                && piece && piece.type === 'k';
+              const isLandingSquare = lastMove?.to === square && piece != null;
+
               return (
                 <div
                   key={square}
-                  className="chess-square"
+                  className={`chess-square${isKingInCheck ? ' check-square' : ''}`}
                   style={getSquareStyle(
                     square, actualRow, actualCol,
                     boardTheme, selectedSquare, legalMoves, lastMove, gameStatus, board, hint
@@ -162,12 +166,14 @@ export default function ChessBoard({
                   {/* 駒（ドラッグ中は半透明） */}
                   {piece && (
                     <span
+                      key={isLandingSquare ? `${square}-${lastMove.from}` : square}
                       className={[
                         'chess-piece',
                         `piece-${piece.color === 'w' ? 'white' : 'black'}`,
                         selectedSquare === square ? 'piece-selected' : '',
                         isSource ? 'piece-dragging' : '',
-                      ].join(' ')}
+                        isLandingSquare && !isSource ? 'piece-landing' : '',
+                      ].filter(Boolean).join(' ')}
                     >
                       {PIECE_SYMBOLS[piece.color + piece.type]}
                     </span>

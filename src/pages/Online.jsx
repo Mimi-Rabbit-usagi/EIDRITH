@@ -366,8 +366,16 @@ export default function Online() {
       <div className="app-container">
         <NavBar />
         <main className="online-page">
-          <div className="online-error">
-            <p>Supabase の設定が必要です。<br />.env.local を確認してください。</p>
+          <div className="online-coming-soon">
+            <div className="online-coming-icon">🌐</div>
+            <h2 className="online-coming-title">オンライン対戦</h2>
+            <p className="online-coming-desc">
+              世界中のプレイヤーとリアルタイムで対局できる機能を<br />
+              現在準備中です。もうしばらくお待ちください。
+            </p>
+            <button className="online-back-link" onClick={() => navigate('/play')}>
+              ← CPU対戦に戻る
+            </button>
           </div>
         </main>
       </div>

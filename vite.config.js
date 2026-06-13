@@ -36,4 +36,8 @@ export default defineConfig({
   // GitHub Pages プロジェクトページ用のベースパス
   // カスタムドメインを使う場合は base: '/' に変更すること
   base: process.env.NODE_ENV === 'production' ? '/EIDRITH/' : '/',
+  server: {
+    port: 5173,
+    strictPort: true, // 5173が使えない場合はサイレントにポート変更せず起動失敗させる
+  },
 })

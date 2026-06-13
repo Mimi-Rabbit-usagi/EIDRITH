@@ -436,7 +436,9 @@ export default function Review() {
       const actualSan = activeGame.moves[step - 1];
       if (!prevFen || !actualSan) { setBestMoveInfo(undefined); return; }
 
-      const bestSan = getBestMove(prevFen, 'normal');
+      const validDiff = ['easy', 'normal', 'hard'].includes(activeGame.difficulty)
+        ? activeGame.difficulty : 'normal';
+      const bestSan = getBestMove(prevFen, validDiff);
       if (!bestSan) { setBestMoveInfo(undefined); return; }
 
       // SAN 正規化: +/# を除いて比較
@@ -452,7 +454,7 @@ export default function Review() {
     }, 200);
 
     return () => clearTimeout(evalTimerRef.current);
-  }, [step, game, positions]);
+  }, [step, activeGame, positions]);
 
   const goTo = useCallback((s) => {
     setStep(Math.min(total, Math.max(0, s)));

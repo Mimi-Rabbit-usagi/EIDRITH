@@ -454,7 +454,13 @@ export default function Play() {
                 ? `${player2Name}（${playerColor === 'w' ? '黒' : '白'}）`
                 : `CPU（${playerColor === 'w' ? '黒' : '白'}）`}
             </div>
-            {gameMode === 'cpu' && isThinking && <div className="thinking-text">考え中...</div>}
+            {gameMode === 'cpu' && isThinking && (
+  <div className="thinking-text">
+    <span className="thinking-dot" />
+    <span className="thinking-dot" />
+    <span className="thinking-dot" />
+  </div>
+)}
             <ChessClock
               time={cpuTime}
               isActive={currentTurn !== playerColor && !isChessOver && clockTimeout === null}

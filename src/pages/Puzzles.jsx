@@ -454,10 +454,11 @@ export default function Puzzles() {
                 {(() => {
                   const cfg = TRAINING_TIERS.find(t => t.id === trainingTier);
                   const tierIdx = TRAINING_TIERS.findIndex(t => t.id === trainingTier);
-                  if (!cfg || tierIdx >= TRAINING_TIERS.length - 1) return null;
+                  const remaining = cfg ? cfg.promoteAt - trainingStreak : 0;
+                  if (!cfg || tierIdx >= TRAINING_TIERS.length - 1 || remaining <= 0) return null;
                   return (
                     <span className="training-promote-hint">
-                      昇格まで {cfg.promoteAt - trainingStreak} 問
+                      昇格まで {remaining} 問
                     </span>
                   );
                 })()}
