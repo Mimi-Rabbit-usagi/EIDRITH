@@ -5,6 +5,7 @@ import NavBar from '../components/NavBar';
 import ChessBoard from '../components/ChessBoard';
 import { BOARD_THEMES } from '../data/themes';
 import { getBestMove } from '../hooks/useAI';
+import { detectTechnique } from '../hooks/detectTactics';
 
 // ── 棋譜から全ポジションを事前計算 ───────────────────────────────────────────
 function buildPositions(moves) {
@@ -16,6 +17,25 @@ function buildPositions(moves) {
     positions.push({ fen: chess.fen(), lastMove: { from: move.from, to: move.to } });
   }
   return positions;
+}
+
+// ── 棋譜から戦術を自動検出（techniques が保存されていない古い対局用） ────────
+function buildTechniques(moves) {
+  const chess = new Chess();
+  const result = [];
+  try {
+    for (let i = 0; i < moves.length; i++) {
+      const move = chess.move(moves[i]);
+      if (!move) break;
+      const tech = detectTechnique(chess, move);
+      if (tech) {
+        result.push({ ...tech, moveIndex: i + 1 });
+      }
+    }
+  } catch (e) {
+    // 不正な手があっても途中まで検出した結果を返す
+  }
+  return result;
 }
 
 // ── 戦術ごとのコーチコメント ──────────────────────────────────────────────────
@@ -408,7 +428,15 @@ export default function Review() {
   const [copyFeedback, setCopyFeedback] = useState(false);
 
   const activeGame = importedGame ?? game;
-  const techniques = activeGame?.techniques ?? [];
+
+  // techniques が保存されていない、または moveIndex が古い形式の対局は棋譜から自動検出
+  const techniques = useMemo(() => {
+    if (!activeGame) return [];
+    const stored = activeGame.techniques ?? [];
+    // moveIndex が保存されている（新形式）の場合のみ保存データを使用
+    if (stored.length > 0 && stored[0]?.moveIndex != null) return stored;
+    return buildTechniques(activeGame.moves ?? []);
+  }, [activeGame]);
 
   const positions = useMemo(
     () => (activeGame ? buildPositions(activeGame.moves) : []),
