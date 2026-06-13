@@ -16,128 +16,136 @@ const LESSON_DEFS = [
   { id: 'strategy', icon: '🧠', title: '中盤の戦略',             desc: 'コマの協力・弱点マスの狙い方',                          hasContent: false },
 ];
 
+const CONTENT_LESSONS = LESSON_DEFS.filter(l => l.hasContent);
+
 export default function Learn() {
   const navigate = useNavigate();
+  const progress = safeLoad('chess-lesson-progress', []);
 
-  // progressは1回だけ読み込む
-  const progress = (() => {
-    return safeLoad('chess-lesson-progress', []);
-  })();
+  const completedCount = progress.filter(id => LESSON_DEFS.find(l => l.id === id)).length;
+  const totalContent   = CONTENT_LESSONS.length;
+  const progressPct    = totalContent > 0 ? Math.round((completedCount / totalContent) * 100) : 0;
 
   return (
     <div className="learn-container">
-      {/* 背景装飾 */}
       <div className="home-bg-glow home-bg-glow--left" />
+      <div className="home-bg-glow home-bg-glow--right" />
 
       <NavBar />
 
-      {/* タイトル */}
+      {/* ヒーロー */}
       <section className="learn-hero">
-        <h1 className="learn-title">学習モード</h1>
-        <p className="learn-subtitle">
-          チェスの基礎から戦術まで、ステップごとに学ぼう。
-        </p>
+        <h1 className="learn-title">📖 学習モード</h1>
+        <p className="learn-subtitle">基礎から戦術まで、ステップごとに学ぼう。</p>
+
+        <div className="learn-hero-progress">
+          <div className="learn-hero-prog-meta">
+            <span className="learn-hero-prog-label">
+              {completedCount > 0 ? `${completedCount} / ${totalContent} レッスン完了` : 'まだ始めていません'}
+            </span>
+            <span className="learn-hero-prog-pct">{progressPct}%</span>
+          </div>
+          <div className="learn-hero-prog-bar-wrap">
+            <div className="learn-hero-prog-bar" style={{ width: `${progressPct}%` }} />
+          </div>
+        </div>
       </section>
 
       {/* レッスン一覧 */}
-      <section className="learn-grid">
-        {LESSON_DEFS.map((lesson, index) => {
-          const done = progress.includes(lesson.id);
-          // 最初のレッスンは常にアンロック。それ以降は前のレッスンが完了済みでアンロック
-          const unlocked = lesson.hasContent && (index === 0 || progress.includes(LESSON_DEFS[index - 1].id));
+      <section className="learn-section">
+        <div className="learn-section-head">
+          <span className="learn-section-label">レッスン</span>
+          <span className="learn-section-count">{totalContent}コース</span>
+        </div>
 
-          // ── アンロック済み ──────────────────────────────────────────────
-          if (unlocked) {
+        <div className="learn-grid">
+          {LESSON_DEFS.map((lesson, index) => {
+            const done      = progress.includes(lesson.id);
+            const unlocked  = lesson.hasContent && (index === 0 || progress.includes(LESSON_DEFS[index - 1].id));
+            const isContent = lesson.hasContent;
+
+            // ── 完了済み / アンロック済み ──
+            if (unlocked) {
+              return (
+                <button
+                  key={lesson.id}
+                  className={`learn-card learn-card--available${done ? ' learn-card--done' : ''}`}
+                  onClick={() => navigate(`/learn/${lesson.id}`)}
+                >
+                  <div className={`learn-step-num ${done ? 'learn-step-num--done' : 'learn-step-num--active'}`}>
+                    {done ? '✓' : index + 1}
+                  </div>
+                  <div className="learn-card-icon">{lesson.icon}</div>
+                  <div className="learn-card-body">
+                    <div className="learn-card-title">{lesson.title}</div>
+                    <p className="learn-card-desc">{lesson.desc}</p>
+                  </div>
+                  <div className={`learn-card-status ${done ? 'learn-card-status--done' : 'learn-card-status--go'}`}>
+                    {done ? '完了' : '→'}
+                  </div>
+                </button>
+              );
+            }
+
+            // ── コンテンツあり・ロック中 ──
+            if (isContent) {
+              const prevLesson = LESSON_DEFS[index - 1];
+              return (
+                <div key={lesson.id} className="learn-card learn-card--locked">
+                  <div className="learn-step-num learn-step-num--locked">{index + 1}</div>
+                  <div className="learn-card-icon">{lesson.icon}</div>
+                  <div className="learn-card-body">
+                    <div className="learn-card-title">{lesson.title}</div>
+                    <p className="learn-card-desc">{lesson.desc}</p>
+                  </div>
+                  <div className="learn-card-status learn-card-status--locked">
+                    🔒
+                    <span className="learn-card-lock-hint">「{prevLesson.title}」を先に</span>
+                  </div>
+                </div>
+              );
+            }
+
+            // ── 近日公開 ──
             return (
-              <div
-                key={lesson.id}
-                className={`learn-card learn-card--available${done ? ' learn-card--done' : ''}`}
-                onClick={() => navigate(`/learn/${lesson.id}`)}
-              >
-                <div className="learn-card-number">#{index + 1}</div>
+              <div key={lesson.id} className="learn-card learn-card--soon">
+                <div className="learn-step-num learn-step-num--soon">{index + 1}</div>
                 <div className="learn-card-icon">{lesson.icon}</div>
                 <div className="learn-card-body">
                   <div className="learn-card-title">{lesson.title}</div>
                   <p className="learn-card-desc">{lesson.desc}</p>
                 </div>
-                {done
-                  ? <div className="learn-card-badge learn-card-badge--done">✅ 完了</div>
-                  : <div className="learn-card-badge learn-card-badge--go">→ 始める</div>
-                }
+                <div className="learn-card-status learn-card-status--soon">準備中</div>
               </div>
             );
-          }
+          })}
+        </div>
+      </section>
 
-          // ── コンテンツあり・ロック中（前のレッスン未完了）─────────────────
-          if (lesson.hasContent) {
-            const prevLesson = LESSON_DEFS[index - 1];
-            return (
-              <div key={lesson.id} className="learn-card learn-card--locked">
-                <div className="learn-card-number">#{index + 1}</div>
-                <div className="learn-card-icon">{lesson.icon}</div>
-                <div className="learn-card-body">
-                  <div className="learn-card-title">{lesson.title}</div>
-                  <p className="learn-card-desc">{lesson.desc}</p>
-                </div>
-                <div className="learn-card-badge learn-card-badge--locked">
-                  🔒 {prevLesson.title}を先に
-                </div>
-              </div>
-            );
-          }
-
-          // ── 近日公開 ───────────────────────────────────────────────────
-          return (
-            <div key={lesson.id} className="learn-card learn-card--locked">
-              <div className="learn-card-number">#{index + 1}</div>
-              <div className="learn-card-icon">{lesson.icon}</div>
-              <div className="learn-card-body">
-                <div className="learn-card-title">{lesson.title}</div>
-                <p className="learn-card-desc">{lesson.desc}</p>
-              </div>
-              <div className="learn-card-badge">近日公開</div>
+      {/* 関連コース */}
+      <section className="learn-section learn-extras">
+        <div className="learn-section-head">
+          <span className="learn-section-label">関連コース</span>
+        </div>
+        <div className="learn-extras-grid">
+          <button className="learn-extra-card" onClick={() => navigate('/endgame')}>
+            <div className="learn-extra-icon">🏁</div>
+            <div className="learn-extra-body">
+              <div className="learn-extra-title">エンドゲームレッスン</div>
+              <p className="learn-extra-desc">オポジション・ポーン昇格・ルーク詰みをインタラクティブに学ぶ</p>
             </div>
-          );
-        })}
-      </section>
+            <span className="learn-extra-arrow">→</span>
+          </button>
 
-      {/* エンドゲームレッスンへのリンク */}
-      <section className="learn-opening-banner" onClick={() => navigate('/endgame')}
-        style={{ marginBottom: '12px' }}>
-        <div className="learn-opening-banner-inner">
-          <span className="learn-opening-banner-icon">🏁</span>
-          <div>
-            <p className="learn-opening-banner-title">エンドゲームレッスン</p>
-            <p className="learn-opening-banner-desc">
-              オポジション・ポーン昇格・ルーク詰みをインタラクティブに学ぶ
-            </p>
-          </div>
-          <span className="learn-opening-banner-arrow">→</span>
+          <button className="learn-extra-card" onClick={() => navigate('/openings')}>
+            <div className="learn-extra-icon">📖</div>
+            <div className="learn-extra-body">
+              <div className="learn-extra-title">定跡ライブラリ</div>
+              <p className="learn-extra-desc">{OPENINGS.length}種類の序盤定跡を盤面で練習できます</p>
+            </div>
+            <span className="learn-extra-arrow">→</span>
+          </button>
         </div>
-      </section>
-
-      {/* 定跡ライブラリへのリンク */}
-      <section className="learn-opening-banner" onClick={() => navigate('/openings')}>
-        <div className="learn-opening-banner-inner">
-          <span className="learn-opening-banner-icon">📖</span>
-          <div>
-            <p className="learn-opening-banner-title">定跡ライブラリ</p>
-            <p className="learn-opening-banner-desc">
-              {OPENINGS.length}種類の序盤定跡を学び、盤面で練習できます
-            </p>
-          </div>
-          <span className="learn-opening-banner-arrow">→</span>
-        </div>
-      </section>
-
-      {/* 足元のCTA */}
-      <section className="learn-cta">
-        <p className="learn-cta-text">
-          まずは対局でチェスを体験しよう！
-        </p>
-        <button className="learn-cta-btn" onClick={() => navigate('/play')}>
-          ♟ 対局を始める
-        </button>
       </section>
     </div>
   );

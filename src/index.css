@@ -4843,170 +4843,337 @@ a:focus-visible,
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 52px 20px 80px;
+  padding: 52px 0 80px;
   position: relative;
   overflow: hidden;
 }
 
-.learn-header {
-  width: 100%;
-  max-width: 900px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 24px 0 0;
-  position: relative;
-  z-index: 1;
-}
-
+/* ヒーロー */
 .learn-hero {
   text-align: center;
-  margin: 48px 0 40px;
+  padding: 36px 16px 0;
+  max-width: 660px;
+  width: 100%;
   position: relative;
   z-index: 1;
 }
 .learn-title {
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
   font-weight: 900;
-  margin: 0 0 10px;
-  background: linear-gradient(135deg, #c89b3c, #ffe082);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  margin: 0 0 8px;
+  color: #fffffe;
 }
 .learn-subtitle {
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.45);
-  margin: 0;
+  font-size: 0.92rem;
+  color: rgba(255,255,255,0.42);
+  margin: 0 0 24px;
 }
 
-.learn-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
+/* 進捗バー */
+.learn-hero-progress {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.learn-hero-prog-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.learn-hero-prog-label {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.55);
+  font-weight: 500;
+}
+.learn-hero-prog-pct {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+.learn-hero-prog-bar-wrap {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.learn-hero-prog-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #6c63ff, #c89b3c);
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+  min-width: 0;
+}
+
+/* セクション共通 */
+.learn-section {
+  max-width: 660px;
   width: 100%;
-  max-width: 860px;
+  padding: 0 16px;
+  margin-top: 28px;
   position: relative;
   z-index: 1;
 }
+.learn-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.learn-section-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255,255,255,0.35);
+}
+.learn-section-count {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.3);
+}
 
+/* グリッド */
+.learn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 520px) {
+  .learn-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 340px) {
+  .learn-grid { grid-template-columns: 1fr; }
+}
+
+/* カード共通 */
 .learn-card {
   background: #13131d;
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 14px;
-  padding: 20px;
-  position: relative;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  position: relative;
   overflow: hidden;
+  text-align: left;
 }
 .learn-card::before {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 3px;
-  background: rgba(255,255,255,0.15);
   border-radius: 3px 0 0 3px;
+  background: rgba(255,255,255,0.1);
 }
-.learn-card--locked { opacity: 0.55; }
 
-.learn-card-number {
-  font-size: 0.7rem;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.05em;
-  font-weight: 700;
-}
-.learn-card-icon {
-  font-size: 1.4rem;
-  width: 44px;
-  height: 44px;
+/* ステップ番号 */
+.learn-step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.learn-card-title { font-size: 0.95rem; font-weight: 700; color: #fffffe; }
-.learn-card-desc  { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin: 0; line-height: 1.5; }
-
-.learn-card-badge {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  background: rgba(200,155,60,0.15);
-  color: #c89b3c;
-  border: 1px solid rgba(200,155,60,0.3);
-  padding: 3px 8px;
-  border-radius: 6px;
+  flex-shrink: 0;
+  border: 1.5px solid;
+  align-self: flex-start;
+}
+.learn-step-num--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(108,99,255,0.12);
+}
+.learn-step-num--done {
+  border-color: #4CAF50;
+  color: #4CAF50;
+  background: rgba(76,175,80,0.12);
+}
+.learn-step-num--locked {
+  border-color: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.25);
+  background: transparent;
+}
+.learn-step-num--soon {
+  border-color: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.2);
+  background: transparent;
 }
 
-.learn-cta {
-  margin-top: 48px;
-  text-align: center;
-  position: relative;
-  z-index: 1;
-}
-.learn-cta-text { font-size: 0.9rem; color: rgba(255,255,255,0.4); margin: 0 0 14px; }
-.learn-cta-btn {
-  background: var(--accent);
-  color: #fff;
-  border: none;
+/* アイコン */
+.learn-card-icon {
+  font-size: 1.3rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 10px;
-  padding: 12px 28px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.15s, transform 0.15s;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  flex-shrink: 0;
 }
-.learn-cta-btn:hover { opacity: 0.85; transform: translateY(-1px); }
 
-/* 利用可能なカード */
+/* 本文 */
+.learn-card-body { flex: 1; min-width: 0; }
+.learn-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fffffe;
+  margin-bottom: 3px;
+}
+.learn-card-desc {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.38);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ステータスバッジ */
+.learn-card-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+.learn-card-status--go {
+  background: rgba(108,99,255,0.12);
+  color: var(--accent);
+  border-color: rgba(108,99,255,0.3);
+}
+.learn-card-status--done {
+  background: rgba(76,175,80,0.12);
+  color: #4CAF50;
+  border-color: rgba(76,175,80,0.3);
+}
+.learn-card-status--locked {
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.1);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+.learn-card-lock-hint {
+  font-size: 0.62rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.2);
+}
+.learn-card-status--soon {
+  background: transparent;
+  color: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.08);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+/* 利用可能カードのアクション */
 .learn-card--available {
   cursor: pointer;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-  opacity: 1;
 }
 .learn-card--available::before {
   background: var(--accent);
-  opacity: 0.5;
+  opacity: 0.45;
   transition: opacity 0.18s;
 }
 .learn-card--available:hover {
   transform: translateY(-2px);
   border-color: rgba(108,99,255,0.35);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
 }
 .learn-card--available:hover::before { opacity: 1; }
+.learn-card--available:active { transform: translateY(0) scale(0.98); }
 
 /* 完了カード */
 .learn-card--done::before {
   background: #4CAF50;
-  opacity: 0.8;
+  opacity: 0.6;
 }
 .learn-card--done:hover::before { opacity: 1; }
 
-.learn-card-badge--done {
-  background: rgba(76,175,80,0.15);
-  color: #4CAF50;
-  border-color: rgba(76,175,80,0.3);
+/* ロック / 準備中 */
+.learn-card--locked,
+.learn-card--soon {
+  opacity: 0.6;
 }
-.learn-card-badge--go {
+.learn-card--soon { opacity: 0.45; }
+
+/* 関連コースセクション */
+.learn-extras { margin-top: 28px; }
+.learn-extras-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 480px) {
+  .learn-extras-grid { grid-template-columns: 1fr; }
+}
+
+.learn-extra-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(108,99,255,0.1) 0%, rgba(200,155,60,0.08) 100%);
+  border: 1px solid rgba(108,99,255,0.25);
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.learn-extra-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(108,99,255,0.55);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  background: linear-gradient(135deg, rgba(108,99,255,0.18) 0%, rgba(200,155,60,0.12) 100%);
+}
+.learn-extra-card:active { transform: scale(0.98); }
+
+.learn-extra-icon {
+  font-size: 1.4rem;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(108,99,255,0.15);
-  color: var(--accent);
-  border-color: rgba(108,99,255,0.3);
+  border: 1px solid rgba(108,99,255,0.3);
+  border-radius: 10px;
+  flex-shrink: 0;
 }
-.learn-card-badge--locked {
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.3);
-  border-color: rgba(255,255,255,0.1);
-  text-transform: none;
-  font-size: 0.6rem;
+.learn-extra-body { flex: 1; min-width: 0; }
+.learn-extra-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fffffe;
+  margin-bottom: 3px;
+}
+.learn-extra-desc {
+  font-size: 0.74rem;
+  color: rgba(255,255,255,0.38);
+  margin: 0;
+  line-height: 1.45;
+}
+.learn-extra-arrow {
+  font-size: 1rem;
+  color: rgba(108,99,255,0.6);
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: transform 0.15s ease;
+}
+.learn-extra-card:hover .learn-extra-arrow {
+  transform: translateX(3px);
+  color: rgba(108,99,255,0.9);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -6689,47 +6856,6 @@ a:focus-visible,
   transition: background 0.15s;
 }
 .endgame-reset-btn:hover { background: rgba(255,255,255,0.1); }
-
-/* ── Learn: 定跡ライブラリ バナー ─────────────────────────────────────────── */
-.learn-opening-banner {
-  max-width: 860px;
-  margin: 0 auto 32px;
-  padding: 0 16px;
-  cursor: pointer;
-}
-.learn-opening-banner-inner {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: linear-gradient(135deg, rgba(108,99,255,0.18) 0%, rgba(255,101,132,0.12) 100%);
-  border: 1px solid rgba(108,99,255,0.4);
-  border-radius: 16px;
-  padding: 20px 24px;
-  transition: background 0.2s, border-color 0.2s, transform 0.15s;
-}
-.learn-opening-banner-inner:hover {
-  background: linear-gradient(135deg, rgba(108,99,255,0.28) 0%, rgba(255,101,132,0.2) 100%);
-  border-color: rgba(108,99,255,0.7);
-  transform: translateY(-2px);
-}
-.learn-opening-banner-icon { font-size: 2rem; flex-shrink: 0; }
-.learn-opening-banner-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #fffffe;
-  margin: 0 0 4px;
-}
-.learn-opening-banner-desc {
-  font-size: 0.85rem;
-  color: #aaa;
-  margin: 0;
-}
-.learn-opening-banner-arrow {
-  margin-left: auto;
-  font-size: 1.4rem;
-  color: #6c63ff;
-  flex-shrink: 0;
-}
 
 /* ── Openings Page ───────────────────────────────────────────────────────── */
 .openings-page {
