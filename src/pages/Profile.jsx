@@ -6,7 +6,10 @@ import { ACHIEVEMENTS } from '../data/achievements';
 import { TECHNIQUES } from '../data/techniques';
 import { PUZZLES } from '../data/puzzles';
 import { LESSONS } from '../data/lessons';
-import { loadGameData, safeLoad, safeSave, loadQuizStats, loadTrainingStats } from '../lib/storage';
+import { BOARD_THEMES } from '../data/themes';
+import { PIECE_SETS } from '../data/pieceSets';
+import CustomizeModal from '../components/CustomizeModal';
+import { loadGameData, saveGameData, safeLoad, safeSave, loadQuizStats, loadTrainingStats } from '../lib/storage';
 
 const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
@@ -188,6 +191,7 @@ export default function Profile() {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [customEmojiInput, setCustomEmojiInput] = useState('');
   const [customEmojiError, setCustomEmojiError] = useState('');
+  const [showCustomize, setShowCustomize] = useState(false);
 
   useEffect(() => {
     const d = loadAllData();
@@ -247,6 +251,22 @@ export default function Profile() {
     }
     setCustomEmojiError('');
     saveAvatar(char);
+  };
+
+  const handleThemeChange = (themeId) => {
+    setData(prev => {
+      const newGameData = { ...prev.gameData, activeBoardTheme: themeId };
+      saveGameData(newGameData);
+      return { ...prev, gameData: newGameData };
+    });
+  };
+
+  const handlePieceSetChange = (id) => {
+    setData(prev => {
+      const newGameData = { ...prev.gameData, activePieceSet: id };
+      saveGameData(newGameData);
+      return { ...prev, gameData: newGameData };
+    });
   };
 
   if (!data) return null;
@@ -557,6 +577,64 @@ export default function Profile() {
           </div>
         </section>
 
+        {/* 外観設定 */}
+        <section className="profile-section">
+          <h2 className="profile-section-title">外観設定</h2>
+          <div className="profile-customize-row">
+            {/* ボードテーマプレビュー */}
+            {(() => {
+              const theme = BOARD_THEMES.find(t => t.id === data.gameData.activeBoardTheme) ?? BOARD_THEMES[0];
+              return (
+                <div className="profile-customize-card">
+                  <div className="profile-customize-label">ボードテーマ</div>
+                  <div className="profile-customize-preview">
+                    <div className="profile-board-mini">
+                      {[0,1,2,3].map(r =>
+                        [0,1,2,3].map(c => (
+                          <div
+                            key={`${r}-${c}`}
+                            className="profile-board-mini-sq"
+                            style={{ background: (r + c) % 2 === 0 ? theme.lightSquare : theme.darkSquare }}
+                          />
+                        ))
+                      )}
+                    </div>
+                    <div className="profile-customize-info">
+                      <span className="profile-customize-emoji">{theme.emoji}</span>
+                      <span className="profile-customize-name">{theme.name}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* 駒セットプレビュー */}
+            {(() => {
+              const set = PIECE_SETS.find(s => s.id === data.gameData.activePieceSet) ?? PIECE_SETS[0];
+              return (
+                <div className="profile-customize-card">
+                  <div className="profile-customize-label">駒セット</div>
+                  <div className="profile-customize-preview">
+                    <div
+                      className="profile-piece-mini"
+                      style={{ background: set.cardBg, color: set.symbolColor }}
+                    >
+                      <span style={{ filter: set.symbolFilter, fontSize: '1.8rem' }}>♛</span>
+                    </div>
+                    <div className="profile-customize-info">
+                      <span className="profile-customize-emoji">{set.emoji}</span>
+                      <span className="profile-customize-name">{set.name}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+          <button className="profile-customize-btn" onClick={() => setShowCustomize(true)}>
+            🎨 外観を変更する
+          </button>
+        </section>
+
         {/* 実績 */}
         <section className="profile-section">
           <h2 className="profile-section-title">
@@ -625,6 +703,20 @@ export default function Profile() {
         )}
 
       </div>
+
+      {showCustomize && (
+        <CustomizeModal
+          activeBoardTheme={data.gameData.activeBoardTheme}
+          unlockedBoardThemes={data.gameData.unlockedBoardThemes}
+          activePieceSet={data.gameData.activePieceSet}
+          unlockedPieceSets={data.gameData.unlockedPieceSets}
+          unlockedAchievements={data.gameData.unlockedAchievements}
+          wins={data.gameData.wins}
+          onThemeChange={handleThemeChange}
+          onPieceSetChange={handlePieceSetChange}
+          onClose={() => setShowCustomize(false)}
+        />
+      )}
     </div>
   );
 }

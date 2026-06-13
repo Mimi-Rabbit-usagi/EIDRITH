@@ -5318,6 +5318,73 @@ body {
   font-weight: 600;
 }
 
+/* 外観設定 */
+.profile-customize-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.profile-customize-card {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.profile-customize-label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.profile-customize-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.profile-board-mini {
+  display: grid;
+  grid-template-columns: repeat(4, 14px);
+  grid-template-rows: repeat(4, 14px);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.profile-board-mini-sq {
+  width: 14px;
+  height: 14px;
+}
+.profile-piece-mini {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.profile-customize-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.profile-customize-emoji { font-size: 1rem; }
+.profile-customize-name  { font-size: 0.8rem; color: rgba(255,255,255,0.8); font-weight: 500; }
+.profile-customize-btn {
+  width: 100%;
+  padding: 10px;
+  background: rgba(255,215,0,0.1);
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 8px;
+  color: #FFD700;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.profile-customize-btn:hover { background: rgba(255,215,0,0.18); }
+
 /* 実績 */
 .profile-achievements {
   display: grid;
