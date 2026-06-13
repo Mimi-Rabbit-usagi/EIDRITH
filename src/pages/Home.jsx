@@ -137,13 +137,28 @@ export default function Home() {
         <div className="home-dash-greet">
           <h1 className="home-dash-name">{greeting(playerName)}</h1>
           {stats && (
-            <p className="home-dash-sub">
-              総勝利 <strong>{stats.wins}</strong> ·
-              {stats.streak > 0
-                ? <> 🔥 <strong>{stats.streak}</strong> 連勝中</>
-                : ' 連勝なし'}
-              {stats.total > 0 && <> · 勝率 <strong>{stats.winRate}%</strong></>}
-            </p>
+            <div className="home-dash-stats">
+              <div className="home-dash-stat">
+                <span className="home-dash-stat-val">{stats.wins}</span>
+                <span className="home-dash-stat-lbl">勝利</span>
+              </div>
+              <div className="home-dash-stat-divider" />
+              <div className={`home-dash-stat ${stats.streak > 0 ? 'home-dash-stat--streak' : ''}`}>
+                <span className="home-dash-stat-val">
+                  {stats.streak > 0 ? `🔥 ${stats.streak}` : '—'}
+                </span>
+                <span className="home-dash-stat-lbl">連勝</span>
+              </div>
+              {stats.total > 0 && (
+                <>
+                  <div className="home-dash-stat-divider" />
+                  <div className="home-dash-stat">
+                    <span className="home-dash-stat-val">{stats.winRate}%</span>
+                    <span className="home-dash-stat-lbl">勝率</span>
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
       </section>
@@ -242,23 +257,28 @@ export default function Home() {
       )}
 
       {/* モードカード */}
-      <section className="home-modes">
-        {MODES.map((mode) => (
-          <button
-            key={mode.id}
-            className="home-mode-card"
-            style={{ '--card-accent': mode.accent }}
-            onClick={() => navigate(mode.path)}
-          >
-            <div className="home-mode-icon">{mode.icon}</div>
-            <div className="home-mode-body">
-              <div className="home-mode-title">{mode.title}</div>
-              <div className="home-mode-subtitle">{mode.subtitle}</div>
-              <p className="home-mode-desc">{mode.description}</p>
-            </div>
-            <div className="home-mode-arrow">→</div>
-          </button>
-        ))}
+      <section className="home-modes-wrap">
+        <div className="home-section-head">
+          <span className="home-section-title">メニュー</span>
+        </div>
+        <div className="home-modes">
+          {MODES.map((mode) => (
+            <button
+              key={mode.id}
+              className="home-mode-card"
+              style={{ '--card-accent': mode.accent }}
+              onClick={() => navigate(mode.path)}
+            >
+              <div className="home-mode-icon">{mode.icon}</div>
+              <div className="home-mode-body">
+                <div className="home-mode-title">{mode.title}</div>
+                <div className="home-mode-subtitle">{mode.subtitle}</div>
+                <p className="home-mode-desc">{mode.description}</p>
+              </div>
+              <div className="home-mode-arrow">→</div>
+            </button>
+          ))}
+        </div>
       </section>
 
       {/* フッター */}
