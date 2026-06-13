@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { useChessGame } from '../hooks/useChessGame';
 import { useChessClock } from '../hooks/useChessClock';
@@ -21,17 +21,27 @@ import CustomizeModal from '../components/CustomizeModal';
 import PromotionModal from '../components/PromotionModal';
 import GameSummary from '../components/GameSummary';
 import { loadGameData, saveGameData, loadLogs, saveLogs, safeLoad, safeSave } from '../lib/storage';
+import { TOURNAMENT_ROUNDS } from './Tournament';
 
 // ── Play Page ─────────────────────────────────────────────────────────────────
 export default function Play() {
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const searchParams = new URLSearchParams(search);
+  const tournamentRound = searchParams.get('tournament') ? parseInt(searchParams.get('tournament'), 10) : null;
+  const isTournament = tournamentRound !== null;
+  const tournamentRoundDef = isTournament ? TOURNAMENT_ROUNDS.find(r => r.id === tournamentRound) : null;
+
   const [gameData, setGameData] = useState(loadGameData);
   const [logs, setLogs] = useState(loadLogs);
   const [pendingUnlock, setPendingUnlock] = useState(null);
   const [pendingAchievement, setPendingAchievement] = useState(null);
   const achievementQueueRef = useRef([]);
   const [winCounted, setWinCounted] = useState(false);
-  const [difficulty, setDifficulty] = useState('easy');
+  const [difficulty, setDifficulty] = useState(() => {
+    const sp = new URLSearchParams(window.location.search);
+    return sp.get('diff') ?? 'easy';
+  });
   const [playerColor, setPlayerColor] = useState('w');
   const [gameMode, setGameMode] = useState(() => safeLoad('chess-game-mode', 'cpu'));
   const [player2Name, setPlayer2Name] = useState(() => safeLoad('chess-player2-name', 'プレイヤー2'));
@@ -236,6 +246,15 @@ export default function Play() {
       return updated;
     });
 
+    // トーナメントモード: 結果を保存してTournament.jsxが読めるようにする
+    if (isTournament && tournamentRound) {
+      safeSave('chess-tournament-last-result', {
+        round: tournamentRound,
+        result,
+        moveCount: history.length,
+      });
+    }
+
     // ローカル2人対戦ではCPU用のwin/streak/実績カウントをスキップ
     if (isLocalMode) return;
 
@@ -408,6 +427,16 @@ export default function Play() {
     <div className="app-container">
       <NavBar />
 
+      {isTournament && tournamentRoundDef && (
+        <div className="tournament-banner">
+          <span className="tournament-banner-icon">🏆</span>
+          <span className="tournament-banner-text">
+            トーナメント — {tournamentRoundDef.label}
+          </span>
+          <span className="tournament-banner-opp">vs {tournamentRoundDef.opponent}</span>
+        </div>
+      )}
+
       <main className="game-area">
         <div className="board-section">
           <div className="opponent-label">
@@ -523,6 +552,8 @@ export default function Play() {
           onNewGame={handleNewGame}
           onClose={() => setShowSummary(false)}
           onReplay={handleReplayCurrentGame}
+          onTournamentReturn={isTournament ? () => navigate('/tournament') : undefined}
+          tournamentRoundLabel={tournamentRoundDef?.label}
         />
       )}
 

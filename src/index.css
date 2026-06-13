@@ -4324,6 +4324,194 @@ body {
   z-index: 1;
 }
 
+/* ── トーナメントバナー（Play.jsx 上部） ─────────────────────────────────────── */
+.tournament-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 800px;
+  margin: 8px auto 0;
+  padding: 8px 16px;
+  background: linear-gradient(90deg, rgba(255,215,0,0.12) 0%, rgba(255,215,0,0.05) 100%);
+  border: 1px solid rgba(255,215,0,0.25);
+  border-radius: 8px;
+}
+.tournament-banner-icon { font-size: 1.1rem; }
+.tournament-banner-text { font-size: 0.85rem; font-weight: 700; color: #FFD700; }
+.tournament-banner-opp  { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-left: auto; }
+
+/* ── Tournament ページ ────────────────────────────────────────────────────────── */
+.tournament-container {
+  min-height: 100vh;
+  background: #0a0a0f;
+  color: #fffffe;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+.tournament-inner {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  position: relative;
+  z-index: 1;
+}
+.tournament-title {
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 900;
+  margin: 12px 0 4px;
+  text-align: center;
+}
+.tournament-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+/* ブラケット */
+.tournament-bracket {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.tournament-round-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: border-color 0.2s;
+}
+.tournament-round-card--current {
+  border-color: #FFD700;
+  background: rgba(255,215,0,0.07);
+}
+.tournament-round-card--win {
+  border-color: rgba(76,175,80,0.4);
+  background: rgba(76,175,80,0.05);
+}
+.tournament-round-card--loss {
+  border-color: rgba(244,67,54,0.3);
+  opacity: 0.7;
+}
+.tournament-round-num {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 6px;
+}
+.tournament-round-card--current .tournament-round-num { color: #FFD700; }
+.tournament-round-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tournament-round-emoji { font-size: 1.5rem; flex-shrink: 0; }
+.tournament-round-info  { flex: 1; }
+.tournament-round-opponent { font-size: 0.95rem; font-weight: 700; display: block; }
+.tournament-round-diff     { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+.tournament-round-result   { font-size: 0.8rem; font-weight: 700; margin-left: auto; }
+.tournament-round-result--win  { color: #4CAF50; }
+.tournament-round-result--loss { color: #F44336; }
+.tournament-round-locked  { font-size: 1rem; margin-left: auto; opacity: 0.3; }
+
+.tournament-play-btn {
+  margin-left: auto;
+  padding: 6px 14px;
+  background: #FFD700;
+  color: #0a0a0f;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.tournament-play-btn:hover { opacity: 0.85; }
+
+/* 開始ボタン */
+.tournament-start-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #c89b3c 0%, #ffe082 50%, #c89b3c 100%);
+  border: none;
+  border-radius: 10px;
+  color: #0a0a0f;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: opacity 0.2s;
+}
+.tournament-start-btn:hover { opacity: 0.9; }
+
+/* チャンピオン */
+.tournament-champion {
+  text-align: center;
+  padding: 20px 0 4px;
+}
+.tournament-champion-icon { font-size: 3rem; margin-bottom: 8px; }
+.tournament-champion-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #FFD700;
+  margin: 0 0 6px;
+}
+.tournament-champion-desc {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.85rem;
+  margin: 0 0 16px;
+}
+
+/* 敗退 */
+.tournament-eliminated {
+  text-align: center;
+  padding: 16px 0 4px;
+}
+.tournament-elim-icon  { font-size: 2.4rem; margin-bottom: 8px; }
+.tournament-elim-text  { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0 0 14px; }
+
+/* 過去の記録 */
+.tournament-history       { margin-top: 24px; }
+.tournament-history-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 8px;
+}
+.tournament-history-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+.tournament-history-row--champion { color: #FFD700; }
+.tournament-history-date { color: rgba(255,255,255,0.3); font-size: 0.72rem; }
+
+/* GameSummary のトーナメント戻るボタン */
+.tournament-return-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,215,0,0.08) 100%);
+  border: 1px solid rgba(255,215,0,0.4);
+  border-radius: 8px;
+  color: #FFD700;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.tournament-return-btn:hover { background: rgba(255,215,0,0.22); }
+
 
 /* 今日のパズルセクション（Home） */
 .home-daily {

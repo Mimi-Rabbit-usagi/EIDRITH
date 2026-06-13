@@ -213,3 +213,23 @@ export function saveDailyPuzzleSolved(today) {
   safeSave('chess-daily-puzzle', { lastSolvedDate: today, streak: newStreak });
   return newStreak;
 }
+
+// ── トーナメント ───────────────────────────────────────────────────────────────
+
+const DEFAULT_TOURNAMENT = {
+  active: false,
+  currentRound: 1,  // 次にプレイするラウンド番号 (1-4)
+  results: [],      // [{ round, result, moveCount, date }]
+  startedAt: null,
+  finishedAt: null,
+  champion: false,
+  history: [],      // 過去の完了/失敗トーナメントのサマリー
+};
+
+export function loadTournamentState() {
+  return safeLoad('chess-tournament-state', { ...DEFAULT_TOURNAMENT });
+}
+
+export function saveTournamentState(state) {
+  safeSave('chess-tournament-state', state);
+}

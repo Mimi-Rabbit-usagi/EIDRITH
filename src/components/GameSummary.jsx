@@ -141,6 +141,7 @@ export default function GameSummary({
   gameStatus, winner, playerColor = 'w', moveHistory, techniqueLog,
   capturedPieces, difficulty, gameMode, playerName, player2Name, drawReason,
   onNewGame, onClose, onReplay,
+  onTournamentReturn, tournamentRoundLabel,
 }) {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const analysis = useMemo(() => {
@@ -277,7 +278,13 @@ export default function GameSummary({
 
         {/* ── ボタン ── */}
         <div className="summary-buttons">
-          <button className="new-game-btn" onClick={onNewGame}>新しいゲーム</button>
+          {onTournamentReturn ? (
+            <button className="tournament-return-btn" onClick={onTournamentReturn}>
+              🏆 トーナメントに戻る
+            </button>
+          ) : (
+            <button className="new-game-btn" onClick={onNewGame}>新しいゲーム</button>
+          )}
           <div className="summary-buttons-sub">
             {moveHistory.length > 0 && (
               <button className="replay-from-summary-btn" onClick={onReplay}>📽 棋譜を見る</button>

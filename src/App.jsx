@@ -9,6 +9,7 @@ import Review from './pages/Review';
 import Online from './pages/Online';
 import Openings from './pages/Openings';
 import Endgame from './pages/Endgame';
+import Tournament from './pages/Tournament';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/online" element={<Online />} />
       <Route path="/openings" element={<Openings />} />
       <Route path="/endgame" element={<Endgame />} />
+      <Route path="/tournament" element={<Tournament />} />
     </Routes>
   );
 }
