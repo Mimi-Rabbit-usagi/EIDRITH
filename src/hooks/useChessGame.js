@@ -21,7 +21,7 @@ function buildDrawReason(chess) {
 }
 
 
-export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 'cpu') {
+export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 'cpu', getAIMove = null) {
   const chessRef = useRef(new Chess());
 
   // fen changes on every move, driving re-renders
@@ -40,6 +40,9 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
   const [gameResetKey, setGameResetKey] = useState(0);
   const [agreedDraw, setAgreedDraw] = useState(false); // 引き分け合意フラグ
   const aiTimerRef = useRef(null);
+  // getAIMove は外部（Stockfish フック等）から渡される非同期関数のref
+  const getAIMoveRef = useRef(getAIMove);
+  getAIMoveRef.current = getAIMove;
 
   const chess = chessRef.current;
 
@@ -78,11 +81,10 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
 
     setIsThinking(true);
 
-    aiTimerRef.current = setTimeout(() => {
+    const executeMove = (bestMove) => {
       const c = chessRef.current;
-      const bestMove = getBestMove(c.fen(), difficulty);
       if (bestMove) {
-        const move = c.move(bestMove);
+        const move = c.move(bestMove); // SAN 文字列または {from, to, promotion?} を受け付ける
         if (move) {
           setLastMove({ from: move.from, to: move.to });
           if (move.captured) {
@@ -96,7 +98,31 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
         }
       }
       setIsThinking(false);
-    }, 350);
+    };
+
+    if (getAIMoveRef.current) {
+      // 非同期パス（Stockfish 等）
+      const fen = c.fen();
+      getAIMoveRef.current(fen).then(moveObj => {
+        if (moveObj) {
+          executeMove(moveObj);
+        } else {
+          // フォールバック: 既存の minimax
+          const fallback = getBestMove(fen, difficulty);
+          executeMove(fallback);
+        }
+      }).catch(() => {
+        const fallback = getBestMove(c.fen(), difficulty);
+        executeMove(fallback);
+      });
+    } else {
+      // 同期パス: 既存の minimax（350ms 遅延でCPU思考演出）
+      aiTimerRef.current = setTimeout(() => {
+        const c = chessRef.current;
+        const bestMove = getBestMove(c.fen(), difficulty);
+        executeMove(bestMove);
+      }, 350);
+    }
   }, [difficulty, syncFen, showTechnique]);
 
   const handleSquareClick = useCallback((square) => {

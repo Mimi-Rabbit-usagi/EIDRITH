@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Stockfish: ビルド時に node_modules からコピーされる（大容量バイナリなので除外）
+public/stockfish/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

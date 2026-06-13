@@ -22,6 +22,7 @@ import PromotionModal from '../components/PromotionModal';
 import GameSummary from '../components/GameSummary';
 import { loadGameData, saveGameData, loadLogs, saveLogs, safeLoad, safeSave } from '../lib/storage';
 import { TOURNAMENT_ROUNDS } from './Tournament';
+import { useStockfish } from '../hooks/useStockfish';
 
 // ── Play Page ─────────────────────────────────────────────────────────────────
 export default function Play() {
@@ -69,6 +70,9 @@ export default function Play() {
   const activeBoardTheme = BOARD_THEMES.find(t => t.id === gameData.activeBoardTheme) || BOARD_THEMES[0];
   const { enabled: soundEnabled, toggle: toggleSound, play: playSound, volume: soundVolume, setVolume: setSoundVolume } = useSoundEffects();
 
+  // Stockfish は hard モードのときだけ起動（メモリ節約）
+  const { getStockfishMove } = useStockfish(difficulty === 'hard' && gameMode !== 'local');
+
   const moveHistoryRef = useRef([]);
   const techniqueLogRef = useRef([]);
 
@@ -100,7 +104,12 @@ export default function Play() {
     offerDraw,
     drawReason,
     resetWithFen,
-  } = useChessGame(difficulty, playerColor, gameMode === 'local' ? 'human' : 'cpu');
+  } = useChessGame(
+    difficulty,
+    playerColor,
+    gameMode === 'local' ? 'human' : 'cpu',
+    difficulty === 'hard' && gameMode !== 'local' ? getStockfishMove : null,
+  );
 
   moveHistoryRef.current = moveHistory;
   techniqueLogRef.current = techniqueLog;
