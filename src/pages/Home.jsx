@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
-import { loadGameData, safeLoad, getTodayDateString, getDailyPuzzleIndex, loadDailyInfo } from '../lib/storage';
+import {
+  loadGameData, safeLoad,
+  getTodayDateString, getDailyPuzzleIndex, loadDailyInfo,
+  loadQuizStats, loadTrainingStats,
+} from '../lib/storage';
 import { PUZZLES } from '../data/puzzles';
+import { LESSONS } from '../data/lessons';
 
-function loadStats() {
-  const data = loadGameData();
-  const solved = safeLoad('chess-solved-puzzles', []);
-  return {
-    wins: data.wins ?? 0,
-    streak: data.streak ?? 0,
-    puzzlesSolved: solved.length,
-  };
+const TOTAL_OPENINGS = 65;
+
+function loadDashData() {
+  const gameData      = loadGameData();
+  const logs          = safeLoad('chess-master-logs', []);
+  const solved        = safeLoad('chess-solved-puzzles', []);
+  const practiced     = safeLoad('chess-opening-practice', []);
+  const completedLess = safeLoad('chess-lesson-progress', []);
+  const name          = safeLoad('chess-player-name', null);
+  const avatar        = safeLoad('chess-avatar-emoji', '');
+  const quizStats     = loadQuizStats();
+  const trainingStats = loadTrainingStats();
+  return { gameData, logs, solved, practiced, completedLess, name, avatar, quizStats, trainingStats };
 }
 
 const MODES = [
@@ -21,9 +31,8 @@ const MODES = [
     icon: '♟',
     title: '対局',
     subtitle: 'CPU対戦',
-    description: '3段階の難易度でCPUと対戦。チェスクロック・定跡解説・戦術検出つき。',
+    description: '3段階の難易度でCPUと対戦。',
     accent: '#6c63ff',
-    available: true,
   },
   {
     id: 'learn',
@@ -31,58 +40,206 @@ const MODES = [
     icon: '📖',
     title: '学習',
     subtitle: '基礎から学ぶ',
-    description: '駒の動き・チェック・フォーク・ピンなど、チェスの基礎を対話形式で学習。',
+    description: '駒の動きや基本戦術を学ぼう。',
     accent: '#c89b3c',
-    available: true,
   },
   {
     id: 'puzzles',
     path: '/puzzles',
     icon: '♞',
     title: 'パズル',
-    subtitle: '12問収録',
-    description: 'バックランクメイト・フォーク・詰みなどの戦術問題を解いて上達しよう。',
+    subtitle: '戦術問題',
+    description: 'フォーク・詰みなどを解いて上達。',
     accent: '#3cb89b',
-    available: true,
+  },
+  {
+    id: 'openings',
+    path: '/openings',
+    icon: '♗',
+    title: '定跡',
+    subtitle: 'オープニング',
+    description: '65種の定跡を学びクイズで腕試し。',
+    accent: '#e06c75',
+  },
+  {
+    id: 'endgame',
+    path: '/endgame',
+    icon: '♔',
+    title: 'エンドゲーム',
+    subtitle: '終盤練習',
+    description: 'キング＋ルークなどの詰め方を習得。',
+    accent: '#56b6c2',
+  },
+  {
+    id: 'review',
+    path: '/review',
+    icon: '🔍',
+    title: '棋譜解析',
+    subtitle: 'ゲームレビュー',
+    description: '過去の対局を振り返り反省しよう。',
+    accent: '#98c379',
   },
 ];
 
+const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
+const RESULT_MARK = { win: { label: '勝', color: '#4CAF50' }, loss: { label: '敗', color: '#F44336' }, draw: { label: '分', color: '#9E9E9E' } };
+
+function greeting(name) {
+  const h = new Date().getHours();
+  if (h < 5)  return `お疲れさまです、${name}`;
+  if (h < 12) return `おはようございます、${name}`;
+  if (h < 18) return `こんにちは、${name}`;
+  return `こんばんは、${name}`;
+}
+
 export default function Home() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ wins: 0, streak: 0, puzzlesSolved: 0 });
-  const [playerName, setPlayerName] = useState('プレイヤー');
+  const [dash, setDash] = useState(null);
 
   const today       = getTodayDateString();
-  const dailyIdx    = getDailyPuzzleIndex(today, PUZZLES.length);
-  const dailyPuzzle = PUZZLES[dailyIdx];
   const [dailyInfo, setDailyInfo] = useState(() => loadDailyInfo());
-  const todaySolved = dailyInfo.lastSolvedDate === today;
 
   useEffect(() => {
-    setStats(loadStats());
-    const name = safeLoad('chess-player-name', null);
-    if (name) setPlayerName(name);
+    setDash(loadDashData());
     setDailyInfo(loadDailyInfo());
   }, []);
 
+  const dailyIdx    = PUZZLES.length > 0 ? getDailyPuzzleIndex(today, PUZZLES.length) : 0;
+  const dailyPuzzle = PUZZLES[dailyIdx];
+  const todaySolved = dailyInfo.lastSolvedDate === today;
+
+  const stats = dash ? {
+    wins:         dash.gameData.wins ?? 0,
+    streak:       dash.gameData.streak ?? 0,
+    total:        dash.logs.length,
+    winRate:      dash.logs.length > 0
+      ? Math.round((dash.logs.filter(l => l.result === 'win').length / dash.logs.length) * 100)
+      : 0,
+    puzzlesSolved:  dash.solved.filter(id => PUZZLES.find(p => p.id === id)).length,
+    openingsDone:   dash.practiced.length,
+    lessonsDone:    dash.completedLess.filter(id => LESSONS[id]).length,
+    recentLogs:     dash.logs.slice(0, 3),
+  } : null;
+
+  const playerName = dash?.name || 'プレイヤー';
+  const avatar     = dash?.avatar || '♟';
+
   return (
     <div className="home-container">
-      {/* 背景装飾 */}
       <div className="home-bg-glow home-bg-glow--left" />
       <div className="home-bg-glow home-bg-glow--right" />
 
       <NavBar />
 
-      {/* ヒーローセクション */}
-      <section className="home-hero">
-        <h1 className="home-hero-title">
-          チェスで、<br />
-          <span className="home-hero-title--accent">強くなれ。</span>
-        </h1>
-        <p className="home-hero-sub">
-          対局・学習・パズルで、初心者でも楽しくチェスが上達できる。
-        </p>
+      {/* ダッシュボード ヘッダー */}
+      <section className="home-dash-header">
+        <div className="home-dash-avatar">{avatar}</div>
+        <div className="home-dash-greet">
+          <h1 className="home-dash-name">{greeting(playerName)}</h1>
+          {stats && (
+            <p className="home-dash-sub">
+              総勝利 <strong>{stats.wins}</strong> ·
+              {stats.streak > 0
+                ? <> 🔥 <strong>{stats.streak}</strong> 連勝中</>
+                : ' 連勝なし'}
+              {stats.total > 0 && <> · 勝率 <strong>{stats.winRate}%</strong></>}
+            </p>
+          )}
+        </div>
       </section>
+
+      {/* 今日のパズル */}
+      {dailyPuzzle && (
+        <section className="home-daily">
+          <button
+            className={`home-daily-card ${todaySolved ? 'home-daily-card--solved' : ''}`}
+            onClick={() => navigate('/puzzles?daily=true')}
+          >
+            <div className="home-daily-left">
+              <span className="home-daily-icon">📅</span>
+              <div>
+                <p className="home-daily-label">今日のパズル</p>
+                <p className="home-daily-title">{dailyPuzzle.title}</p>
+              </div>
+            </div>
+            <div className="home-daily-right">
+              {dailyInfo.streak > 0 && (
+                <span className="home-daily-streak">🔥 {dailyInfo.streak}日連続</span>
+              )}
+              {todaySolved ? (
+                <span className="home-daily-badge">✓ クリア</span>
+              ) : (
+                <span className="home-daily-cta">挑戦する →</span>
+              )}
+            </div>
+          </button>
+        </section>
+      )}
+
+      {/* 直近の対局 */}
+      {stats && stats.recentLogs.length > 0 && (
+        <section className="home-recent">
+          <div className="home-section-head">
+            <span className="home-section-title">直近の対局</span>
+            <button className="home-section-link" onClick={() => navigate('/profile')}>すべて見る →</button>
+          </div>
+          <div className="home-recent-list">
+            {stats.recentLogs.map((l, i) => {
+              const rm = RESULT_MARK[l.result] ?? RESULT_MARK.draw;
+              return (
+                <div
+                  key={l.id ?? i}
+                  className={`home-recent-row ${l.moves?.length > 0 ? 'home-recent-row--clickable' : ''}`}
+                  onClick={() => {
+                    if (l.moves?.length > 0) navigate('/review', { state: { game: l } });
+                  }}
+                >
+                  <span className="home-recent-mark" style={{ color: rm.color }}>{rm.label}</span>
+                  <span className="home-recent-diff">{DIFF_LABEL[l.difficulty] ?? l.difficulty}</span>
+                  <span className="home-recent-moves">{l.moveCount}手</span>
+                  <span className="home-recent-date">
+                    {new Date(l.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                  </span>
+                  {l.moves?.length > 0 && <span className="home-recent-review">▶ 振り返る</span>}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* 学習進捗 */}
+      {stats && (
+        <section className="home-progress">
+          <div className="home-section-head">
+            <span className="home-section-title">学習進捗</span>
+            <button className="home-section-link" onClick={() => navigate('/profile')}>詳細 →</button>
+          </div>
+          <div className="home-progress-bars">
+            {[
+              { label: 'パズル',   value: stats.puzzlesSolved, total: PUZZLES.length,   color: '#3cb89b' },
+              { label: 'レッスン', value: stats.lessonsDone,   total: Object.keys(LESSONS).length, color: '#c89b3c' },
+              { label: '定跡練習', value: stats.openingsDone,  total: TOTAL_OPENINGS,   color: '#e06c75' },
+            ].map(item => (
+              <div key={item.label} className="home-progress-item">
+                <div className="home-progress-meta">
+                  <span className="home-progress-label">{item.label}</span>
+                  <span className="home-progress-count">{item.value} / {item.total}</span>
+                </div>
+                <div className="home-progress-bar-wrap">
+                  <div
+                    className="home-progress-bar"
+                    style={{
+                      width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%`,
+                      background: item.color,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* モードカード */}
       <section className="home-modes">
@@ -104,56 +261,9 @@ export default function Home() {
         ))}
       </section>
 
-      {/* 今日のパズル */}
-      <section className="home-daily">
-        <button
-          className={`home-daily-card ${todaySolved ? 'home-daily-card--solved' : ''}`}
-          onClick={() => navigate('/puzzles?daily=true')}
-        >
-          <div className="home-daily-left">
-            <span className="home-daily-icon">📅</span>
-            <div>
-              <p className="home-daily-label">今日のパズル</p>
-              <p className="home-daily-title">{dailyPuzzle.title}</p>
-            </div>
-          </div>
-          <div className="home-daily-right">
-            {dailyInfo.streak > 0 && (
-              <span className="home-daily-streak">🔥 {dailyInfo.streak}日連続</span>
-            )}
-            {todaySolved ? (
-              <span className="home-daily-badge">✓ クリア</span>
-            ) : (
-              <span className="home-daily-cta">挑戦する →</span>
-            )}
-          </div>
-        </button>
-      </section>
-
-      {/* スタッツバー */}
-      <section className="home-stats">
-        <div className="home-stat">
-          <span className="home-stat-icon">👑</span>
-          <span className="home-stat-value">{stats.wins}</span>
-          <span className="home-stat-label">勝利</span>
-        </div>
-        <div className="home-stat-divider" />
-        <div className="home-stat">
-          <span className="home-stat-icon">🔥</span>
-          <span className="home-stat-value">{stats.streak}</span>
-          <span className="home-stat-label">連勝</span>
-        </div>
-        <div className="home-stat-divider" />
-        <div className="home-stat">
-          <span className="home-stat-icon">🧩</span>
-          <span className="home-stat-value">{stats.puzzlesSolved}<span className="home-stat-denom">/12</span></span>
-          <span className="home-stat-label">パズル</span>
-        </div>
-      </section>
-
       {/* フッター */}
       <footer className="home-footer">
-        <span>将来実装予定：オンライン対戦 · Googleログイン · レーティング</span>
+        <span>EIDRITH Chess — 対局・学習・パズル・定跡でチェスを楽しもう</span>
       </footer>
     </div>
   );

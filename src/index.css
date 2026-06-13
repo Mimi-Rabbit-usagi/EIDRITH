@@ -4046,6 +4046,128 @@ body {
   line-height: 1.6;
 }
 
+/* ダッシュボード ヘッダー */
+.home-dash-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 20px 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.home-dash-avatar {
+  font-size: 2.4rem;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.home-dash-greet { flex: 1; min-width: 0; }
+.home-dash-name {
+  font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+  font-weight: 700;
+  color: #fffffe;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.home-dash-sub {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+  margin: 0;
+  line-height: 1.5;
+}
+.home-dash-sub strong { color: rgba(255,255,255,0.85); }
+
+/* 直近の対局 */
+.home-recent {
+  max-width: 600px;
+  margin: 20px auto 0;
+  padding: 0 16px;
+}
+.home-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.home-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.4);
+}
+.home-section-link {
+  background: none;
+  border: none;
+  color: #c89b3c;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0;
+}
+.home-recent-list {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.home-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.home-recent-row:last-child { border-bottom: none; }
+.home-recent-row--clickable { cursor: pointer; }
+.home-recent-row--clickable:hover { background: rgba(255,255,255,0.04); }
+.home-recent-mark { font-weight: 700; font-size: 0.8rem; min-width: 18px; }
+.home-recent-diff { color: rgba(255,255,255,0.55); flex: 1; }
+.home-recent-moves { color: rgba(255,255,255,0.35); font-size: 0.75rem; min-width: 36px; text-align: right; }
+.home-recent-date  { color: rgba(255,255,255,0.3); font-size: 0.72rem; min-width: 52px; text-align: right; }
+.home-recent-review { color: #c89b3c; font-size: 0.72rem; white-space: nowrap; margin-left: auto; }
+
+/* 学習進捗 */
+.home-progress {
+  max-width: 600px;
+  margin: 20px auto 0;
+  padding: 0 16px;
+}
+.home-progress-bars { display: flex; flex-direction: column; gap: 8px; }
+.home-progress-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.home-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.home-progress-label { font-size: 0.78rem; color: rgba(255,255,255,0.6); }
+.home-progress-count { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+.home-progress-bar-wrap {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.home-progress-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
 /* モードカード */
 .home-modes {
   display: flex;
