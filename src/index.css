@@ -3213,6 +3213,177 @@ body {
   flex-shrink: 0;
 }
 
+/* PGN エクスポート・インポート */
+.review-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.pgn-copy-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 7px;
+  border: 1px solid rgba(200,155,60,0.4);
+  background: rgba(200,155,60,0.08);
+  color: #c89b3c;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.pgn-copy-btn:hover { background: rgba(200,155,60,0.18); }
+.pgn-copy-btn--done {
+  border-color: rgba(76,175,80,0.5);
+  background: rgba(76,175,80,0.1);
+  color: #69F0AE;
+}
+.pgn-dl-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.pgn-dl-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+.pgn-import-bar {
+  display: flex;
+  justify-content: center;
+  padding: 12px 18px 4px;
+}
+.pgn-import-bar-btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.45);
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.pgn-import-bar-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+/* PGN インポートモーダル */
+.pgn-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+.pgn-modal {
+  background: #1a1a2e;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 24px;
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pgn-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pgn-modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+.pgn-modal-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+.pgn-modal-close:hover { color: #fff; }
+.pgn-modal-input {
+  width: 100%;
+  min-height: 160px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.pgn-modal-input:focus { outline: 1px solid rgba(200,155,60,0.5); }
+.pgn-modal-error {
+  font-size: 0.82rem;
+  color: #FF5252;
+  margin: 0;
+}
+.pgn-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.pgn-modal-cancel {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.pgn-modal-cancel:hover { color: #fff; }
+.pgn-modal-submit {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #c89b3c;
+  color: #0f0e17;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.pgn-modal-submit:hover { opacity: 0.85; }
+
+/* review-empty（棋譜なし）拡張 */
+.review-empty-sub {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.4);
+  margin: 0 0 16px;
+  text-align: center;
+}
+.pgn-import-empty-btn {
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: 1px solid rgba(200,155,60,0.4);
+  background: rgba(200,155,60,0.1);
+  color: #c89b3c;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background 0.15s;
+}
+.pgn-import-empty-btn:hover { background: rgba(200,155,60,0.2); }
+
 /* GameSummary の「棋譜を見る」ボタン */
 .replay-from-summary-btn {
   flex: 1;

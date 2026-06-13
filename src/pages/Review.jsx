@@ -324,6 +324,73 @@ function EngineEval({ info, step }) {
   );
 }
 
+// ── PGN ユーティリティ ────────────────────────────────────────────────────────
+function buildPgn(moves) {
+  const chess = new Chess();
+  for (const san of moves) {
+    try { chess.move(san); } catch { break; }
+  }
+  return chess.pgn();
+}
+
+function parsePgn(pgnText) {
+  const chess = new Chess();
+  try {
+    chess.loadPgn(pgnText.trim());
+    const moves = chess.history();
+    if (moves.length === 0) return { ok: false, error: 'PGN に手順が含まれていません' };
+    return { ok: true, moves };
+  } catch (e) {
+    return { ok: false, error: '無効な PGN 形式です' };
+  }
+}
+
+function downloadPgn(pgnText, filename = 'game.pgn') {
+  const blob = new Blob([pgnText], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── PGN インポートモーダル ─────────────────────────────────────────────────────
+function PgnImportModal({ onImport, onClose }) {
+  const [pgnInput, setPgnInput] = useState('');
+  const [error,    setError]    = useState('');
+
+  const handleImport = () => {
+    const result = parsePgn(pgnInput);
+    if (!result.ok) { setError(result.error); return; }
+    onImport(result.moves);
+  };
+
+  return (
+    <div className="pgn-modal-overlay" onClick={onClose}>
+      <div className="pgn-modal" onClick={e => e.stopPropagation()}>
+        <div className="pgn-modal-header">
+          <h3 className="pgn-modal-title">📥 PGN を読み込む</h3>
+          <button className="pgn-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <textarea
+          className="pgn-modal-input"
+          placeholder={'PGN テキストをここに貼り付けてください\n例: 1. e4 e5 2. Nf3 Nc6 3. Bb5 ...'}
+          value={pgnInput}
+          onChange={e => { setPgnInput(e.target.value); setError(''); }}
+          rows={8}
+          spellCheck={false}
+        />
+        {error && <p className="pgn-modal-error">{error}</p>}
+        <div className="pgn-modal-actions">
+          <button className="pgn-modal-cancel" onClick={onClose}>キャンセル</button>
+          <button className="pgn-modal-submit" onClick={handleImport}>読み込む</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Review ページ ─────────────────────────────────────────────────────────────
 export default function Review() {
   const location = useLocation();
@@ -335,11 +402,17 @@ export default function Review() {
   const pieceSet     = location.state?.pieceSet ?? 'classic';
   const flipped      = location.state?.flipped  ?? false;
 
-  const techniques = game?.techniques ?? [];
+  // PGN インポートで読み込んだゲームを上書きする
+  const [importedGame, setImportedGame] = useState(null);
+  const [showImport, setShowImport]     = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState(false);
+
+  const activeGame = importedGame ?? game;
+  const techniques = activeGame?.techniques ?? [];
 
   const positions = useMemo(
-    () => (game ? buildPositions(game.moves) : []),
-    [game]
+    () => (activeGame ? buildPositions(activeGame.moves) : []),
+    [activeGame]
   );
   const total = positions.length - 1;
 
@@ -351,7 +424,7 @@ export default function Review() {
   const evalTimerRef = useRef(null);
 
   useEffect(() => {
-    if (step === 0 || !game) {
+    if (step === 0 || !activeGame) {
       setBestMoveInfo(undefined);
       return;
     }
@@ -360,7 +433,7 @@ export default function Review() {
     clearTimeout(evalTimerRef.current);
     evalTimerRef.current = setTimeout(() => {
       const prevFen = positions[step - 1]?.fen;
-      const actualSan = game.moves[step - 1];
+      const actualSan = activeGame.moves[step - 1];
       if (!prevFen || !actualSan) { setBestMoveInfo(undefined); return; }
 
       const bestSan = getBestMove(prevFen, 'normal');
@@ -372,7 +445,7 @@ export default function Review() {
 
       // step が奇数=白手番, playerColor が 'w' なら白=プレイヤー
       const isWhiteTurn = step % 2 === 1;
-      const playerColor = game.playerColor ?? 'w';
+      const playerColor = activeGame.playerColor ?? 'w';
       const isPlayerMove = (isWhiteTurn && playerColor === 'w') || (!isWhiteTurn && playerColor === 'b');
 
       setBestMoveInfo({ bestSan, actualSan, isBest, isPlayerMove });
@@ -410,22 +483,58 @@ export default function Review() {
   };
 
   const comment = useMemo(
-    () => game ? getMoveComment(step, game.moves, techniques) : null,
-    [step, game, techniques]
+    () => activeGame ? getMoveComment(step, activeGame.moves, techniques) : null,
+    [step, activeGame, techniques]
   );
 
+  // PGN インポートハンドラ
+  const handlePgnImport = useCallback((moves) => {
+    setImportedGame({ moves, techniques: [], playerColor: 'w', moveCount: moves.length });
+    setShowImport(false);
+    setStep(0);
+    setIsPlaying(false);
+  }, []);
+
+  // PGN コピー
+  const handleCopyPgn = useCallback(async () => {
+    if (!activeGame) return;
+    const pgnText = buildPgn(activeGame.moves);
+    try {
+      await navigator.clipboard.writeText(pgnText);
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2000);
+    } catch {
+      // フォールバック: テキストエリア経由
+      const ta = document.createElement('textarea');
+      ta.value = pgnText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2000);
+    }
+  }, [activeGame]);
+
   // データなし
-  if (!game) {
+  if (!activeGame) {
     return (
       <div className="app-container">
         <NavBar />
         <main className="review-page">
           <div className="review-empty">
             <p>棋譜データがありません。</p>
+            <p className="review-empty-sub">対局後にここで棋譜を確認できます。PGN を貼り付けて再生することもできます。</p>
+            <button className="pgn-import-empty-btn" onClick={() => setShowImport(true)}>
+              📥 PGN を読み込む
+            </button>
             <button className="new-game-btn" onClick={() => navigate('/play')}>
               ← 対局に戻る
             </button>
           </div>
+          {showImport && (
+            <PgnImportModal onImport={handlePgnImport} onClose={() => setShowImport(false)} />
+          )}
         </main>
       </div>
     );
@@ -445,7 +554,23 @@ export default function Review() {
             ← 戻る
           </button>
           <h1 className="review-title">棋譜リプレイ</h1>
-          <span className="replay-step-counter">{step} / {total}手</span>
+          <div className="review-header-right">
+            <span className="replay-step-counter">{step} / {total}手</span>
+            <button
+              className={`pgn-copy-btn ${copyFeedback ? 'pgn-copy-btn--done' : ''}`}
+              onClick={handleCopyPgn}
+              title="PGN をクリップボードにコピー"
+            >
+              {copyFeedback ? '✓ コピー済み' : '📋 PGN コピー'}
+            </button>
+            <button
+              className="pgn-dl-btn"
+              onClick={() => downloadPgn(buildPgn(activeGame.moves))}
+              title="PGN ファイルをダウンロード"
+            >
+              ⬇ DL
+            </button>
+          </div>
         </div>
 
         {/* ── 盤面 + 手順リスト ── */}
@@ -469,7 +594,7 @@ export default function Review() {
 
           <div className="replay-side">
             <p className="replay-moves-title">手順（{total}手）</p>
-            <MoveList moves={game.moves} step={step} techniques={techniques} onGoTo={goTo} />
+            <MoveList moves={activeGame.moves} step={step} techniques={techniques} onGoTo={goTo} />
           </div>
         </div>
 
@@ -494,6 +619,16 @@ export default function Review() {
           <button className="replay-ctrl-btn" onClick={() => goTo(total)}    title="最後">⏭</button>
         </div>
         <p className="replay-keyboard-hint">← → キーでも操作できます</p>
+
+        <div className="pgn-import-bar">
+          <button className="pgn-import-bar-btn" onClick={() => setShowImport(true)}>
+            📥 別の PGN を読み込む
+          </button>
+        </div>
+
+        {showImport && (
+          <PgnImportModal onImport={handlePgnImport} onClose={() => setShowImport(false)} />
+        )}
       </main>
     </div>
   );
