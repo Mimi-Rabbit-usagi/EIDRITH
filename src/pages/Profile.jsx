@@ -6,7 +6,7 @@ import { ACHIEVEMENTS } from '../data/achievements';
 import { TECHNIQUES } from '../data/techniques';
 import { PUZZLES } from '../data/puzzles';
 import { LESSONS } from '../data/lessons';
-import { loadGameData, safeLoad, safeSave } from '../lib/storage';
+import { loadGameData, safeLoad, safeSave, loadQuizStats } from '../lib/storage';
 
 const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
@@ -27,7 +27,8 @@ function loadAllData() {
   const completedLessons = safeLoad('chess-lesson-progress', []);
   const name             = safeLoad('chess-player-name', 'あなた');
   const avatarEmoji      = safeLoad('chess-avatar-emoji', '');
-  return { gameData, logs, solved, practiced, completedLessons, name, avatarEmoji };
+  const quizStats        = loadQuizStats();
+  return { gameData, logs, solved, practiced, completedLessons, name, avatarEmoji, quizStats };
 }
 
 function calcStats(logs) {
@@ -255,6 +256,8 @@ export default function Profile() {
   const streak = data.gameData.streak ?? 0;
   const solvedCount = data.solved.filter(id => PUZZLES.find(p => p.id === id)).length;
   const practicedCount = data.practiced.length;
+  const quizStats = data.quizStats;
+  const quizRate = quizStats.total > 0 ? Math.round((quizStats.correct / quizStats.total) * 100) : null;
   const totalLessons = Object.keys(LESSONS).length;
   const completedLessonsCount = data.completedLessons.filter(id => LESSONS[id]).length;
 
@@ -508,6 +511,24 @@ export default function Profile() {
                   style={{ width: `${totalLessons > 0 ? (completedLessonsCount / totalLessons) * 100 : 0}%` }}
                 />
               </div>
+            </div>
+            <div className="profile-progress-item" onClick={() => navigate('/openings')}>
+              <div className="profile-progress-header">
+                <span className="profile-progress-icon">🧠</span>
+                <span className="profile-progress-name">定跡クイズ</span>
+                <span className="profile-progress-count">
+                  {quizStats.total > 0 ? `${quizStats.correct} / ${quizStats.total} 問` : '未挑戦'}
+                </span>
+              </div>
+              <div className="profile-progress-bar-wrap">
+                <div
+                  className="profile-progress-bar profile-progress-bar--quiz"
+                  style={{ width: `${quizRate ?? 0}%` }}
+                />
+              </div>
+              {quizRate !== null && (
+                <p className="profile-quiz-rate">正解率 {quizRate}%</p>
+              )}
             </div>
           </div>
         </section>

@@ -169,6 +169,18 @@ export function loadDailyInfo() {
   return safeLoad('chess-daily-puzzle', { lastSolvedDate: null, streak: 0 });
 }
 
+// ── オープニングクイズ ────────────────────────────────────────────────────────
+
+/** クイズの累計成績を読み込む */
+export function loadQuizStats() {
+  return safeLoad('chess-opening-quiz', { total: 0, correct: 0 });
+}
+
+/** クイズの累計成績を保存する */
+export function saveQuizStats(stats) {
+  safeSave('chess-opening-quiz', stats);
+}
+
 /**
  * デイリーパズルを解いたときに呼ぶ。ストリークを更新して保存する。
  * @param {string} today - "2026-06-13" 形式
