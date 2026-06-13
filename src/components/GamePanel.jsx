@@ -65,11 +65,12 @@ const STATUS_CONFIG = {
   timeout:   { text: '時間切れ！',            color: '#F44336' },
 };
 
-const CLOCK_CONFIG = [
-  { id: 'none', label: 'なし',  emoji: '∞'  },
-  { id: '1',    label: '1分',   emoji: '⚡' },
-  { id: '3',    label: '3分',   emoji: '⏱' },
-  { id: '10',   label: '10分',  emoji: '🕐' },
+const CLOCK_PRESETS = [
+  { id: 'none',      label: 'なし',      emoji: '∞',  mode: 'none', increment: 0, sub: null        },
+  { id: 'bullet',    label: 'Bullet',    emoji: '⚡',  mode: '1',    increment: 0, sub: '1分'       },
+  { id: 'blitz',     label: 'Blitz',     emoji: '⏱',  mode: '3',    increment: 2, sub: '3+2'       },
+  { id: 'rapid',     label: 'Rapid',     emoji: '🕐',  mode: '10',   increment: 0, sub: '10分'      },
+  { id: 'classical', label: 'Classical', emoji: '⌛',  mode: '30',   increment: 0, sub: '30分'      },
 ];
 
 const DIFFICULTY_CONFIG = [
@@ -106,9 +107,9 @@ export default function GamePanel({
   capturedPieces, moveHistory, wins,
   difficulty, soundEnabled, technique, techniqueLog, hint,
   currentOpening,
-  gameMode, playerColor, playerName, player2Name, clockMode,
+  gameMode, playerColor, playerName, player2Name, clockMode, clockIncrement,
   onGameModeChange, onDifficultyChange, onNewGame, onShowHistory,
-  onToggleSound, onHint, onClearHint, onUndo, onOfferDraw, onPlayerColorChange, onClockModeChange,
+  onToggleSound, onHint, onClearHint, onUndo, onOfferDraw, onPlayerColorChange, onClockPresetChange,
   onPlayerNameChange, onPlayer2NameChange, onShowStats, onShowPuzzle, onShowOpening, onShowCustomize,
   onShowFenInput,
 }) {
@@ -357,18 +358,21 @@ export default function GamePanel({
       {/* 持ち時間 */}
       <div className={mobileTab === 'game' ? 'mobile-hidden' : ''}>
         <p className="section-title">持ち時間</p>
-        <div className="difficulty-row clock-mode-row">
-          {CLOCK_CONFIG.map(c => (
-            <button
-              key={c.id}
-              className={`difficulty-btn ${clockMode === c.id ? 'difficulty-btn-active' : ''}`}
-              style={clockMode === c.id ? { borderColor: '#2196F3', color: '#2196F3' } : {}}
-              onClick={() => onClockModeChange(c.id)}
-            >
-              <span>{c.emoji}</span>
-              <span>{c.label}</span>
-            </button>
-          ))}
+        <div className="clock-preset-row">
+          {CLOCK_PRESETS.map(p => {
+            const isActive = clockMode === p.mode && clockIncrement === p.increment;
+            return (
+              <button
+                key={p.id}
+                className={`clock-preset-btn ${isActive ? 'clock-preset-btn--active' : ''}`}
+                onClick={() => onClockPresetChange({ mode: p.mode, increment: p.increment })}
+              >
+                <span className="clock-preset-emoji">{p.emoji}</span>
+                <span className="clock-preset-label">{p.label}</span>
+                {p.sub && <span className="clock-preset-sub">{p.sub}</span>}
+              </button>
+            );
+          })}
         </div>
       </div>
 

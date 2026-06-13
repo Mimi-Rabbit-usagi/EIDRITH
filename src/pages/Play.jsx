@@ -35,8 +35,9 @@ export default function Play() {
   const [playerColor, setPlayerColor] = useState('w');
   const [gameMode, setGameMode] = useState(() => safeLoad('chess-game-mode', 'cpu'));
   const [player2Name, setPlayer2Name] = useState(() => safeLoad('chess-player2-name', 'プレイヤー2'));
-  const [clockMode, setClockMode] = useState('none');
-  const [clockTimeout, setClockTimeout] = useState(null);
+  const [clockMode, setClockMode]           = useState('none');
+  const [clockIncrement, setClockIncrement] = useState(0);
+  const [clockTimeout, setClockTimeout]     = useState(null);
   const [playerName, setPlayerName] = useState(() => safeLoad('chess-player-name', 'あなた'));
   const [showHistory, setShowHistory] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
@@ -98,6 +99,7 @@ export default function Play() {
   const handleTimeout = useCallback((loserColor) => setClockTimeout(loserColor), []);
   const { playerTime, cpuTime, resetClock } = useChessClock({
     clockMode,
+    increment: clockIncrement,
     currentTurn,
     playerColor,
     isGameOver: isChessOver || clockTimeout !== null,
@@ -328,8 +330,9 @@ export default function Play() {
     setShowSummary(false);
   }, [resetGame, resetClock]);
 
-  const handleClockModeChange = useCallback((mode) => {
+  const handleClockPresetChange = useCallback(({ mode, increment }) => {
     setClockMode(mode);
+    setClockIncrement(increment);
     resetGame();
     setClockTimeout(null);
     setWinCounted(false);
@@ -466,12 +469,13 @@ export default function Play() {
           playerName={playerName}
           player2Name={player2Name}
           clockMode={clockMode}
+          clockIncrement={clockIncrement}
           onGameModeChange={handleGameModeChange}
           onDifficultyChange={handleDifficultyChange}
           onPlayerNameChange={handlePlayerNameChange}
           onPlayer2NameChange={handlePlayer2NameChange}
           onShowStats={() => setShowStats(true)}
-          onClockModeChange={handleClockModeChange}
+          onClockPresetChange={handleClockPresetChange}
           onPlayerColorChange={handlePlayerColorChange}
           onUndo={undoMove}
           onOfferDraw={offerDraw}

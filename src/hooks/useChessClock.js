@@ -15,7 +15,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  * - バックグラウンドタブ復帰時に visibilitychange で即座に補正
  * - タイムアウトは非同期ではなく即座に呼び出す
  */
-export function useChessClock({ clockMode, currentTurn, playerColor, isGameOver, onTimeout }) {
+export function useChessClock({ clockMode, increment = 0, currentTurn, playerColor, isGameOver, onTimeout }) {
   const getInitTime = () => clockMode === 'none' ? null : parseInt(clockMode) * 60;
 
   const [playerTime, setPlayerTime] = useState(getInitTime);
@@ -28,6 +28,9 @@ export function useChessClock({ clockMode, currentTurn, playerColor, isGameOver,
   const onTimeoutRef  = useRef(onTimeout);
   onTimeoutRef.current = onTimeout;
 
+  // インクリメント用: 直前のターンを追跡
+  const prevTurnRef = useRef(null); // null = "このゲームでまだ手が指されていない"
+
   // clockMode が変わったらリセット
   useEffect(() => {
     const t = clockMode === 'none' ? null : parseInt(clockMode) * 60;
@@ -36,6 +39,7 @@ export function useChessClock({ clockMode, currentTurn, playerColor, isGameOver,
     setPlayerTime(t);
     setCpuTime(t);
     timedOutRef.current = false;
+    prevTurnRef.current = null; // インクリメントを新ゲーム用にリセット
   // clockMode だけに反応すればよい
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clockMode]);
@@ -85,6 +89,34 @@ export function useChessClock({ clockMode, currentTurn, playerColor, isGameOver,
     };
   }, [clockMode, currentTurn, playerColor, isGameOver]);
 
+  // ターンが変わったとき（=手が指されたとき）インクリメントを加算
+  useEffect(() => {
+    if (increment <= 0 || clockMode === 'none' || isGameOver) return;
+
+    if (prevTurnRef.current === null) {
+      // 初手: ターンを記録するだけで加算しない
+      prevTurnRef.current = currentTurn;
+      return;
+    }
+    if (prevTurnRef.current === currentTurn) return; // ターン変化なし
+
+    // ターンが変わった → 直前のターンのプレイヤーが手を指した
+    const justMovedColor = prevTurnRef.current;
+    prevTurnRef.current  = currentTurn;
+
+    const cpuColor = playerColor === 'w' ? 'b' : 'w';
+    if (justMovedColor === playerColor) {
+      const newT = (playerTimeRef.current ?? 0) + increment;
+      playerTimeRef.current = newT;
+      setPlayerTime(newT);
+    } else if (justMovedColor === cpuColor) {
+      const newT = (cpuTimeRef.current ?? 0) + increment;
+      cpuTimeRef.current = newT;
+      setCpuTime(newT);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTurn]);
+
   const resetClock = useCallback(() => {
     const t = clockMode === 'none' ? null : parseInt(clockMode) * 60;
     playerTimeRef.current = t;
@@ -92,6 +124,7 @@ export function useChessClock({ clockMode, currentTurn, playerColor, isGameOver,
     setPlayerTime(t);
     setCpuTime(t);
     timedOutRef.current = false;
+    prevTurnRef.current = null;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clockMode]);
 
