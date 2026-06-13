@@ -4685,6 +4685,98 @@ body {
   color: rgba(255,255,255,0.25);
 }
 
+/* puzzles-page-header のヘッダー右側 */
+.puzzles-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.training-start-btn {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #7986CB 0%, #5c6bc0 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.training-start-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+/* トレーニングパネル（右カラム） */
+.training-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(121,134,203,0.1);
+  border: 1px solid rgba(121,134,203,0.3);
+  margin-bottom: 4px;
+}
+.training-tier-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.training-tier-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.3);
+  background: transparent;
+}
+.training-tier-badge--current {
+  background: rgba(255,255,255,0.05);
+  font-weight: 700;
+}
+.training-tier-badge--done {
+  color: rgba(255,255,255,0.5);
+  text-decoration: line-through;
+}
+.training-tier-badge--locked { opacity: 0.3; }
+
+.training-streak-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.training-streak-icon { font-size: 1.1rem; }
+.training-streak-val  { font-size: 1.4rem; font-weight: 800; color: #FF9800; }
+.training-streak-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+.training-promote-hint {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.05);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+.training-promoted-banner {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #FFD700;
+  background: rgba(255,215,0,0.1);
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  text-align: center;
+  animation: popIn 0.3s ease;
+}
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.training-session-row {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.35);
+}
+
 /* レスポンシブ */
 @media (max-width: 760px) {
   .puzzles-play-layout {
@@ -4977,7 +5069,8 @@ body {
 }
 .profile-progress-bar--gold { background: #c89b3c; }
 .profile-progress-bar--lesson { background: #7c5cbf; }
-.profile-progress-bar--quiz { background: #26a69a; }
+.profile-progress-bar--quiz     { background: #26a69a; }
+.profile-progress-bar--training { background: #7986CB; }
 
 .profile-quiz-rate {
   font-size: 0.75rem;

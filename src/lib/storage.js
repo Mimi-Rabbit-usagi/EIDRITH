@@ -169,6 +169,18 @@ export function loadDailyInfo() {
   return safeLoad('chess-daily-puzzle', { lastSolvedDate: null, streak: 0 });
 }
 
+// ── タクティクストレーニング ──────────────────────────────────────────────────
+
+/** トレーニングの累計成績を読み込む */
+export function loadTrainingStats() {
+  return safeLoad('chess-tactics-training', { bestStreak: 0, totalCorrect: 0, highestTier: 'easy' });
+}
+
+/** トレーニングの累計成績を保存する */
+export function saveTrainingStats(stats) {
+  safeSave('chess-tactics-training', stats);
+}
+
 // ── オープニングクイズ ────────────────────────────────────────────────────────
 
 /** クイズの累計成績を読み込む */

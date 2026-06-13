@@ -8,10 +8,18 @@ import { BOARD_THEMES } from '../data/themes';
 import {
   loadGameData, safeLoad, safeSave,
   getTodayDateString, getDailyPuzzleIndex, loadDailyInfo, saveDailyPuzzleSolved,
+  loadTrainingStats, saveTrainingStats,
 } from '../lib/storage';
 
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
 const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
+
+const TRAINING_TIERS = [
+  { id: 'easy',   label: 'かんたん',   promoteAt: 3, color: '#4CAF50' },
+  { id: 'normal', label: 'ふつう',     promoteAt: 3, color: '#FF9800' },
+  { id: 'hard',   label: 'むずかしい', promoteAt: 3, color: '#F44336' },
+];
+const TIER_RANK = { easy: 0, normal: 1, hard: 2 };
 
 function loadPrefs() {
   const d = loadGameData();
@@ -51,6 +59,14 @@ export default function Puzzles() {
   const [solutionStep, setSolutionStep] = useState(-1);
   const autoMoveTimer  = useRef(null);
   const solutionTimers = useRef([]);
+
+  // トレーニング関連
+  const [isTraining, setIsTraining]           = useState(false);
+  const [trainingTier, setTrainingTier]       = useState('easy');
+  const [trainingStreak, setTrainingStreak]   = useState(0);
+  const [trainingSession, setTrainingSession] = useState({ correct: 0, total: 0 });
+  const [trainingStats, setTrainingStats]     = useState(() => loadTrainingStats());
+  const [promoted, setPromoted]               = useState(false);
 
   const filteredPuzzles = filter === 'all' ? PUZZLES : PUZZLES.filter(p => p.difficulty === filter);
   const puzzle = puzzleIdx !== null ? filteredPuzzles[puzzleIdx] : null;
@@ -182,6 +198,43 @@ export default function Puzzles() {
     }
   }, [puzzle, status, chess, selectedSq, legalMoves, moveIdx, playOpponentMove]);
 
+  // トレーニング：ランダムに問題を選んで直接ロード（filteredPuzzles を経由しない）
+  const openTrainingPuzzle = useCallback((tier, excludeId = null) => {
+    const pool = PUZZLES.filter(p => p.difficulty === tier && p.id !== excludeId);
+    if (pool.length === 0) return;
+    const p = pool[Math.floor(Math.random() * pool.length)];
+    chess.load(p.fen);
+    setFen(chess.fen());
+    setFilter('all');
+    setPuzzleIdx(PUZZLES.indexOf(p));
+    setMoveIdx(0);
+    setSelectedSq(null);
+    setLegalMoves([]);
+    setLastMove(null);
+    setStatus('idle');
+    setShowHint(false);
+    setSolutionMode(false);
+    setSolutionStep(-1);
+    setPromoted(false);
+    clearTimeout(autoMoveTimer.current);
+    clearSolutionTimers();
+  }, [chess, clearSolutionTimers]);
+
+  const startTraining = useCallback(() => {
+    setIsTraining(true);
+    setTrainingTier('easy');
+    setTrainingStreak(0);
+    setTrainingSession({ correct: 0, total: 0 });
+    setPromoted(false);
+    openTrainingPuzzle('easy', null);
+  }, [openTrainingPuzzle]);
+
+  const stopTraining = useCallback(() => {
+    setIsTraining(false);
+    setPuzzleIdx(null);
+    clearTimeout(autoMoveTimer.current);
+  }, []);
+
   // ?daily=true でアクセスしたときはデイリーパズルを自動的に開く
   useEffect(() => {
     if (isDaily) {
@@ -191,6 +244,48 @@ export default function Puzzles() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDaily]);
+
+  // トレーニング: 正解したとき streak・tier を更新
+  useEffect(() => {
+    if (!isTraining || status !== 'done' || !puzzle) return;
+
+    const newStreak = trainingStreak + 1;
+    setTrainingStreak(newStreak);
+    setTrainingSession(prev => ({ correct: prev.correct + 1, total: prev.total + 1 }));
+
+    // 昇格チェック
+    const tierCfg = TRAINING_TIERS.find(t => t.id === trainingTier);
+    const currentTierIdx = TRAINING_TIERS.findIndex(t => t.id === trainingTier);
+    let nextTier = trainingTier;
+
+    if (tierCfg && newStreak >= tierCfg.promoteAt && currentTierIdx < TRAINING_TIERS.length - 1) {
+      nextTier = TRAINING_TIERS[currentTierIdx + 1].id;
+      setTrainingTier(nextTier);
+      setTrainingStreak(0);
+      setPromoted(true);
+    }
+
+    // 全体ベスト更新
+    setTrainingStats(prev => {
+      const updated = {
+        bestStreak: Math.max(prev.bestStreak, newStreak),
+        totalCorrect: prev.totalCorrect + 1,
+        highestTier: TIER_RANK[nextTier] > TIER_RANK[prev.highestTier ?? 'easy']
+          ? nextTier : prev.highestTier,
+      };
+      saveTrainingStats(updated);
+      return updated;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTraining, status, puzzle?.id]);
+
+  // トレーニング: 不正解で streak リセット
+  useEffect(() => {
+    if (!isTraining || status !== 'wrong') return;
+    setTrainingStreak(0);
+    setTrainingSession(prev => ({ ...prev, total: prev.total + 1 }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTraining, status]);
 
   useEffect(() => () => {
     clearTimeout(autoMoveTimer.current);
@@ -212,10 +307,15 @@ export default function Puzzles() {
               <h1 className="puzzles-title">🧩 チェスパズル</h1>
               <p className="puzzles-subtitle">戦術問題を解いて実力を磨こう</p>
             </div>
-            <div className="puzzles-progress">
-              <span className="puzzles-progress-num">{solvedCount}</span>
-              <span className="puzzles-progress-denom">/ {PUZZLES.length}</span>
-              <span className="puzzles-progress-label">クリア</span>
+            <div className="puzzles-header-right">
+              <div className="puzzles-progress">
+                <span className="puzzles-progress-num">{solvedCount}</span>
+                <span className="puzzles-progress-denom">/ {PUZZLES.length}</span>
+                <span className="puzzles-progress-label">クリア</span>
+              </div>
+              <button className="training-start-btn" onClick={startTraining}>
+                🎯 トレーニング
+              </button>
             </div>
           </div>
 
@@ -319,12 +419,59 @@ export default function Puzzles() {
 
         {/* 右：情報パネル */}
         <div className="puzzles-info-col">
-          <button
-            className="puzzles-back-btn"
-            onClick={() => { setPuzzleIdx(null); clearTimeout(autoMoveTimer.current); }}
-          >
-            ← 一覧に戻る
-          </button>
+          {isTraining ? (
+            <button className="puzzles-back-btn" onClick={stopTraining}>
+              ✕ トレーニングを終了
+            </button>
+          ) : (
+            <button
+              className="puzzles-back-btn"
+              onClick={() => { setPuzzleIdx(null); clearTimeout(autoMoveTimer.current); }}
+            >
+              ← 一覧に戻る
+            </button>
+          )}
+
+          {/* トレーニングパネル */}
+          {isTraining && (
+            <div className="training-panel">
+              <div className="training-tier-row">
+                {TRAINING_TIERS.map((t, i) => {
+                  const tierIdx = TRAINING_TIERS.findIndex(x => x.id === trainingTier);
+                  const state = i < tierIdx ? 'done' : i === tierIdx ? 'current' : 'locked';
+                  return (
+                    <div key={t.id} className={`training-tier-badge training-tier-badge--${state}`}
+                      style={state === 'current' ? { borderColor: t.color, color: t.color } : {}}>
+                      {t.label}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="training-streak-row">
+                <span className="training-streak-icon">🔥</span>
+                <span className="training-streak-val">{trainingStreak}</span>
+                <span className="training-streak-label">連続正解</span>
+                {(() => {
+                  const cfg = TRAINING_TIERS.find(t => t.id === trainingTier);
+                  const tierIdx = TRAINING_TIERS.findIndex(t => t.id === trainingTier);
+                  if (!cfg || tierIdx >= TRAINING_TIERS.length - 1) return null;
+                  return (
+                    <span className="training-promote-hint">
+                      昇格まで {cfg.promoteAt - trainingStreak} 問
+                    </span>
+                  );
+                })()}
+              </div>
+              {promoted && (
+                <div className="training-promoted-banner">
+                  🎉 {DIFF_LABEL[trainingTier]} へ昇格！
+                </div>
+              )}
+              <div className="training-session-row">
+                セッション: {trainingSession.correct} / {trainingSession.total} 正解
+              </div>
+            </div>
+          )}
 
           <div className="puzzles-puzzle-meta">
             <h2 className="puzzles-puzzle-title">{puzzle.title}</h2>
@@ -391,7 +538,15 @@ export default function Puzzles() {
                 もう一度挑戦する
               </button>
             )}
-            {status === 'done' && (
+            {status === 'done' && isTraining && (
+              <button
+                className="puzzle-next-btn"
+                onClick={() => openTrainingPuzzle(trainingTier, puzzle?.id)}
+              >
+                次の問題 →
+              </button>
+            )}
+            {status === 'done' && !isTraining && (
               <div className="puzzle-next-row">
                 {puzzleIdx + 1 < filteredPuzzles.length && (
                   <button className="puzzle-next-btn" onClick={() => openPuzzle(puzzleIdx + 1)}>

@@ -6,7 +6,7 @@ import { ACHIEVEMENTS } from '../data/achievements';
 import { TECHNIQUES } from '../data/techniques';
 import { PUZZLES } from '../data/puzzles';
 import { LESSONS } from '../data/lessons';
-import { loadGameData, safeLoad, safeSave, loadQuizStats } from '../lib/storage';
+import { loadGameData, safeLoad, safeSave, loadQuizStats, loadTrainingStats } from '../lib/storage';
 
 const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
@@ -28,7 +28,8 @@ function loadAllData() {
   const name             = safeLoad('chess-player-name', 'あなた');
   const avatarEmoji      = safeLoad('chess-avatar-emoji', '');
   const quizStats        = loadQuizStats();
-  return { gameData, logs, solved, practiced, completedLessons, name, avatarEmoji, quizStats };
+  const trainingStats    = loadTrainingStats();
+  return { gameData, logs, solved, practiced, completedLessons, name, avatarEmoji, quizStats, trainingStats };
 }
 
 function calcStats(logs) {
@@ -258,6 +259,8 @@ export default function Profile() {
   const practicedCount = data.practiced.length;
   const quizStats = data.quizStats;
   const quizRate = quizStats.total > 0 ? Math.round((quizStats.correct / quizStats.total) * 100) : null;
+  const trainingStats = data.trainingStats;
+  const TIER_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
   const totalLessons = Object.keys(LESSONS).length;
   const completedLessonsCount = data.completedLessons.filter(id => LESSONS[id]).length;
 
@@ -528,6 +531,27 @@ export default function Profile() {
               </div>
               {quizRate !== null && (
                 <p className="profile-quiz-rate">正解率 {quizRate}%</p>
+              )}
+            </div>
+            <div className="profile-progress-item" onClick={() => navigate('/puzzles')}>
+              <div className="profile-progress-header">
+                <span className="profile-progress-icon">🎯</span>
+                <span className="profile-progress-name">タクティクストレーニング</span>
+                <span className="profile-progress-count">
+                  {trainingStats.totalCorrect > 0 ? `${trainingStats.totalCorrect} 問正解` : '未挑戦'}
+                </span>
+              </div>
+              <div className="profile-progress-bar-wrap">
+                <div
+                  className="profile-progress-bar profile-progress-bar--training"
+                  style={{ width: `${Math.min((trainingStats.bestStreak / 9) * 100, 100)}%` }}
+                />
+              </div>
+              {trainingStats.totalCorrect > 0 && (
+                <p className="profile-quiz-rate">
+                  ベストストリーク {trainingStats.bestStreak} 連続 ·
+                  最高到達: {TIER_LABEL[trainingStats.highestTier] ?? 'かんたん'}
+                </p>
               )}
             </div>
           </div>
