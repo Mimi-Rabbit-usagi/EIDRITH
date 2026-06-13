@@ -108,8 +108,9 @@ export default function GamePanel({
   difficulty, soundEnabled, technique, techniqueLog, hint,
   currentOpening,
   gameMode, playerColor, playerName, player2Name, clockMode, clockIncrement,
+  soundVolume,
   onGameModeChange, onDifficultyChange, onNewGame, onShowHistory,
-  onToggleSound, onHint, onClearHint, onUndo, onOfferDraw, onPlayerColorChange, onClockPresetChange,
+  onToggleSound, onVolumeChange, onHint, onClearHint, onUndo, onOfferDraw, onPlayerColorChange, onClockPresetChange,
   onPlayerNameChange, onPlayer2NameChange, onShowStats, onShowPuzzle, onShowOpening, onShowCustomize,
   onShowFenInput,
 }) {
@@ -139,13 +140,25 @@ export default function GamePanel({
           <span>EIDRITH</span>
         </div>
         <div className="panel-top-right">
-          <button
-            className="sound-toggle-btn"
-            onClick={onToggleSound}
-            title={soundEnabled ? '音をオフにする' : '音をオンにする'}
-          >
-            {soundEnabled ? '🔊' : '🔇'}
-          </button>
+          <div className="sound-ctrl">
+            <button
+              className="sound-toggle-btn"
+              onClick={onToggleSound}
+              title={soundEnabled ? '音をオフにする' : '音をオンにする'}
+            >
+              {soundEnabled ? '🔊' : '🔇'}
+            </button>
+            {soundEnabled && (
+              <input
+                className="sound-volume-slider"
+                type="range"
+                min="0" max="1" step="0.05"
+                value={soundVolume ?? 0.8}
+                onChange={e => onVolumeChange(parseFloat(e.target.value))}
+                title={`音量: ${Math.round((soundVolume ?? 0.8) * 100)}%`}
+              />
+            )}
+          </div>
           <div className="win-counter">
             <span className="win-icon">🏆</span>
             <span className="win-text"><strong>{wins}</strong>勝</span>

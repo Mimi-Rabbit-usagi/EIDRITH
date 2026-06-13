@@ -496,6 +496,39 @@ body {
   background: rgba(255,255,255,0.12);
 }
 
+.sound-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sound-volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 68px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.15);
+  outline: none;
+  cursor: pointer;
+}
+.sound-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #c89b3c;
+  cursor: pointer;
+}
+.sound-volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #c89b3c;
+  cursor: pointer;
+  border: none;
+}
+
 /* ── Mobile Tabs ─────────────────────────────────────────────────────────── */
 /* PCでは非表示 */
 .mobile-tabs { display: none; }

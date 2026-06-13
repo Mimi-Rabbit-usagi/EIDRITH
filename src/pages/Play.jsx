@@ -57,7 +57,7 @@ export default function Play() {
   }, []);
 
   const activeBoardTheme = BOARD_THEMES.find(t => t.id === gameData.activeBoardTheme) || BOARD_THEMES[0];
-  const { enabled: soundEnabled, toggle: toggleSound, play: playSound } = useSoundEffects();
+  const { enabled: soundEnabled, toggle: toggleSound, play: playSound, volume: soundVolume, setVolume: setSoundVolume } = useSoundEffects();
 
   const moveHistoryRef = useRef([]);
   const techniqueLogRef = useRef([]);
@@ -136,6 +136,8 @@ export default function Play() {
       playSound('check');
     } else if (last?.promotion) {
       playSound('promotion');
+    } else if (last?.san === 'O-O' || last?.san === 'O-O-O') {
+      playSound('castle');
     } else if (last?.captured) {
       playSound('capture');
     } else {
@@ -143,6 +145,18 @@ export default function Play() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moveHistory.length]);
+
+  // 時計の警告ティック（残り10秒以下）
+  const lastTickedTimeRef = useRef(null);
+  useEffect(() => {
+    if (!soundEnabled || playerTime === null || playerTime > 10 || playerTime <= 0) return;
+    if (currentTurn !== playerColor || isChessOver || clockTimeout !== null) return;
+    if (playerTime !== lastTickedTimeRef.current) {
+      lastTickedTimeRef.current = playerTime;
+      playSound('tick');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerTime]);
 
   const [showTimeoutBanner, setShowTimeoutBanner] = useState(false);
   const [showKeyHelp, setShowKeyHelp] = useState(false);
@@ -460,6 +474,7 @@ export default function Play() {
           wins={gameData.wins}
           difficulty={difficulty}
           soundEnabled={soundEnabled}
+          soundVolume={soundVolume}
           technique={technique}
           techniqueLog={techniqueLog}
           hint={hint}
@@ -486,6 +501,7 @@ export default function Play() {
           onShowCustomize={() => setShowCustomize(true)}
           onShowFenInput={() => { setFenValue(''); setFenError(null); setShowFenInput(true); }}
           onToggleSound={toggleSound}
+          onVolumeChange={setSoundVolume}
           onHint={requestHint}
           onClearHint={clearHint}
         />
