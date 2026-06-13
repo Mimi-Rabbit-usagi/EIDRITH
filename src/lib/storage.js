@@ -140,3 +140,52 @@ export function loadLogs() {
 export function saveLogs(logs) {
   safeSave('chess-master-logs', logs.slice(0, 30));
 }
+
+// ── デイリーパズル ────────────────────────────────────────────────────────────
+
+/** 今日の日付文字列を返す（例: "2026-06-13"） */
+export function getTodayDateString() {
+  return new Date().toISOString().split('T')[0];
+}
+
+/**
+ * 日付文字列からパズルのインデックスを決める（同じ日付→同じ問題）
+ * @param {string} dateStr - "2026-06-13" 形式
+ * @param {number} totalPuzzles - PUZZLES.length
+ */
+export function getDailyPuzzleIndex(dateStr, totalPuzzles) {
+  let hash = 0;
+  for (const c of dateStr) {
+    hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
+  }
+  return Math.abs(hash) % totalPuzzles;
+}
+
+/**
+ * デイリーパズルの状態を読み込む
+ * @returns {{ lastSolvedDate: string|null, streak: number }}
+ */
+export function loadDailyInfo() {
+  return safeLoad('chess-daily-puzzle', { lastSolvedDate: null, streak: 0 });
+}
+
+/**
+ * デイリーパズルを解いたときに呼ぶ。ストリークを更新して保存する。
+ * @param {string} today - "2026-06-13" 形式
+ * @returns {number} 新しいストリーク数
+ */
+export function saveDailyPuzzleSolved(today) {
+  const info = loadDailyInfo();
+
+  // 既に今日解いていたら何もしない
+  if (info.lastSolvedDate === today) return info.streak;
+
+  // 昨日も解いていたらストリーク継続、それ以外はリセット
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  const newStreak = info.lastSolvedDate === yesterdayStr ? info.streak + 1 : 1;
+
+  safeSave('chess-daily-puzzle', { lastSolvedDate: today, streak: newStreak });
+  return newStreak;
+}

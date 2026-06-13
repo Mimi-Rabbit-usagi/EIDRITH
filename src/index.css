@@ -3964,6 +3964,186 @@ body {
 }
 
 
+/* 今日のパズルセクション（Home） */
+.home-daily {
+  padding: 0 24px;
+  max-width: 860px;
+  margin: 0 auto 24px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.home-daily-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(200, 155, 60, 0.35);
+  background: rgba(200, 155, 60, 0.07);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  color: #fff;
+  text-align: left;
+}
+
+.home-daily-card:hover {
+  background: rgba(200, 155, 60, 0.14);
+  border-color: rgba(200, 155, 60, 0.6);
+  transform: translateY(-2px);
+}
+
+.home-daily-card--solved {
+  border-color: rgba(76, 175, 80, 0.4);
+  background: rgba(76, 175, 80, 0.07);
+}
+
+.home-daily-card--solved:hover {
+  background: rgba(76, 175, 80, 0.12);
+  border-color: rgba(76, 175, 80, 0.65);
+}
+
+.home-daily-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.home-daily-icon { font-size: 1.6rem; }
+
+.home-daily-label {
+  font-size: 0.7rem;
+  color: #c89b3c;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin: 0 0 3px;
+}
+
+.home-daily-card--solved .home-daily-label { color: #69F0AE; }
+
+.home-daily-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.home-daily-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.home-daily-streak {
+  font-size: 0.75rem;
+  color: #FF9800;
+  font-weight: 600;
+}
+
+.home-daily-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #69F0AE;
+  background: rgba(76, 175, 80, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.35);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.home-daily-cta {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #c89b3c;
+}
+
+/* デイリーパズルバナー（Puzzles 一覧） */
+.daily-puzzle-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(200, 155, 60, 0.4);
+  background: rgba(200, 155, 60, 0.08);
+}
+
+.daily-puzzle-banner--solved {
+  border-color: rgba(76, 175, 80, 0.4);
+  background: rgba(76, 175, 80, 0.07);
+}
+
+.daily-puzzle-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.daily-puzzle-banner-icon { font-size: 1.4rem; }
+
+.daily-puzzle-banner-title {
+  font-size: 0.7rem;
+  color: #c89b3c;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+
+.daily-puzzle-banner--solved .daily-puzzle-banner-title { color: #69F0AE; }
+
+.daily-puzzle-banner-meta {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.85);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.daily-puzzle-banner-streak {
+  font-size: 0.75rem;
+  color: #FF9800;
+  font-weight: 600;
+}
+
+.daily-puzzle-banner-done {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #69F0AE;
+  background: rgba(76, 175, 80, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.35);
+  border-radius: 20px;
+  padding: 4px 12px;
+  flex-shrink: 0;
+}
+
+.daily-puzzle-banner-btn {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #c89b3c;
+  background: rgba(200, 155, 60, 0.12);
+  border: 1px solid rgba(200, 155, 60, 0.35);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.daily-puzzle-banner-btn:hover {
+  background: rgba(200, 155, 60, 0.22);
+}
+
+
 /* ══════════════════════════════════════════════════════════════════════════
    LEARN PAGE
    ══════════════════════════════════════════════════════════════════════════ */

@@ -1,10 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { PUZZLES, PUZZLE_THEMES } from '../data/puzzles';
 import ChessBoard from '../components/ChessBoard';
 import NavBar from '../components/NavBar';
 import { BOARD_THEMES } from '../data/themes';
-import { loadGameData, safeLoad, safeSave } from '../lib/storage';
+import {
+  loadGameData, safeLoad, safeSave,
+  getTodayDateString, getDailyPuzzleIndex, loadDailyInfo, saveDailyPuzzleSolved,
+} from '../lib/storage';
 
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
 const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
@@ -21,6 +25,14 @@ export default function Puzzles() {
   const prefs = loadPrefs();
   const boardTheme = BOARD_THEMES.find(t => t.id === prefs.activeBoardTheme) || BOARD_THEMES[0];
   const pieceSet   = prefs.activePieceSet;
+
+  const location = useLocation();
+  const isDaily  = new URLSearchParams(location.search).get('daily') === 'true';
+
+  const today          = getTodayDateString();
+  const dailyIdx       = getDailyPuzzleIndex(today, PUZZLES.length);
+  const [dailyInfo, setDailyInfo] = useState(() => loadDailyInfo());
+  const todaySolved    = dailyInfo.lastSolvedDate === today;
 
   const [filter, setFilter]         = useState('all');
   const [puzzleIdx, setPuzzleIdx]   = useState(null);
@@ -132,6 +144,11 @@ export default function Puzzles() {
               safeSave('chess-solved-puzzles', updated);
               return updated;
             });
+            // デイリーパズルだった場合はストリークを更新
+            if (puzzle.id === PUZZLES[dailyIdx].id) {
+              const newStreak = saveDailyPuzzleSolved(today);
+              setDailyInfo({ lastSolvedDate: today, streak: newStreak });
+            }
           } else {
             setStatus('correct');
             playOpponentMove(puzzle, nextIdx);
@@ -165,6 +182,16 @@ export default function Puzzles() {
     }
   }, [puzzle, status, chess, selectedSq, legalMoves, moveIdx, playOpponentMove]);
 
+  // ?daily=true でアクセスしたときはデイリーパズルを自動的に開く
+  useEffect(() => {
+    if (isDaily) {
+      // filteredPuzzles は filter='all' のときは PUZZLES そのものなので dailyIdx で直接開ける
+      setFilter('all');
+      openPuzzle(dailyIdx);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDaily]);
+
   useEffect(() => () => {
     clearTimeout(autoMoveTimer.current);
     solutionTimers.current.forEach(clearTimeout);
@@ -190,6 +217,29 @@ export default function Puzzles() {
               <span className="puzzles-progress-denom">/ {PUZZLES.length}</span>
               <span className="puzzles-progress-label">クリア</span>
             </div>
+          </div>
+
+          {/* デイリーパズルバナー */}
+          <div className={`daily-puzzle-banner ${todaySolved ? 'daily-puzzle-banner--solved' : ''}`}>
+            <div className="daily-puzzle-banner-left">
+              <span className="daily-puzzle-banner-icon">📅</span>
+              <div>
+                <p className="daily-puzzle-banner-title">今日のパズル</p>
+                <p className="daily-puzzle-banner-meta">
+                  {PUZZLES[dailyIdx].title}
+                  {dailyInfo.streak > 0 && (
+                    <span className="daily-puzzle-banner-streak">🔥 {dailyInfo.streak}日連続</span>
+                  )}
+                </p>
+              </div>
+            </div>
+            {todaySolved ? (
+              <span className="daily-puzzle-banner-done">✓ クリア済み</span>
+            ) : (
+              <button className="daily-puzzle-banner-btn" onClick={() => openPuzzle(dailyIdx)}>
+                挑戦する →
+              </button>
+            )}
           </div>
 
           <div className="puzzle-filter-row">

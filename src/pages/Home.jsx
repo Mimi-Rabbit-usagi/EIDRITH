@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
-import { loadGameData, safeLoad } from '../lib/storage';
+import { loadGameData, safeLoad, getTodayDateString, getDailyPuzzleIndex, loadDailyInfo } from '../lib/storage';
+import { PUZZLES } from '../data/puzzles';
 
 function loadStats() {
   const data = loadGameData();
@@ -51,10 +52,17 @@ export default function Home() {
   const [stats, setStats] = useState({ wins: 0, streak: 0, puzzlesSolved: 0 });
   const [playerName, setPlayerName] = useState('プレイヤー');
 
+  const today       = getTodayDateString();
+  const dailyIdx    = getDailyPuzzleIndex(today, PUZZLES.length);
+  const dailyPuzzle = PUZZLES[dailyIdx];
+  const [dailyInfo, setDailyInfo] = useState(() => loadDailyInfo());
+  const todaySolved = dailyInfo.lastSolvedDate === today;
+
   useEffect(() => {
     setStats(loadStats());
     const name = safeLoad('chess-player-name', null);
     if (name) setPlayerName(name);
+    setDailyInfo(loadDailyInfo());
   }, []);
 
   return (
@@ -94,6 +102,32 @@ export default function Home() {
             <div className="home-mode-arrow">→</div>
           </button>
         ))}
+      </section>
+
+      {/* 今日のパズル */}
+      <section className="home-daily">
+        <button
+          className={`home-daily-card ${todaySolved ? 'home-daily-card--solved' : ''}`}
+          onClick={() => navigate('/puzzles?daily=true')}
+        >
+          <div className="home-daily-left">
+            <span className="home-daily-icon">📅</span>
+            <div>
+              <p className="home-daily-label">今日のパズル</p>
+              <p className="home-daily-title">{dailyPuzzle.title}</p>
+            </div>
+          </div>
+          <div className="home-daily-right">
+            {dailyInfo.streak > 0 && (
+              <span className="home-daily-streak">🔥 {dailyInfo.streak}日連続</span>
+            )}
+            {todaySolved ? (
+              <span className="home-daily-badge">✓ クリア</span>
+            ) : (
+              <span className="home-daily-cta">挑戦する →</span>
+            )}
+          </div>
+        </button>
       </section>
 
       {/* スタッツバー */}
