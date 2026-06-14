@@ -424,3 +424,24 @@ export function detectTechnique(chess, move) {
 
   return null;
 }
+
+/**
+ * 棋譜（SANの配列）から戦術を再検出して返す。
+ * moveIndex は 1 始まり（1手目 = 1）。
+ * localStorage に保存された旧データのマイグレーション用。
+ */
+export function buildTechniques(moves) {
+  const chess = new Chess();
+  const result = [];
+  try {
+    for (let i = 0; i < moves.length; i++) {
+      const move = chess.move(moves[i]);
+      if (!move) break;
+      const tech = detectTechnique(chess, move);
+      if (tech) result.push({ ...tech, moveIndex: i + 1 });
+    }
+  } catch {
+    // 不正な手があっても途中まで検出した結果を返す
+  }
+  return result;
+}
