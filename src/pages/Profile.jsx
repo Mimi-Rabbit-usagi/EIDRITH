@@ -10,10 +10,11 @@ import { BOARD_THEMES } from '../data/themes';
 import { PIECE_SETS } from '../data/pieceSets';
 import CustomizeModal from '../components/CustomizeModal';
 import { loadGameData, saveGameData, safeLoad, safeSave, loadQuizStats, loadTrainingStats } from '../lib/storage';
+import { OPENINGS } from '../data/openings';
 
 const DIFF_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
 const DIFF_COLOR = { easy: '#4CAF50', normal: '#FF9800', hard: '#F44336' };
-const TOTAL_OPENINGS = 65;
+const TOTAL_OPENINGS = OPENINGS.length;
 
 const AVATAR_EMOJIS = [
   '♟','♞','♝','♜','♛','♚',

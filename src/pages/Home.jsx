@@ -8,8 +8,9 @@ import {
 } from '../lib/storage';
 import { PUZZLES } from '../data/puzzles';
 import { LESSONS } from '../data/lessons';
+import { OPENINGS } from '../data/openings';
 
-const TOTAL_OPENINGS = 65;
+const TOTAL_OPENINGS = OPENINGS.length;
 
 function loadDashData() {
   const gameData      = loadGameData();
