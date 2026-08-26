@@ -16,7 +16,8 @@ export default function PuzzleModal({ activeBoardTheme, activePieceSet, onClose 
   const [filter, setFilter]         = useState('all');
   const [puzzleIdx, setPuzzleIdx]   = useState(null); // null = list view
   const [chess]                     = useState(() => new Chess());
-  const [fen, setFen]               = useState('');
+  // chess は破壊的に更新されるため、setFen を再レンダーの引き金としてのみ使う
+  const [, setFen]                  = useState('');
   const [selectedSq, setSelectedSq] = useState(null);
   const [legalMoves, setLegalMoves] = useState([]);
   const [lastMove, setLastMove]     = useState(null);
@@ -234,7 +235,7 @@ export default function PuzzleModal({ activeBoardTheme, activePieceSet, onClose 
             boardTheme={boardTheme}
             pieceSet={activePieceSet}
             hint={null}
-            flipped={!isWhiteTurn && moveIdx === 0}
+            flipped={flipped}
             onSquareClick={handleSquareClick}
             onDrop={() => {}}
             onCancelDrag={() => {}}
