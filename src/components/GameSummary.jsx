@@ -141,7 +141,7 @@ export default function GameSummary({
   gameStatus, winner, playerColor = 'w', moveHistory, techniqueLog,
   capturedPieces, difficulty, gameMode, playerName, player2Name, drawReason,
   onNewGame, onClose, onReplay,
-  onTournamentReturn, tournamentRoundLabel,
+  onTournamentReturn,
 }) {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const analysis = useMemo(() => {

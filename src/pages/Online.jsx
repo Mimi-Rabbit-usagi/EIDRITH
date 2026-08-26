@@ -25,6 +25,11 @@ function buildGameStatus(chess) {
   return 'playing';
 }
 
+/** 描画に必要な盤面情報だけを取り出す（レンダー中に Chess インスタンスを読まないため） */
+function buildSnapshot(chess) {
+  return { board: chess.board(), turn: chess.turn() };
+}
+
 // ── 待機画面 ──────────────────────────────────────────────────────────────────
 function WaitingScreen({ playerName, playerAvatar, onCancel }) {
   const [dots, setDots] = useState('');
@@ -45,9 +50,11 @@ function WaitingScreen({ playerName, playerAvatar, onCancel }) {
 }
 
 // ── 対局画面 ──────────────────────────────────────────────────────────────────
-function GameScreen({ game, myColor, myId, onGameEnd }) {
+function GameScreen({ game, myColor, onGameEnd }) {
   const chessRef  = useRef(new Chess());
-  const [fen, setFen]                   = useState(game.fen);
+  // chessRef は破壊的に更新されるため、レンダー中に直接読まず
+  // 局面が変わるたびに描画用スナップショットを state として作り直す
+  const [snapshot, setSnapshot]         = useState(() => buildSnapshot(new Chess()));
   const [selectedSquare, setSelected]   = useState(null);
   const [legalMoves, setLegalMoves]     = useState([]);
   const [lastMove, setLastMove]         = useState(null);
@@ -63,6 +70,29 @@ function GameScreen({ game, myColor, myId, onGameEnd }) {
   const oppInfo       = myColor === 'w'
     ? { name: game.black_name, avatar: game.black_avatar }
     : { name: game.white_name, avatar: game.white_avatar };
+
+  function applyGameData(data) {
+    const c = new Chess();
+    // 棋譜を再生して局面を復元
+    for (const move of (data.moves ?? [])) {
+      try { c.move(move); } catch { break; }
+    }
+    chessRef.current = c;
+    setSnapshot(buildSnapshot(c));
+    const history = c.history({ verbose: true });
+    const last = history[history.length - 1];
+    if (last) setLastMove({ from: last.from, to: last.to });
+
+    if (data.status !== 'playing') {
+      setGameStatus(data.status);
+      setWinner(data.winner ?? null);
+      onGameEnd(data);
+    } else {
+      setGameStatus(buildGameStatus(c));
+    }
+
+    if (data.status === 'abandoned') setOpponentLeft(true);
+  }
 
   // ── Supabase からゲーム更新を受け取る ───────────────────────────────────────
   useEffect(() => {
@@ -83,28 +113,6 @@ function GameScreen({ game, myColor, myId, onGameEnd }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.id]);
 
-  function applyGameData(data) {
-    const c = new Chess();
-    // 棋譜を再生して局面を復元
-    for (const move of (data.moves ?? [])) {
-      try { c.move(move); } catch { break; }
-    }
-    chessRef.current = c;
-    setFen(c.fen());
-    const history = c.history({ verbose: true });
-    const last = history[history.length - 1];
-    if (last) setLastMove({ from: last.from, to: last.to });
-
-    if (data.status !== 'playing') {
-      setGameStatus(data.status);
-      setWinner(data.winner ?? null);
-      onGameEnd(data);
-    } else {
-      setGameStatus(buildGameStatus(c));
-    }
-
-    if (data.status === 'abandoned') setOpponentLeft(true);
-  }
 
   // ── 手を指す ──────────────────────────────────────────────────────────────
   const executeMove = useCallback(async (from, to, promotion = null) => {
@@ -114,7 +122,7 @@ function GameScreen({ game, myColor, myId, onGameEnd }) {
       : c.move({ from, to, promotion: 'q' });
     if (!moveObj) return;
 
-    setFen(c.fen());
+    setSnapshot(buildSnapshot(c));
     setLastMove({ from, to });
     setSelected(null);
     setLegalMoves([]);
@@ -188,8 +196,7 @@ function GameScreen({ game, myColor, myId, onGameEnd }) {
     }).eq('id', game.id);
   };
 
-  const chess = chessRef.current;
-  const isMyTurn = chess.turn() === myColor && gameStatus === 'playing';
+  const isMyTurn = snapshot.turn === myColor && gameStatus === 'playing';
   const isOver   = gameStatus !== 'playing' && gameStatus !== 'check';
 
   return (
@@ -205,7 +212,7 @@ function GameScreen({ game, myColor, myId, onGameEnd }) {
       {/* ボード */}
       <div className="online-board-wrap">
         <ChessBoard
-          board={chess.board()}
+          board={snapshot.board}
           selectedSquare={selectedSquare}
           legalMoves={legalMoves}
           lastMove={lastMove}
@@ -267,6 +274,23 @@ export default function Online() {
   const [myColor, setMyColor] = useState('w');
   const matchmakingIdRef      = useRef(null);
 
+  // ── 相手からのゲーム作成を監視 ──────────────────────────────────────────
+  const listenForMatch = useCallback(() => {
+    if (!supabase) return;
+    const channel = supabase
+      .channel(`matchmaking:${playerId}`)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'games',
+        filter: `white_id=eq.${playerId}`,
+      }, ({ new: newGame }) => {
+        supabase.removeChannel(channel);
+        setMyColor('w');
+        setCurrentGame(newGame);
+        setPhase('playing');
+      })
+      .subscribe();
+  }, [playerId]);
+
   // ── マッチング開始 ───────────────────────────────────────────────────────
   const startMatchmaking = useCallback(async () => {
     if (!supabase) return;
@@ -286,7 +310,6 @@ export default function Online() {
       await supabase.from('matchmaking').delete().eq('id', opponent.id);
 
       const myCol    = 'b'; // 後から来た人が黒
-      const oppCol   = 'w';
       setMyColor(myCol);
 
       const { data: newGame } = await supabase.from('games').insert({
@@ -317,24 +340,8 @@ export default function Online() {
         listenForMatch();
       }
     }
-  }, [playerId, playerName, playerAvatar]);
+  }, [playerId, playerName, playerAvatar, listenForMatch]);
 
-  // ── 相手からのゲーム作成を監視 ──────────────────────────────────────────
-  const listenForMatch = useCallback(() => {
-    if (!supabase) return;
-    const channel = supabase
-      .channel(`matchmaking:${playerId}`)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'games',
-        filter: `white_id=eq.${playerId}`,
-      }, ({ new: newGame }) => {
-        supabase.removeChannel(channel);
-        setMyColor('w');
-        setCurrentGame(newGame);
-        setPhase('playing');
-      })
-      .subscribe();
-  }, [playerId]);
 
   // ── マッチングキャンセル ────────────────────────────────────────────────
   const cancelMatchmaking = useCallback(async () => {
@@ -419,7 +426,6 @@ export default function Online() {
           <GameScreen
             game={currentGame}
             myColor={myColor}
-            myId={playerId}
             onGameEnd={handleGameEnd}
           />
         )}

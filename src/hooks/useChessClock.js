@@ -21,27 +21,41 @@ export function useChessClock({ clockMode, increment = 0, currentTurn, playerCol
   const [playerTime, setPlayerTime] = useState(getInitTime);
   const [cpuTime, setCpuTime]       = useState(getInitTime);
 
-  // Ref で「現在の残り時間」を保持する（エフェクト再起動時の初期値として使う）
+  // Ref で「現在の残り時間」を保持する。
+  // 計測 effect は playerTime を依存配列に入れられない（1秒ごとに再起動してしまう）ので、
+  // 再起動時の初期値をここから読む。
   const playerTimeRef = useRef(playerTime);
   const cpuTimeRef    = useRef(cpuTime);
   const timedOutRef   = useRef(false);
   const onTimeoutRef  = useRef(onTimeout);
-  onTimeoutRef.current = onTimeout;
 
   // インクリメント用: 直前のターンを追跡
   const prevTurnRef = useRef(null); // null = "このゲームでまだ手が指されていない"
 
-  // clockMode が変わったらリセット
-  useEffect(() => {
-    const t = clockMode === 'none' ? null : parseInt(clockMode) * 60;
-    playerTimeRef.current = t;
-    cpuTimeRef.current    = t;
+  // clockMode が変わったら残り時間をリセットする。
+  // effect でやると古い持ち時間が一瞬表示されてしまうため、レンダー中に調整する
+  // （React 公式の "Adjusting some state when a prop changes" パターン）。
+  const [prevClockMode, setPrevClockMode] = useState(clockMode);
+  if (clockMode !== prevClockMode) {
+    setPrevClockMode(clockMode);
+    const t = getInitTime();
     setPlayerTime(t);
     setCpuTime(t);
+  }
+
+  // ref への代入はレンダー中ではなく effect で行う。
+  // 下の計測 effect がこれらの ref を読むため、必ず先に宣言しておくこと
+  // （effect は宣言順に実行される）。
+  useEffect(() => {
+    onTimeoutRef.current  = onTimeout;
+    playerTimeRef.current = playerTime;
+    cpuTimeRef.current    = cpuTime;
+  });
+
+  // 新しい持ち時間になったらタイムアウト済みフラグとターン追跡もリセットする
+  useEffect(() => {
     timedOutRef.current = false;
-    prevTurnRef.current = null; // インクリメントを新ゲーム用にリセット
-  // clockMode だけに反応すればよい
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    prevTurnRef.current = null;
   }, [clockMode]);
 
   useEffect(() => {
@@ -125,7 +139,6 @@ export function useChessClock({ clockMode, increment = 0, currentTurn, playerCol
     setCpuTime(t);
     timedOutRef.current = false;
     prevTurnRef.current = null;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clockMode]);
 
   return { playerTime, cpuTime, resetClock };

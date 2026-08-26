@@ -1,5 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback } from 'react';
 import { Chess } from 'chess.js';
 import NavBar from '../components/NavBar';
 import ChessBoard from '../components/ChessBoard';
@@ -12,7 +11,6 @@ function buildBoardTheme(themeId) {
 }
 
 export default function Endgame() {
-  const navigate = useNavigate();
   const gameData = loadGameData();
   const boardTheme = buildBoardTheme(gameData.activeBoardTheme);
   const pieceSet   = gameData.activePieceSet;
@@ -26,7 +24,8 @@ export default function Endgame() {
 
   // Board state for current step
   const [chess]       = useState(() => new Chess());
-  const [fen, setFen] = useState('');
+  // chess は破壊的に更新されるため、setFen を再レンダーの引き金としてのみ使う
+  const [, setFen]    = useState('');
   const [selectedSq, setSelectedSq] = useState(null);
   const [legalMoves, setLegalMoves] = useState([]);
   const [lastMove, setLastMove]     = useState(null);

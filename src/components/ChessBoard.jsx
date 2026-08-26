@@ -58,8 +58,9 @@ export default function ChessBoard({
   // ゴースト駒の位置（stateで管理→再レンダーが必要）
   const [ghost, setGhost] = useState(null); // { from, piece, x, y } | null
   // flippedのref（onPointerUp内のクロージャから最新値を参照するため）
+  // 代入はレンダー中ではなく effect で行う
   const flippedRef = useRef(flipped);
-  flippedRef.current = flipped;
+  useEffect(() => { flippedRef.current = flipped; });
 
   useEffect(() => {
     function onPointerMove(e) {

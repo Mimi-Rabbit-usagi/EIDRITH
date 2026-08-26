@@ -342,7 +342,7 @@ function parsePgn(pgnText) {
     const moves = chess.history();
     if (moves.length === 0) return { ok: false, error: 'PGN に手順が含まれていません' };
     return { ok: true, moves };
-  } catch (e) {
+  } catch {
     return { ok: false, error: '無効な PGN 形式です' };
   }
 }
@@ -441,29 +441,27 @@ export default function Review() {
   const total = positions.length - 1;
 
   const [step, setStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  // 「再生ボタンが押されている」状態。実際に再生中かは isPlaying（派生値）で判定する
+  const [playRequested, setPlayRequested] = useState(false);
 
-  // エンジン評価: null=計算中, undefined=非表示
-  const [bestMoveInfo, setBestMoveInfo] = useState(undefined);
+  // エンジン評価の計算結果を「どの step のものか」ごと保持する。
+  // こうすると「計算中」を state に書き込まずに派生値として表せる。
+  const [evalResult, setEvalResult] = useState(null); // { step, info } | null
   const evalTimerRef = useRef(null);
 
   useEffect(() => {
-    if (step === 0 || !activeGame) {
-      setBestMoveInfo(undefined);
-      return;
-    }
-    // 計算中を示す null をセット（前の結果を消す）
-    setBestMoveInfo(null);
+    if (step === 0 || !activeGame) return;
+
     clearTimeout(evalTimerRef.current);
     evalTimerRef.current = setTimeout(() => {
       const prevFen = positions[step - 1]?.fen;
       const actualSan = activeGame.moves[step - 1];
-      if (!prevFen || !actualSan) { setBestMoveInfo(undefined); return; }
+      if (!prevFen || !actualSan) { setEvalResult({ step, info: undefined }); return; }
 
       const validDiff = ['easy', 'normal', 'hard'].includes(activeGame.difficulty)
         ? activeGame.difficulty : 'normal';
       const bestSan = getBestMove(prevFen, validDiff);
-      if (!bestSan) { setBestMoveInfo(undefined); return; }
+      if (!bestSan) { setEvalResult({ step, info: undefined }); return; }
 
       // SAN 正規化: +/# を除いて比較
       const norm = (s) => s.replace(/[+#]/g, '');
@@ -474,24 +472,32 @@ export default function Review() {
       const playerColor = activeGame.playerColor ?? 'w';
       const isPlayerMove = (isWhiteTurn && playerColor === 'w') || (!isWhiteTurn && playerColor === 'b');
 
-      setBestMoveInfo({ bestSan, actualSan, isBest, isPlayerMove });
+      setEvalResult({ step, info: { bestSan, actualSan, isBest, isPlayerMove } });
     }, 200);
 
     return () => clearTimeout(evalTimerRef.current);
   }, [step, activeGame, positions]);
 
+  // undefined=非表示, null=計算中, オブジェクト=計算済み。
+  // 保持している結果が今の step のものでなければ「計算中」扱いになる。
+  const bestMoveInfo = (step === 0 || !activeGame)
+    ? undefined
+    : (evalResult?.step === step ? evalResult.info : null);
+
   const goTo = useCallback((s) => {
     setStep(Math.min(total, Math.max(0, s)));
-    setIsPlaying(false);
+    setPlayRequested(false);
   }, [total]);
+
+  // 「終端に達したら止まる」は state を書き換えずに派生値として表す
+  const isPlaying = playRequested && step < total;
 
   // 自動再生
   useEffect(() => {
     if (!isPlaying) return;
-    if (step >= total) { setIsPlaying(false); return; }
     const t = setTimeout(() => setStep(s => s + 1), 1000);
     return () => clearTimeout(t);
-  }, [isPlaying, step, total]);
+  }, [isPlaying, step]);
 
   // キーボード操作
   useEffect(() => {
@@ -505,7 +511,9 @@ export default function Review() {
 
   const handlePlayPause = () => {
     if (step >= total) setStep(0);
-    setIsPlaying(p => !p);
+    // 終端で止まっているとき playRequested は true のままなので、
+    // トグルの基準は playRequested ではなく isPlaying を使う
+    setPlayRequested(!isPlaying);
   };
 
   const comment = useMemo(
@@ -518,7 +526,7 @@ export default function Review() {
     setImportedGame({ moves, techniques: [], playerColor: 'w', moveCount: moves.length });
     setShowImport(false);
     setStep(0);
-    setIsPlaying(false);
+    setPlayRequested(false);
   }, []);
 
   // PGN コピー

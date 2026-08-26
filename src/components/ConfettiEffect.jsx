@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 
 // 勝利時に画面に紙吹雪を降らせるエフェクト
 // pointer-events: none なので盤面操作を妨げない
@@ -6,8 +6,11 @@ import { useMemo } from 'react';
 const COLORS = ['#6c63ff', '#ff6584', '#ffb800', '#4caf50', '#00bcd4', '#ff9800', '#e91e63'];
 
 export default function ConfettiEffect() {
-  // コンポーネントマウント時に一度だけランダム値を計算
-  const pieces = useMemo(() => (
+  // マウント時に一度だけランダム値を計算する。
+  // useMemo ではなく useState を使うのは、useMemo のキャッシュは React が破棄して
+  // 再計算することが許されている（＝紙吹雪が途中で飛び直す）のに対し、
+  // useState の初期化関数はマウントごとに必ず1回しか呼ばれないため。
+  const [pieces] = useState(() => (
     Array.from({ length: 60 }, (_, i) => ({
       id: i,
       color: COLORS[i % COLORS.length],
@@ -18,7 +21,7 @@ export default function ConfettiEffect() {
       animationDuration: `${2.8 + Math.random() * 2}s`,
       borderRadius: Math.random() > 0.4 ? '50%' : '2px',
     }))
-  ), []);
+  ));
 
   return (
     <div className="confetti-container" aria-hidden="true">

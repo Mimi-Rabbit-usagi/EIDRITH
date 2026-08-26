@@ -20,7 +20,7 @@ function saveProgress(lessonId) {
 }
 
 // ── 説明ステップ ──────────────────────────────────────────────────────────────
-function ExplainStep({ step, onNext, nextType, stepNum, totalSteps }) {
+function ExplainStep({ step, onNext, nextType }) {
   return (
     <div className="lesson-step-wrap">
       <div className="lesson-explain-card">
@@ -136,7 +136,7 @@ function QuizStep({ step, onNext, boardTheme }) {
       setSelectedSq(square);
       setLegalMoves(chess.moves({ square, verbose: true }).map(m => m.to));
     }
-  }, [chess, selectedSq, legalMoves, cleared]);
+  }, [chess, selectedSq, legalMoves, cleared, condition, step]);
 
   return (
     <div className="lesson-step-wrap">
@@ -273,8 +273,6 @@ export default function LessonPlayer() {
             step={step}
             onNext={handleNext}
             nextType={nextStep?.type}
-            stepNum={stepIdx}
-            totalSteps={lesson.steps.length}
           />
         )}
         {step.type === 'quiz' && (

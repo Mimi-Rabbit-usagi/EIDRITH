@@ -2,13 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import { loadTournamentState, saveTournamentState, safeLoad, safeSave } from '../lib/storage';
-
-export const TOURNAMENT_ROUNDS = [
-  { id: 1, label: 'ラウンド 1', opponent: '初心者',         difficulty: 'easy',   emoji: '🤖', diffLabel: 'かんたん' },
-  { id: 2, label: 'ラウンド 2', opponent: '中級者',         difficulty: 'easy',   emoji: '🤖', diffLabel: 'かんたん' },
-  { id: 3, label: 'ラウンド 3', opponent: '強者',           difficulty: 'normal', emoji: '🧠', diffLabel: 'ふつう'   },
-  { id: 4, label: 'ファイナル', opponent: 'グランドマスター', difficulty: 'hard',   emoji: '👑', diffLabel: 'むずかしい' },
-];
+import { TOURNAMENT_ROUNDS } from '../data/tournamentRounds';
 
 function startFreshTournament() {
   const state = {
@@ -24,65 +18,75 @@ function startFreshTournament() {
   return state;
 }
 
+/**
+ * 保存済みのトーナメント状態を読み、Play.jsx が書き残した対局結果があれば取り込む。
+ *
+ * localStorage の読み取りだけで書き換えは行わない（StrictMode では useState の
+ * 初期化関数が2回呼ばれるため、ここで受け渡しデータを消すと結果が失われる）。
+ * 消す処理は Tournament 内の effect で行う。
+ */
+function loadTournamentWithPendingResult() {
+  const state = loadTournamentState();
+  const lastResult = safeLoad('chess-tournament-last-result', null);
+  if (!lastResult) return state;
+  if (!state.active) return state;
+  if (lastResult.round !== state.currentRound) return state;
+
+  const newResults = [...state.results, {
+    round: lastResult.round,
+    result: lastResult.result,
+    moveCount: lastResult.moveCount,
+    date: new Date().toISOString(),
+  }];
+
+  if (lastResult.result === 'loss') {
+    // 敗退
+    const finished = {
+      ...state,
+      active: false,
+      results: newResults,
+      finishedAt: new Date().toISOString(),
+      champion: false,
+      history: [
+        { reachedRound: lastResult.round, champion: false, date: new Date().toISOString() },
+        ...(state.history ?? []),
+      ].slice(0, 5),
+    };
+    saveTournamentState(finished);
+    return finished;
+  }
+
+  // 勝利
+  const nextRound = state.currentRound + 1;
+  const isChampion = nextRound > TOURNAMENT_ROUNDS.length;
+  const finished = {
+    ...state,
+    active: !isChampion,
+    currentRound: isChampion ? state.currentRound : nextRound,
+    results: newResults,
+    finishedAt: isChampion ? new Date().toISOString() : null,
+    champion: isChampion,
+    history: isChampion
+      ? [
+          { reachedRound: state.currentRound, champion: true, date: new Date().toISOString() },
+          ...(state.history ?? []),
+        ].slice(0, 5)
+      : (state.history ?? []),
+  };
+  saveTournamentState(finished);
+  return finished;
+}
+
 export default function Tournament() {
   const navigate = useNavigate();
-  const [ts, setTs] = useState(() => loadTournamentState());
+  const [ts, setTs] = useState(loadTournamentWithPendingResult);
 
-  // Play.jsx が書いたトーナメント結果を読み込む
+  // 取り込み済みの受け渡しデータを消す。
+  // 外部ストレージの後始末なので effect が適切な置き場所。
+  // 万一ここに来る前に落ちても、次回は currentRound が進んでいて
+  // loadTournamentWithPendingResult が二重適用を弾くので安全。
   useEffect(() => {
-    const lastResult = safeLoad('chess-tournament-last-result', null);
-    if (!lastResult) return;
-    safeSave('chess-tournament-last-result', null); // 読んだら消す
-
-    setTs(prev => {
-      const state = { ...prev };
-      if (!state.active) return state;
-      if (lastResult.round !== state.currentRound) return state;
-
-      const newResults = [...state.results, {
-        round: lastResult.round,
-        result: lastResult.result,
-        moveCount: lastResult.moveCount,
-        date: new Date().toISOString(),
-      }];
-
-      if (lastResult.result === 'loss') {
-        // 敗退
-        const finished = {
-          ...state,
-          active: false,
-          results: newResults,
-          finishedAt: new Date().toISOString(),
-          champion: false,
-          history: [
-            { reachedRound: lastResult.round, champion: false, date: new Date().toISOString() },
-            ...(state.history ?? []),
-          ].slice(0, 5),
-        };
-        saveTournamentState(finished);
-        return finished;
-      }
-
-      // 勝利
-      const nextRound = state.currentRound + 1;
-      const isChampion = nextRound > TOURNAMENT_ROUNDS.length;
-      const finished = {
-        ...state,
-        active: !isChampion,
-        currentRound: isChampion ? state.currentRound : nextRound,
-        results: newResults,
-        finishedAt: isChampion ? new Date().toISOString() : null,
-        champion: isChampion,
-        history: isChampion
-          ? [
-              { reachedRound: state.currentRound, champion: true, date: new Date().toISOString() },
-              ...(state.history ?? []),
-            ].slice(0, 5)
-          : (state.history ?? []),
-      };
-      saveTournamentState(finished);
-      return finished;
-    });
+    safeSave('chess-tournament-last-result', null);
   }, []);
 
   const handleStart = () => {
@@ -93,8 +97,6 @@ export default function Tournament() {
   const handlePlayRound = (round) => {
     navigate(`/play?tournament=${round.id}&diff=${round.difficulty}`);
   };
-
-  const currentRoundDef = TOURNAMENT_ROUNDS.find(r => r.id === ts.currentRound);
 
   return (
     <div className="tournament-container">

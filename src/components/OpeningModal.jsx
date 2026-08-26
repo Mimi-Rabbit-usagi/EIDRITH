@@ -28,7 +28,8 @@ export default function OpeningModal({ activeBoardTheme, activePieceSet, onClose
   const [opening, setOpening]       = useState(null);
   const [practiceColor, setPracticeColor] = useState('w');
   const [chess]                     = useState(() => new Chess());
-  const [fen, setFen]               = useState('');
+  // chess は破壊的に更新されるため、setFen を再レンダーの引き金としてのみ使う
+  const [, setFen]                  = useState('');
   const [selectedSq, setSelectedSq] = useState(null);
   const [legalMoves, setLegalMoves] = useState([]);
   const [lastMove, setLastMove]     = useState(null);

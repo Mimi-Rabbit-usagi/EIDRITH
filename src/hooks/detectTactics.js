@@ -249,7 +249,6 @@ export function detectBattery(chess, move) {
 // 移動した駒が2つ以上の価値ある相手駒を同時に攻撃しているか
 export function detectFork(chess, move) {
   const board = chess.board();
-  const piece = board.flat().find(p => p && chess.get(move.to) === p);
   const movedPiece = chess.get(move.to);
   if (!movedPiece) return false;
 
@@ -264,7 +263,7 @@ export function detectFork(chess, move) {
   // 代わりに盤面を直接分析する
   const attackedEnemySquares = [];
 
-  const addSlidingAttacks = (dirs, types) => {
+  const addSlidingAttacks = (dirs) => {
     for (const [dr, dc] of dirs) {
       let r = toRank + dr, c = toFile + dc;
       while (r >= 0 && r < 8 && c >= 0 && c < 8) {
@@ -290,11 +289,11 @@ export function detectFork(chess, move) {
 
   switch (movedPiece.type) {
     case 'n': addLeapAttacks([[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]); break;
-    case 'b': addSlidingAttacks([[1,1],[1,-1],[-1,1],[-1,-1]], ['b','q']); break;
-    case 'r': addSlidingAttacks([[0,1],[0,-1],[1,0],[-1,0]], ['r','q']); break;
+    case 'b': addSlidingAttacks([[1,1],[1,-1],[-1,1],[-1,-1]]); break;
+    case 'r': addSlidingAttacks([[0,1],[0,-1],[1,0],[-1,0]]); break;
     case 'q':
-      addSlidingAttacks([[1,1],[1,-1],[-1,1],[-1,-1]], ['b','q']);
-      addSlidingAttacks([[0,1],[0,-1],[1,0],[-1,0]], ['r','q']);
+      addSlidingAttacks([[1,1],[1,-1],[-1,1],[-1,-1]]);
+      addSlidingAttacks([[0,1],[0,-1],[1,0],[-1,0]]);
       break;
     case 'p': {
       const pDir = movedPiece.color === 'w' ? -1 : 1;
