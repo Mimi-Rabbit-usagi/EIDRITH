@@ -43,9 +43,16 @@ export default function Puzzles() {
   const todaySolved    = dailyInfo.lastSolvedDate === today;
 
   const [filter, setFilter]         = useState('all');
-  const [puzzleIdx, setPuzzleIdx]   = useState(null);
-  const [chess]                     = useState(() => new Chess());
-  const [fen, setFen]               = useState('');
+  // ?daily=true で来たときは最初からデイリーパズルを開いた状態にする。
+  // （effect で後から開くと、一覧が一瞬見えてから切り替わってしまう）
+  const [puzzleIdx, setPuzzleIdx]   = useState(isDaily ? dailyIdx : null);
+  const [chess]                     = useState(() => {
+    const c = new Chess();
+    if (isDaily) c.load(PUZZLES[dailyIdx].fen);
+    return c;
+  });
+  // chess は破壊的に更新されるため、setFen を再レンダーの引き金としてのみ使う
+  const [, setFen]                  = useState('');
   const [selectedSq, setSelectedSq] = useState(null);
   const [legalMoves, setLegalMoves] = useState([]);
   const [lastMove, setLastMove]     = useState(null);
@@ -65,7 +72,8 @@ export default function Puzzles() {
   const [trainingTier, setTrainingTier]       = useState('easy');
   const [trainingStreak, setTrainingStreak]   = useState(0);
   const [trainingSession, setTrainingSession] = useState({ correct: 0, total: 0 });
-  const [trainingStats, setTrainingStats]     = useState(() => loadTrainingStats());
+  // 値は画面に出さず localStorage への保存にのみ使う（updater の prev で参照）
+  const [, setTrainingStats]                  = useState(() => loadTrainingStats());
   const [promoted, setPromoted]               = useState(false);
 
   const filteredPuzzles = filter === 'all' ? PUZZLES : PUZZLES.filter(p => p.difficulty === filter);
@@ -119,6 +127,45 @@ export default function Puzzles() {
     });
   }, [puzzle, chess, clearSolutionTimers]);
 
+  // ── トレーニングの採点 ──────────────────────────────────────────────────────
+  // 「正解した」「間違えた」はユーザー操作への応答なので、status の変化を effect で
+  // 監視するのではなく、status を変える側（handleSquareClick）から直接呼ぶ。
+
+  /** 正解時: streak を伸ばし、条件を満たせば tier を昇格させる */
+  const recordTrainingCorrect = useCallback(() => {
+    const newStreak = trainingStreak + 1;
+    setTrainingStreak(newStreak);
+    setTrainingSession(prev => ({ correct: prev.correct + 1, total: prev.total + 1 }));
+
+    const tierCfg        = TRAINING_TIERS.find(t => t.id === trainingTier);
+    const currentTierIdx = TRAINING_TIERS.findIndex(t => t.id === trainingTier);
+    let nextTier = trainingTier;
+
+    if (tierCfg && newStreak >= tierCfg.promoteAt && currentTierIdx < TRAINING_TIERS.length - 1) {
+      nextTier = TRAINING_TIERS[currentTierIdx + 1].id;
+      setTrainingTier(nextTier);
+      setTrainingStreak(0);
+      setPromoted(true);
+    }
+
+    setTrainingStats(prev => {
+      const updated = {
+        bestStreak:   Math.max(prev.bestStreak, newStreak),
+        totalCorrect: prev.totalCorrect + 1,
+        highestTier:  TIER_RANK[nextTier] > TIER_RANK[prev.highestTier ?? 'easy']
+          ? nextTier : prev.highestTier,
+      };
+      saveTrainingStats(updated);
+      return updated;
+    });
+  }, [trainingStreak, trainingTier]);
+
+  /** 不正解時: streak をリセットして出題数だけ数える */
+  const recordTrainingWrong = useCallback(() => {
+    setTrainingStreak(0);
+    setTrainingSession(prev => ({ ...prev, total: prev.total + 1 }));
+  }, []);
+
   const playOpponentMove = useCallback((p, nextIdx) => {
     if (nextIdx >= p.solution.length) return;
     autoMoveTimer.current = setTimeout(() => {
@@ -155,6 +202,7 @@ export default function Puzzles() {
           const nextIdx = moveIdx + 1;
           if (nextIdx >= puzzle.solution.length) {
             setStatus('done');
+            if (isTraining) recordTrainingCorrect();
             setSolvedIds(prev => {
               const updated = prev.includes(puzzle.id) ? prev : [...prev, puzzle.id];
               safeSave('chess-solved-puzzles', updated);
@@ -171,6 +219,7 @@ export default function Puzzles() {
           }
         } else {
           setStatus('wrong');
+          if (isTraining) recordTrainingWrong();
           setTimeout(() => {
             chess.undo();
             setFen(chess.fen());
@@ -196,7 +245,8 @@ export default function Puzzles() {
       setSelectedSq(square);
       setLegalMoves(chess.moves({ square, verbose: true }).map(m => m.to));
     }
-  }, [puzzle, status, chess, selectedSq, legalMoves, moveIdx, playOpponentMove]);
+  }, [puzzle, status, solutionMode, chess, selectedSq, legalMoves, moveIdx, playOpponentMove,
+      isTraining, recordTrainingCorrect, recordTrainingWrong, dailyIdx, today]);
 
   // トレーニング：ランダムに問題を選んで直接ロード（filteredPuzzles を経由しない）
   const openTrainingPuzzle = useCallback((tier, excludeId = null) => {
@@ -234,58 +284,6 @@ export default function Puzzles() {
     setPuzzleIdx(null);
     clearTimeout(autoMoveTimer.current);
   }, []);
-
-  // ?daily=true でアクセスしたときはデイリーパズルを自動的に開く
-  useEffect(() => {
-    if (isDaily) {
-      // filteredPuzzles は filter='all' のときは PUZZLES そのものなので dailyIdx で直接開ける
-      setFilter('all');
-      openPuzzle(dailyIdx);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDaily]);
-
-  // トレーニング: 正解したとき streak・tier を更新
-  useEffect(() => {
-    if (!isTraining || status !== 'done' || !puzzle) return;
-
-    const newStreak = trainingStreak + 1;
-    setTrainingStreak(newStreak);
-    setTrainingSession(prev => ({ correct: prev.correct + 1, total: prev.total + 1 }));
-
-    // 昇格チェック
-    const tierCfg = TRAINING_TIERS.find(t => t.id === trainingTier);
-    const currentTierIdx = TRAINING_TIERS.findIndex(t => t.id === trainingTier);
-    let nextTier = trainingTier;
-
-    if (tierCfg && newStreak >= tierCfg.promoteAt && currentTierIdx < TRAINING_TIERS.length - 1) {
-      nextTier = TRAINING_TIERS[currentTierIdx + 1].id;
-      setTrainingTier(nextTier);
-      setTrainingStreak(0);
-      setPromoted(true);
-    }
-
-    // 全体ベスト更新
-    setTrainingStats(prev => {
-      const updated = {
-        bestStreak: Math.max(prev.bestStreak, newStreak),
-        totalCorrect: prev.totalCorrect + 1,
-        highestTier: TIER_RANK[nextTier] > TIER_RANK[prev.highestTier ?? 'easy']
-          ? nextTier : prev.highestTier,
-      };
-      saveTrainingStats(updated);
-      return updated;
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTraining, status, puzzle?.id]);
-
-  // トレーニング: 不正解で streak リセット
-  useEffect(() => {
-    if (!isTraining || status !== 'wrong') return;
-    setTrainingStreak(0);
-    setTrainingSession(prev => ({ ...prev, total: prev.total + 1 }));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTraining, status]);
 
   useEffect(() => () => {
     clearTimeout(autoMoveTimer.current);

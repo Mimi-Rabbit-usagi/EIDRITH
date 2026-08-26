@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const PIECE_SYMBOLS = { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' };
 
@@ -118,17 +118,21 @@ export default function GamePanel({
   const moveListRef = (el) => { if (el) el.scrollTop = el.scrollHeight; };
 
   const [expandedTechId, setExpandedTechId] = useState(null);
-  useEffect(() => {
-    if (technique) setExpandedTechId(technique.id);
-  }, [technique]);
-
   // スマホ用タブ（PCでは無視される）
   const [mobileTab, setMobileTab] = useState('game');
 
-  // 新しい戦術が来たらスマホでも対局タブに切り替え
-  useEffect(() => {
-    if (technique) setMobileTab('game');
-  }, [technique]);
+  // 新しい戦術が来たら、その解説を開いて対局タブに戻す。
+  // effect ではなくレンダー中に前回値と比べて調整する（React 公式の
+  // "Adjusting some state when a prop changes" パターン）。
+  // effect でやると「一度描画してから再描画」になり、古い状態が一瞬見えてしまう。
+  const [prevTechnique, setPrevTechnique] = useState(null);
+  if (technique !== prevTechnique) {
+    setPrevTechnique(technique);
+    if (technique) {
+      setExpandedTechId(technique.id);
+      setMobileTab('game');
+    }
+  }
 
   return (
     <div className="game-panel">

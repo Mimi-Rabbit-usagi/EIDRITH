@@ -20,12 +20,30 @@ function buildDrawReason(chess) {
   return null;
 }
 
+/**
+ * 描画に必要な盤面情報を Chess インスタンスから抜き出して固める。
+ *
+ * Chess インスタンスは ref に置かれて破壊的に更新されるため、レンダー中に直接読むと
+ * React が変化を追跡できない。局面が変わるたびにこの関数でスナップショットを作り、
+ * state として持たせることで「state が同じなら画面も同じ」を保証する。
+ */
+function buildSnapshot(chess) {
+  return {
+    fen: chess.fen(),
+    board: chess.board(),
+    turn: chess.turn(),
+    history: chess.history({ verbose: true }),
+    status: buildGameStatus(chess),
+    drawReason: buildDrawReason(chess),
+  };
+}
+
 
 export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 'cpu', getAIMove = null) {
   const chessRef = useRef(new Chess());
 
-  // fen changes on every move, driving re-renders
-  const [fen, setFen] = useState(() => chessRef.current.fen());
+  // 局面が変わるたびに差し替わる描画用スナップショット（再レンダーの起点）
+  const [snapshot, setSnapshot] = useState(() => buildSnapshot(new Chess()));
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [legalMoves, setLegalMoves] = useState([]);
   const [lastMove, setLastMove] = useState(null);
@@ -42,28 +60,34 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
   const aiTimerRef = useRef(null);
   // getAIMove は外部（Stockfish フック等）から渡される非同期関数のref
   const getAIMoveRef = useRef(getAIMove);
-  getAIMoveRef.current = getAIMove;
 
-  const chess = chessRef.current;
-
-  // プレイヤーカラーのref（再レンダーのたびに更新されるので常に最新値を参照できる）
+  // 最新の props を ref に写しておくためのref群。
+  // コールバック内から「常に最新の値」を参照するために使う（依存配列を増やさずに済む）
   const playerColorRef = useRef(playerColor);
   const cpuColorRef = useRef(playerColor === 'w' ? 'b' : 'w');
   const vsModeRef = useRef(vsMode);
-  playerColorRef.current = playerColor;
-  cpuColorRef.current = playerColor === 'w' ? 'b' : 'w';
-  vsModeRef.current = vsMode;
 
-  // Snapshot of derived state
-  const gameStatus = agreedDraw ? 'draw' : buildGameStatus(chess);
-  const winner = gameStatus === 'checkmate' ? (chess.turn() === 'w' ? 'b' : 'w') : null;
+  // ref への代入はレンダー中ではなく effect で行う。
+  // この effect は他のどの effect よりも先に宣言しておくこと（下の「CPU先手」effect が
+  // cpuColorRef / vsModeRef を読むため、順序が入れ替わると古い値を見てしまう）
+  useEffect(() => {
+    getAIMoveRef.current = getAIMove;
+    playerColorRef.current = playerColor;
+    cpuColorRef.current = playerColor === 'w' ? 'b' : 'w';
+    vsModeRef.current = vsMode;
+  });
+
+  // 派生値はすべてスナップショット（state）から計算する
+  const gameStatus = agreedDraw ? 'draw' : snapshot.status;
+  const winner = gameStatus === 'checkmate' ? (snapshot.turn === 'w' ? 'b' : 'w') : null;
   const drawReason = gameStatus === 'draw'
-    ? (agreedDraw ? 'agreement' : buildDrawReason(chess))
+    ? (agreedDraw ? 'agreement' : snapshot.drawReason)
     : null;
 
+  /** 盤面を変更したあとは必ずこれを呼ぶ（呼ばないと画面が更新されない） */
   const syncFen = useCallback(() => {
     const c = chessRef.current;
-    setFen(c.fen());
+    setSnapshot(buildSnapshot(c));
     setCurrentOpening(detectOpening(c.history({ verbose: true })));
     setPositionEval(evaluatePosition(c));
   }, []);
@@ -274,7 +298,7 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
   const resetGame = useCallback(() => {
     clearTimeout(aiTimerRef.current);
     chessRef.current = new Chess();
-    setFen(chessRef.current.fen());
+    setSnapshot(buildSnapshot(chessRef.current));
     setSelectedSquare(null);
     setLegalMoves([]);
     setLastMove(null);
@@ -297,7 +321,7 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
       c.load(fen);
       clearTimeout(aiTimerRef.current);
       chessRef.current = c;
-      setFen(c.fen());
+      setSnapshot(buildSnapshot(c));
       setSelectedSquare(null);
       setLegalMoves([]);
       setLastMove(null);
@@ -380,8 +404,8 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
   }, [gameStatus]);
 
   return {
-    board: chess.board(),
-    fen,
+    board: snapshot.board,
+    fen: snapshot.fen,
     selectedSquare,
     legalMoves,
     lastMove,
@@ -392,8 +416,8 @@ export function useChessGame(difficulty = 'normal', playerColor = 'w', vsMode = 
     gameStatus,
     winner,
     drawReason,
-    currentTurn: chess.turn(),
-    moveHistory: chess.history({ verbose: true }),
+    currentTurn: snapshot.turn,
+    moveHistory: snapshot.history,
     handleSquareClick,
     resetGame,
     resetWithFen,

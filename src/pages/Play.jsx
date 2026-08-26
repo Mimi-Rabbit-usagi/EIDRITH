@@ -6,7 +6,7 @@ import { useChessClock } from '../hooks/useChessClock';
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { BOARD_THEMES } from '../data/themes';
 import { PIECE_SETS } from '../data/pieceSets';
-import { ACHIEVEMENTS, checkAchievements } from '../data/achievements';
+import { checkAchievements } from '../data/achievements';
 import ChessBoard from '../components/ChessBoard';
 import ChessClock from '../components/ChessClock';
 import EvalBar from '../components/EvalBar';
@@ -21,7 +21,7 @@ import CustomizeModal from '../components/CustomizeModal';
 import PromotionModal from '../components/PromotionModal';
 import GameSummary from '../components/GameSummary';
 import { loadGameData, saveGameData, loadLogs, saveLogs, safeLoad, safeSave } from '../lib/storage';
-import { TOURNAMENT_ROUNDS } from './Tournament';
+import { TOURNAMENT_ROUNDS } from '../data/tournamentRounds';
 import { useStockfish } from '../hooks/useStockfish';
 
 // ── Play Page ─────────────────────────────────────────────────────────────────
@@ -111,11 +111,24 @@ export default function Play() {
     difficulty === 'hard' && gameMode !== 'local' ? getStockfishMove : null,
   );
 
-  moveHistoryRef.current = moveHistory;
-  techniqueLogRef.current = techniqueLog;
+  // ref への代入はレンダー中ではなく effect で行う。
+  // 対局終了を検知して棋譜を保存する下の effect がこれらの ref を読むため、
+  // この effect はそれより先に宣言しておく必要がある（effect は宣言順に実行される）。
+  useEffect(() => {
+    moveHistoryRef.current = moveHistory;
+    techniqueLogRef.current = techniqueLog;
+  });
 
   const isChessOver = gameStatus !== 'playing' && gameStatus !== 'check';
-  const handleTimeout = useCallback((loserColor) => setClockTimeout(loserColor), []);
+  const [showTimeoutBanner, setShowTimeoutBanner] = useState(false);
+
+  // 時間切れは「イベント」なので、効果音とバナー表示もここで一緒に行う
+  // （effect で clockTimeout を監視すると、描画が一往復ぶん遅れる）
+  const handleTimeout = useCallback((loserColor) => {
+    setClockTimeout(loserColor);
+    playSound(loserColor !== playerColor ? 'win' : 'lose');
+    setShowTimeoutBanner(true);
+  }, [playerColor, playSound]);
   const { playerTime, cpuTime, resetClock } = useChessClock({
     clockMode,
     increment: clockIncrement,
@@ -177,20 +190,25 @@ export default function Play() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerTime]);
 
-  const [showTimeoutBanner, setShowTimeoutBanner] = useState(false);
   const [showKeyHelp, setShowKeyHelp] = useState(false);
   const [showFenInput, setShowFenInput] = useState(false);
   const [fenValue, setFenValue] = useState('');
   const [fenError, setFenError] = useState(null);
 
+  // バナーを 1.2 秒後に自動的に消す（setState はタイマーのコールバック内なのでOK）
   useEffect(() => {
-    if (clockTimeout === null) return;
-    playSound(clockTimeout !== playerColor ? 'win' : 'lose');
-    setShowTimeoutBanner(true);
+    if (!showTimeoutBanner) return;
     const t = setTimeout(() => setShowTimeoutBanner(false), 1200);
     return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clockTimeout]);
+  }, [showTimeoutBanner]);
+
+  const handleNewGame = useCallback(() => {
+    resetGame();
+    resetClock();
+    setClockTimeout(null);
+    setWinCounted(false);
+    setShowSummary(false);
+  }, [resetGame, resetClock]);
 
   // ── キーボードショートカット ──────────────────────────────────────────────
   useEffect(() => {
@@ -226,9 +244,17 @@ export default function Play() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isChessOver, hint, showSummary, showHistory, showStats, showPuzzle, showOpening, showCustomize]);
 
+  // 対局が終わったら棋譜・戦績・実績を保存する。
+  //
+  // set-state-in-effect を意図的に無効化している：
+  // 終局はプレイヤーの手・CPU の手（useChessGame 内の非同期処理）・時間切れの
+  // どれからでも起こるため、この画面には「終局イベント」を捕まえられるハンドラが
+  // 存在しない。gameStatus の変化を effect で観測するのが唯一の方法。
+  // winCounted ガードで二重記録を防いでいる。
   useEffect(() => {
     const isOver = gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'draw' || clockTimeout !== null;
     if (!isOver || winCounted) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWinCounted(true);
 
     let result = 'draw';
@@ -319,13 +345,6 @@ export default function Play() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameStatus, winner, winCounted, clockTimeout, gameMode]);
 
-  const handleNewGame = useCallback(() => {
-    resetGame();
-    resetClock();
-    setClockTimeout(null);
-    setWinCounted(false);
-    setShowSummary(false);
-  }, [resetGame, resetClock]);
 
   const handleFenStart = useCallback(() => {
     const trimmed = fenValue.trim();
@@ -568,7 +587,6 @@ export default function Play() {
           onClose={() => setShowSummary(false)}
           onReplay={handleReplayCurrentGame}
           onTournamentReturn={isTournament ? () => navigate('/tournament') : undefined}
-          tournamentRoundLabel={tournamentRoundDef?.label}
         />
       )}
 

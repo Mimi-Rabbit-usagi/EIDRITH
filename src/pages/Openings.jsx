@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { OPENINGS } from '../data/openings';
 import NavBar from '../components/NavBar';
@@ -55,7 +54,6 @@ function buildQuizQuestion(prevEco = null) {
 }
 
 export default function Openings() {
-  const navigate = useNavigate();
   const gameData = loadGameData();
   const boardTheme = buildBoardTheme(gameData.activeBoardTheme);
   const pieceSet   = gameData.activePieceSet;
@@ -71,7 +69,8 @@ export default function Openings() {
   const [quizSelected, setQuizSelected] = useState(null); // 選んだ選択肢テキスト
   const [quizScore, setQuizScore]       = useState(() => loadQuizStats());
   const [chess]                     = useState(() => new Chess());
-  const [fen, setFen]               = useState('');
+  // chess は破壊的に更新されるため、setFen を再レンダーの引き金としてのみ使う
+  const [, setFen]                  = useState('');
   const [selectedSq, setSelectedSq] = useState(null);
   const [legalMoves, setLegalMoves] = useState([]);
   const [lastMove, setLastMove]     = useState(null);

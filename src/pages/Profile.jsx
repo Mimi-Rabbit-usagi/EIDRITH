@@ -186,24 +186,32 @@ function ResultDot({ result }) {
 export default function Profile() {
   const navigate = useNavigate();
   const { user, signInWithGoogle, signOut } = useAuth();
-  const [data, setData] = useState(null);
+  // localStorage の読み込みは同期的なので effect ではなく初期化関数で行う
+  const [data, setData] = useState(loadAllData);
   const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState('');
+  const [nameInput, setNameInput] = useState(() => loadAllData().name);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [customEmojiInput, setCustomEmojiInput] = useState('');
   const [customEmojiError, setCustomEmojiError] = useState('');
   const [showCustomize, setShowCustomize] = useState(false);
 
+  // Google ログインが完了したとき、名前が未設定ならGoogle名を既定値にする。
+  //
+  // set-state-in-effect を意図的に無効化している：
+  // ログイン完了は Supabase（外部システム）が非同期に知らせてくるイベントで、
+  // このコンポーネントが持つイベントハンドラでは捕まえられない。
+  // React 公式も「外部システムの更新を受けて setState する」ケースは effect の
+  // 正当な用途としている。
   useEffect(() => {
-    const d = loadAllData();
-    // Googleログイン済みで名前未設定の場合はGoogle名をデフォルトに
-    if (user && (!safeLoad('chess-player-name', null) || safeLoad('chess-player-name', null) === 'あなた')) {
-      const googleName = user.user_metadata?.full_name?.split(' ')[0] ?? 'あなた';
-      safeSave('chess-player-name', googleName);
-      d.name = googleName;
-    }
-    setData(d);
-    setNameInput(d.name);
+    if (!user) return;
+    const stored = safeLoad('chess-player-name', null);
+    if (stored && stored !== 'あなた') return;
+
+    const googleName = user.user_metadata?.full_name?.split(' ')[0] ?? 'あなた';
+    safeSave('chess-player-name', googleName);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setData(prev => ({ ...prev, name: googleName }));
+    setNameInput(googleName);
   }, [user]);
 
   const saveName = () => {
@@ -228,7 +236,7 @@ export default function Profile() {
       return;
     }
 
-    let char = val;
+    let char;
     try {
       const segs = [...new Intl.Segmenter().segment(val)];
       if (segs.length > 1) {

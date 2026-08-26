@@ -73,20 +73,23 @@ export default function ReplayModal({ game, boardTheme, onClose }) {
   const total = positions.length - 1; // 総手数
 
   const [step, setStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  // 「再生ボタンが押されている」状態。実際に再生中かは isPlaying（下の派生値）で判定する
+  const [playRequested, setPlayRequested] = useState(false);
 
   const goTo = useCallback((s) => {
     setStep(Math.min(total, Math.max(0, s)));
-    setIsPlaying(false);
+    setPlayRequested(false);
   }, [total]);
+
+  // 「終端に達したら止まる」は state を書き換えずに派生値として表す
+  const isPlaying = playRequested && step < total;
 
   // 自動再生: 1秒ごとに1手進む
   useEffect(() => {
     if (!isPlaying) return;
-    if (step >= total) { setIsPlaying(false); return; }
     const t = setTimeout(() => setStep(s => s + 1), 1000);
     return () => clearTimeout(t);
-  }, [isPlaying, step, total]);
+  }, [isPlaying, step]);
 
   // キーボード操作
   useEffect(() => {
@@ -104,7 +107,10 @@ export default function ReplayModal({ game, boardTheme, onClose }) {
 
   const handlePlayPause = () => {
     if (step >= total) setStep(0); // 最後まで行ったら最初から
-    setIsPlaying(p => !p);
+    // トグルの基準は playRequested ではなく isPlaying。
+    // 終端で止まっているとき playRequested は true のままなので、
+    // それを反転させると「再生し直し」ではなく「停止」になってしまう
+    setPlayRequested(!isPlaying);
   };
 
   return (

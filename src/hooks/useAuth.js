@@ -8,10 +8,11 @@ import { supabase } from '../lib/supabase';
  */
 export function useAuth() {
   const [user, setUser]       = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Supabase 未設定なら確認すべきセッションが無いので、最初から loading=false でよい
+  const [loading, setLoading] = useState(supabase !== null);
 
   useEffect(() => {
-    if (!supabase) { setLoading(false); return; }
+    if (!supabase) return;
 
     // 初回: 現在のセッションを取得
     supabase.auth.getSession().then(({ data: { session } }) => {

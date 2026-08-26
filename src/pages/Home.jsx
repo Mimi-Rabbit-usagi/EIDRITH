@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import {
@@ -95,15 +95,11 @@ function greeting(name) {
 
 export default function Home() {
   const navigate = useNavigate();
-  const [dash, setDash] = useState(null);
+  // localStorage の読み込みは同期的なので、effect ではなく初期化関数で一度だけ行う
+  const [dash] = useState(() => loadDashData());
 
-  const today       = getTodayDateString();
-  const [dailyInfo, setDailyInfo] = useState(() => loadDailyInfo());
-
-  useEffect(() => {
-    setDash(loadDashData());
-    setDailyInfo(loadDailyInfo());
-  }, []);
+  const today = getTodayDateString();
+  const [dailyInfo] = useState(() => loadDailyInfo());
 
   const dailyIdx    = PUZZLES.length > 0 ? getDailyPuzzleIndex(today, PUZZLES.length) : 0;
   const dailyPuzzle = PUZZLES[dailyIdx];
